@@ -1,0 +1,37 @@
+{
+  "name": "openclaw-algorand-plugin",
+  "version": "0.1.0",
+  "description": "Algorand blockchain integration for OpenClaw — by GoPlausible",
+  "author": "GoPlausible <info@goplausible.com>",
+  "homepage": "https://goplausible.com",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/GoPlausible/openclaw-algorand-plugin"
+  },
+  "keywords": [
+    "openclaw",
+    "openclaw-plugin",
+    "algorand",
+    "blockchain",
+    "mcp",
+    "x402",
+    "goplausible"
+  ],
+  "license": "MIT",
+  "type": "module",
+  "main": "index.ts",
+  "files": [
+    "index.ts",
+    "setup.ts",
+    "lib/",
+    "skills/",
+    "openclaw.plugin.json",
+    "AGENTS.md"
+  ],
+  "openclaw": {
+    "extensions": ["./index.ts"]
+  },
+  "dependencies": {
+    "@clack/prompts": "^0.7.0"
+  }
+}

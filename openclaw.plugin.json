@@ -1,0 +1,53 @@
+{
+  "id": "openclaw-algorand-plugin",
+  "name": "Algorand Integration",
+  "description": "Algorand blockchain integration with MCP and skills — by GoPlausible",
+  "version": "0.1.0",
+  "skills": [
+    "skills/algorand-development",
+    "skills/algorand-typescript",
+    "skills/algorand-python",
+    "skills/algorand-interaction",
+    "skills/algorand-x402-typescript",
+    "skills/algorand-x402-python"
+  ],
+  "configSchema": {
+    "type": "object",
+    "additionalProperties": false,
+    "properties": {
+      "mcpServer": {
+        "type": "string",
+        "enum": ["lite", "full"],
+        "default": "lite",
+        "description": "Which Algorand MCP to use"
+      },
+      "mcpServerUrl": {
+        "type": "string",
+        "description": "MCP server URL (auto-set based on mcpServer choice)"
+      },
+      "enableX402": {
+        "type": "boolean",
+        "default": true,
+        "description": "Enable x402 micropayments"
+      },
+      "authenticated": {
+        "type": "boolean",
+        "default": false,
+        "description": "OAuth authentication status"
+      }
+    }
+  },
+  "uiHints": {
+    "mcpServer": {
+      "label": "MCP Server",
+      "placeholder": "lite"
+    },
+    "enableX402": {
+      "label": "Enable x402 Micropayments"
+    },
+    "authenticated": {
+      "label": "Authenticated",
+      "sensitive": false
+    }
+  }
+}
