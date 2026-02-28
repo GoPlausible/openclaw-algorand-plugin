@@ -31,6 +31,17 @@ generate_algorand_uri {
 ```
 Or direct user to: https://lora.algokit.io/testnet/fund
 
+### Step 4: If account needs USDC funding
+```
+generate_algorand_uri {
+  "address": "[wallet_address]",
+  "asset": 10458941, // USDC on testnet
+  "amount": 1000000, // 1 USDC with 6 decimals
+  "note": "Fund testnet account with USDC"
+}
+```
+Or direct user to: https://faucet.circle.com/
+
 ---
 
 ## ALGO Payment Workflow

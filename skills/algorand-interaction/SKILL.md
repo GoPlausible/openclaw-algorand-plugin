@@ -20,7 +20,8 @@ Interact with Algorand blockchain through the Algorand MCP server (99 tools acro
 1. **Check wallet**: `wallet_get_info` with target `network` — verify an account exists and is active
 2. **If no accounts**: Guide user to create one with `wallet_add_account` (sets nickname and spending limits)
 3. **If needs funding**: Generate ARC-26 QR with `generate_algorand_uri` or direct to testnet faucet: https://lora.algokit.io/testnet/fund
-4. **Confirm network**: Always confirm which network (`mainnet`, `testnet`, `localnet`) before transactions
+4. **If needs USDC funding**: Generate ARC-26 QR with `generate_algorand_uri` or direct to testnet faucet: https://faucet.circle.com/
+5. **Confirm network**: Always confirm which network (`mainnet`, `testnet`, `localnet`) before transactions
 
 ## Network Selection
 
@@ -184,6 +185,7 @@ When using NFD (`.algo` names), always use the `depositAccount` field from the N
 - x402 Gateway: https://x402.goplausible.xyz
 - Facilitator: https://facilitator.goplausible.xyz
 - Testnet Faucet: https://lora.algokit.io/testnet/fund
+- Testnet USDC Faucet: https://faucet.circle.com/
 - Algorand Developer Docs: https://dev.algorand.co/
 - Algorand Developer Docs Github : https://github.com/algorandfoundation/devportal
 - Algorand Developer Examples Github : https://github.com/algorandfoundation/devportal-code-examples

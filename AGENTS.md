@@ -111,7 +111,8 @@ Always confirm with the user which network to use before transactions. Default t
 1. **Check wallet**: Call `wallet_get_info` with target network to verify a wallet account exists and is active
 2. **If no accounts**: Guide user to create one with `wallet_add_account` (sets nickname and spending limits)
 3. **If needs funding**: Generate ARC-26 QR with `generate_algorand_uri` or direct to testnet faucet: https://lora.algokit.io/testnet/fund
-4. **Confirm network**: Always confirm which network before transactions
+4. **If needs USDC funding**: Generate ARC-26 QR with `generate_algorand_uri` or direct to testnet faucet: https://faucet.circle.com/
+5. **Confirm network**: Always confirm which network before transactions
 
 ### Pre-Transaction Validation
 
@@ -250,6 +251,7 @@ When using NFD (`.algo` names) for transactions, always use the `depositAccount`
 - GoPlausible: https://goplausible.com
 - Algorand: https://algorand.co
 - Testnet Faucet: https://lora.algokit.io/testnet/fund
+- Testnet USDC Faucet: https://faucet.circle.com/
 - Algorand Developer Docs: https://dev.algorand.co/
 - Algorand Developer Docs Github: https://github.com/algorandfoundation/devportal
 - Algorand Developer Examples Github: https://github.com/algorandfoundation/devportal-code-examples

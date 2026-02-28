@@ -71,6 +71,7 @@ mcporter call algorand-mcp.search_assets name=USDC network=mainnet
 - x402 Gateway: https://x402.goplausible.xyz
 - Facilitator: https://facilitator.goplausible.xyz
 - Testnet Faucet: https://lora.algokit.io/testnet/fund
+- Testnet USDC Faucet: https://faucet.circle.com/
 - Algorand Developer Docs: https://dev.algorand.co/
 - Algorand Developer Docs Github : https://github.com/algorandfoundation/devportal
 - Algorand Developer Examples Github : https://github.com/algorandfoundation/devportal-code-examples
