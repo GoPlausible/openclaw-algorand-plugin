@@ -56,18 +56,22 @@ const PAYMENT_INSTRUCTIONS = `To pay for this resource, follow these steps using
    wallet_sign_transaction { transaction: <grouped_payment_txn>, network: "<network>" }
    — Leave the fee payer transaction (index 0) unsigned — the facilitator signs it.
 
-6. Construct the X-PAYMENT payload as JSON:
+6. Encode the unsigned fee payer transaction to base64:
+   encode_unsigned_transaction { transaction: <grouped_fee_payer_txn> }
+   — Returns base64 bytes of the unsigned transaction (canonical algosdk encoding).
+
+7. Construct the X-PAYMENT payload as JSON:
    {
      "x402Version": 2,
      "scheme": "exact",
      "network": "<CAIP-2 network identifier from accepts>",
      "payload": {
-       "paymentGroup": ["<base64 unsigned fee txn>", "<base64 signed payment txn>"],
+       "paymentGroup": ["<base64 from encode_unsigned_transaction>", "<base64 from wallet_sign_transaction>"],
        "paymentIndex": 1
      }
    }
 
-7. Retry the request using x402_fetch with paymentHeader set to the JSON string above.
+8. Retry the request using x402_fetch with paymentHeader set to the JSON string above.
 
 Load the algorand-interaction skill for the full x402 payment workflow reference.`;
 

@@ -602,7 +602,17 @@ wallet_sign_transaction {
 ```
 > Leave the fee payer transaction (index 0) unsigned — the facilitator signs it server-side.
 
-### Step 6: Construct the X-PAYMENT payload
+### Step 6: Encode the unsigned fee payer transaction
+
+Convert the grouped fee payer transaction (index 0) to base64 bytes:
+```
+encode_unsigned_transaction {
+  "transaction": <grouped_fee_payer_txn>
+}
+```
+> This produces the canonical `algosdk.encodeUnsignedTransaction()` base64 encoding needed for the X-PAYMENT payload.
+
+### Step 7: Construct the X-PAYMENT payload
 
 Build this JSON string:
 ```json
@@ -611,13 +621,13 @@ Build this JSON string:
   "scheme": "exact",
   "network": "<CAIP-2 network identifier from accepts>",
   "payload": {
-    "paymentGroup": ["<base64 unsigned fee txn>", "<base64 signed payment txn>"],
+    "paymentGroup": ["<base64 from encode_unsigned_transaction>", "<base64 from wallet_sign_transaction>"],
     "paymentIndex": 1
   }
 }
 ```
 
-### Step 7: Retry with payment
+### Step 8: Retry with payment
 
 Call `x402_fetch` again with `paymentHeader` set to the JSON string from Step 6.
 The server verifies the payment, submits the transaction group, and returns the resource.
