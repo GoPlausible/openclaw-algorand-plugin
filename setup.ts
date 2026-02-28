@@ -13,8 +13,9 @@ export async function runSetup(
 
   // Step 1: Verify algorand-mcp binary is available
   let mcpAvailable = false;
+  let mcpPath = "";
   try {
-    execSync("which algorand-mcp", { encoding: "utf-8" });
+    mcpPath = execSync("which algorand-mcp", { encoding: "utf-8" }).trim();
     mcpAvailable = true;
   } catch {
     // Binary not found in PATH
@@ -25,13 +26,17 @@ export async function runSetup(
       `MCP Server: ${ALGORAND_MCP.name}\n` +
         `Type: ${ALGORAND_MCP.type} (local)\n` +
         `Command: ${ALGORAND_MCP.command}\n` +
+        `Path: ${mcpPath}\n` +
         `Status: ✅ Available`,
       "Algorand MCP"
     );
   } else {
     p.log.warn(
-      `algorand-mcp binary not found in PATH.\n` +
-        `It should be installed as a dependency. Try: npm install algorand-mcp`
+      `algorand-mcp binary not found in PATH.\n\n` +
+        `Options:\n` +
+        `  • Run with npx: npx algorand-mcp\n` +
+        `  • Install globally: npm install -g algorand-mcp\n` +
+        `  • Add node_modules/.bin to PATH`
     );
   }
 
@@ -52,15 +57,23 @@ export async function runSetup(
   };
 
   p.note(
-    `MCP Server: ${ALGORAND_MCP.name} (local, stdio)\n` +
-      `x402: ${config.enableX402 ? "Enabled" : "Disabled"}`,
+    `x402 Micropayments: ${config.enableX402 ? "Enabled" : "Disabled"}\n\n` +
+      `MCP Server Setup:\n` +
+      `  The Algorand MCP server (${ALGORAND_MCP.command}) provides 99 blockchain tools.\n` +
+      `  Configure it in your coding agent's MCP config:\n` +
+      `  • Claude Code: .mcp.json\n` +
+      `  • Cursor: .cursor/mcp.json\n` +
+      `  • OpenCode: opencode.json`,
     "Configuration"
   );
 
   p.outro(
-    `🔷 Algorand plugin configured!\n` +
-      `   Docs: ${GOPLAUSIBLE_SERVICES.website}\n` +
-      `   Run \`openclaw algorand-plugin init\` to write MCP config and plugin memory.`
+    `🔷 Algorand plugin configured!\n\n` +
+      `   Next steps:\n` +
+      `   1. Run \`openclaw algorand-plugin init\` to add plugin memory\n` +
+      `   2. Configure algorand-mcp in your coding agent's MCP config\n` +
+      `   3. Restart OpenClaw gateway\n\n` +
+      `   Docs: ${GOPLAUSIBLE_SERVICES.website}`
   );
 
   return config;

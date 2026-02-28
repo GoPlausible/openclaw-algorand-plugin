@@ -15,14 +15,10 @@
     "type": "object",
     "additionalProperties": false,
     "properties": {
-      "mcpServer": {
-        "type": "object",
-        "description": "Algorand MCP server configuration (auto-set by plugin)"
-      },
       "enableX402": {
         "type": "boolean",
         "default": true,
-        "description": "Enable x402 micropayments"
+        "description": "Enable x402 micropayments skills"
       }
     }
   },
