@@ -1,122 +1,101 @@
-# GitHub Tools Reference
+# Algorand Examples — WebFetch Reference
 
-Quick reference for the GitHub MCP tools for searching Algorand code examples.
+Quick reference for fetching Algorand code examples using WebFetch with raw GitHub URLs.
 
-## Tools
+## Methods
 
-| Tool | Purpose |
-|------|---------|
-| `github_get_file_contents` | Read files or list directories |
-| `github_search_code` | Search for code patterns |
-| `github_search_repositories` | Find repositories |
+| Method | URL Pattern | Purpose |
+|--------|-------------|---------|
+| File contents | `https://raw.githubusercontent.com/{owner}/{repo}/{branch}/{path}` | Read file contents (plain text) |
+| Directory listing | `https://api.github.com/repos/{owner}/{repo}/contents/{path}` | List directory entries (JSON) |
+| Knowledge docs | `get_knowledge_doc` (Algorand MCP) | Algorand developer documentation |
 
-## github_get_file_contents
+## Fetching File Contents
 
-Retrieve file contents or list directory entries from a GitHub repository.
+Use `raw.githubusercontent.com` to get file contents directly as plain text.
 
-**Parameters:**
-
-| Parameter | Required | Description |
-|-----------|----------|-------------|
-| `owner` | Yes | Repository owner (e.g., `algorandfoundation`) |
-| `repo` | Yes | Repository name (e.g., `puya-ts`) |
-| `path` | No | Path to file or directory (default: root) |
-| `ref` | No | Git ref (branch, tag, or commit SHA) |
+**URL Format:**
+```
+https://raw.githubusercontent.com/{owner}/{repo}/{branch}/{path}
+```
 
 **Examples:**
 
 ```
-# Get a specific file
-github_get_file_contents owner:algorandfoundation repo:puya-ts path:examples/voting/contract.algo.ts
+# Get a specific contract
+WebFetch url:https://raw.githubusercontent.com/algorandfoundation/puya-ts/main/examples/voting/contract.algo.ts
 
-# List directory contents
-github_get_file_contents owner:algorandfoundation repo:puya-ts path:examples
+# Get a test file
+WebFetch url:https://raw.githubusercontent.com/algorandfoundation/puya-ts/main/examples/voting/contract.spec.ts
+
+# Get devportal example
+WebFetch url:https://raw.githubusercontent.com/algorandfoundation/devportal-code-examples/main/projects/typescript-examples/contracts/HelloWorld/contract.algo.ts
+
+# Get a Python example
+WebFetch url:https://raw.githubusercontent.com/algorandfoundation/puya/main/examples/voting/contract.py
+
+# Get README or docs
+WebFetch url:https://raw.githubusercontent.com/algorandfoundation/algokit-utils-ts/main/README.md
+WebFetch url:https://raw.githubusercontent.com/algorandfoundation/algokit-utils-ts/main/CHANGELOG.md
+```
+
+## Listing Directory Contents
+
+Use `api.github.com` to list files in a directory.
+
+**URL Format:**
+```
+https://api.github.com/repos/{owner}/{repo}/contents/{path}
+```
+
+**Examples:**
+
+```
+# List examples directory
+WebFetch url:https://api.github.com/repos/algorandfoundation/puya-ts/contents/examples
 
 # List repo root
-github_get_file_contents owner:algorandfoundation repo:devportal-code-examples
+WebFetch url:https://api.github.com/repos/algorandfoundation/devportal-code-examples/contents
 
-# Get file from specific branch
-github_get_file_contents owner:algorandfoundation repo:puya-ts path:README.md ref:main
+# List TypeScript contracts
+WebFetch url:https://api.github.com/repos/algorandfoundation/devportal-code-examples/contents/projects/typescript-examples/contracts
+
+# List Python contracts
+WebFetch url:https://api.github.com/repos/algorandfoundation/devportal-code-examples/contents/projects/python-examples/contracts
+
+# List specific branch
+WebFetch url:https://api.github.com/repos/algorandfoundation/puya-ts/contents/examples?ref=main
 ```
 
-## github_search_code
+## Searching for Code Patterns
 
-Search for code patterns across GitHub repositories.
-
-**Parameters:**
-
-| Parameter | Required | Description |
-|-----------|----------|-------------|
-| `query` | Yes | Search query (GitHub code search syntax) |
-| `sort` | No | Sort field (`indexed` only) |
-| `order` | No | Sort order (`asc` or `desc`) |
-| `page` | No | Page number (default: 1) |
-| `perPage` | No | Results per page (max 100, default: 30) |
-
-**Query Syntax:**
-
-| Qualifier | Example | Description |
-|-----------|---------|-------------|
-| `org:` | `org:algorandfoundation` | Search within organization |
-| `repo:` | `repo:algorandfoundation/puya-ts` | Search specific repo |
-| `language:` | `language:typescript` | Filter by language |
-| `path:` | `path:examples/` | Filter by file path |
-| `extension:` | `extension:ts` | Filter by file extension |
-
-**Examples:**
+For searching code across repositories, use web search:
 
 ```
 # Search for BoxMap usage in TypeScript
-github_search_code query:"BoxMap org:algorandfoundation language:typescript"
+Web search: "BoxMap site:github.com/algorandfoundation language:typescript"
 
 # Search for inner transactions
-github_search_code query:"itxn org:algorandfoundation language:typescript"
-
-# Search in specific repo
-github_search_code query:"GlobalState repo:algorandfoundation/puya-ts"
+Web search: "itxn site:github.com/algorandfoundation"
 
 # Search for ARC-4 implementations
-github_search_code query:"arc4 abimethod org:algorandfoundation"
+Web search: "arc4 abimethod site:github.com/algorandfoundation"
 ```
 
-## github_search_repositories
+## Using Knowledge Base (Algorand MCP)
 
-Find repositories by name, description, topics, or other criteria.
-
-**Parameters:**
-
-| Parameter | Required | Description |
-|-----------|----------|-------------|
-| `query` | Yes | Search query (GitHub repo search syntax) |
-| `sort` | No | Sort by: `stars`, `forks`, `help-wanted-issues`, `updated` |
-| `order` | No | Sort order (`asc` or `desc`) |
-| `page` | No | Page number (default: 1) |
-| `perPage` | No | Results per page (max 100, default: 30) |
-
-**Query Syntax:**
-
-| Qualifier | Example | Description |
-|-----------|---------|-------------|
-| `topic:` | `topic:algorand` | Filter by topic |
-| `language:` | `language:typescript` | Filter by primary language |
-| `org:` | `org:algorandfoundation` | Filter by organization |
-| `stars:` | `stars:>100` | Filter by star count |
-
-**Examples:**
+For Algorand developer documentation, use `get_knowledge_doc` or `list_knowledge_docs` from the Algorand MCP server (Remote Full or Local):
 
 ```
-# Find Algorand repos by topic
-github_search_repositories query:"topic:algorand language:typescript"
+# List available documents in a category
+list_knowledge_docs { "prefix": "arcs" }
 
-# Find NFT-related Algorand projects
-github_search_repositories query:"algorand nft" sort:stars order:desc
-
-# Find repos in algorandfoundation
-github_search_repositories query:"org:algorandfoundation smart-contract"
-
-# Find popular Algorand repos
-github_search_repositories query:"topic:algorand stars:>50" sort:stars
+# Get specific documentation
+get_knowledge_doc { "documents": ["arcs:specs:arc-0003.md"] }
+get_knowledge_doc { "documents": ["algokit:docs:get-started.md"] }
 ```
+
+**Knowledge categories:** `arcs`, `sdks`, `algokit`, `algokit-utils`, `tealscript`, `puya`, `liquid-auth`, `python`, `developers`, `clis`, `nodes`, `details`
 
 ## Priority Repositories
 

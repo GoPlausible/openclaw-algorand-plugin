@@ -1,12 +1,9 @@
 import * as p from "@clack/prompts";
 import { execSync } from "node:child_process";
-import { MCP_SERVERS, GOPLAUSIBLE_SERVICES, type McpServerKey } from "./lib/mcp-servers.js";
+import { ALGORAND_MCP, GOPLAUSIBLE_SERVICES } from "./lib/mcp-servers.js";
 
 export interface AlgorandPluginConfig {
-  mcpServer: McpServerKey;
-  mcpServerUrl: string;
   enableX402: boolean;
-  authenticated: boolean;
 }
 
 export async function runSetup(
@@ -14,30 +11,29 @@ export async function runSetup(
 ): Promise<AlgorandPluginConfig | null> {
   p.intro("🔷 Algorand Plugin Setup — powered by GoPlausible");
 
-  // Step 1: Choose MCP Server
-  const mcpChoice = await p.select({
-    message: "Which Algorand MCP server do you want to use?",
-    initialValue: existingConfig?.mcpServer || "lite",
-    options: [
-      {
-        value: "lite",
-        label: MCP_SERVERS.lite.name,
-        hint: MCP_SERVERS.lite.description,
-      },
-      {
-        value: "full",
-        label: MCP_SERVERS.full.name,
-        hint: MCP_SERVERS.full.description,
-      },
-    ],
-  });
-
-  if (p.isCancel(mcpChoice)) {
-    p.cancel("Setup cancelled.");
-    return null;
+  // Step 1: Verify algorand-mcp binary is available
+  let mcpAvailable = false;
+  try {
+    execSync("which algorand-mcp", { encoding: "utf-8" });
+    mcpAvailable = true;
+  } catch {
+    // Binary not found in PATH
   }
 
-  const selectedServer = MCP_SERVERS[mcpChoice as McpServerKey];
+  if (mcpAvailable) {
+    p.note(
+      `MCP Server: ${ALGORAND_MCP.name}\n` +
+        `Type: ${ALGORAND_MCP.type} (local)\n` +
+        `Command: ${ALGORAND_MCP.command}\n` +
+        `Status: ✅ Available`,
+      "Algorand MCP"
+    );
+  } else {
+    p.log.warn(
+      `algorand-mcp binary not found in PATH.\n` +
+        `It should be installed as a dependency. Try: npm install algorand-mcp`
+    );
+  }
 
   // Step 2: x402 integration
   const enableX402 = await p.confirm({
@@ -50,64 +46,22 @@ export async function runSetup(
     return null;
   }
 
-  // Step 3: OAuth Authentication
-  p.note(
-    `The ${selectedServer.name} uses OAuth authentication.\n` +
-      `You'll need to authorize via browser to connect your wallet.`,
-    "Authentication Required"
-  );
-
-  const authNow = await p.confirm({
-    message: "Authenticate now? (Opens browser)",
-    initialValue: true,
-  });
-
-  if (p.isCancel(authNow)) {
-    p.cancel("Setup cancelled.");
-    return null;
-  }
-
-  let authenticated = existingConfig?.authenticated ?? false;
-
-  if (authNow) {
-    authenticated = await runAuth(selectedServer.url);
-  }
-
   // Summary
   const config: AlgorandPluginConfig = {
-    mcpServer: mcpChoice as McpServerKey,
-    mcpServerUrl: selectedServer.url,
     enableX402: enableX402 as boolean,
-    authenticated,
   };
 
   p.note(
-    `MCP Server: ${selectedServer.name}\n` +
-      `URL: ${selectedServer.url}\n` +
-      `x402: ${config.enableX402 ? "Enabled" : "Disabled"}\n` +
-      `Auth: ${config.authenticated ? "✅ Connected" : "⏳ Pending"}`,
+    `MCP Server: ${ALGORAND_MCP.name} (local, stdio)\n` +
+      `x402: ${config.enableX402 ? "Enabled" : "Disabled"}`,
     "Configuration"
   );
 
   p.outro(
     `🔷 Algorand plugin configured!\n` +
       `   Docs: ${GOPLAUSIBLE_SERVICES.website}\n` +
-      `   Run \`openclaw algorand --help\` for commands.`
+      `   Run \`openclaw algorand-plugin init\` to write MCP config and plugin memory.`
   );
 
   return config;
-}
-
-export async function runAuth(serverUrl: string): Promise<boolean> {
-  const spinner = p.spinner();
-  spinner.start("Opening browser for Algorand OAuth...");
-
-  try {
-    execSync(`mcporter auth "${serverUrl}"`, { stdio: "inherit" });
-    spinner.stop("✅ Authentication successful!");
-    return true;
-  } catch (error) {
-    spinner.stop("⚠️ Authentication skipped or failed. Run `openclaw algorand auth` to retry.");
-    return false;
-  }
 }

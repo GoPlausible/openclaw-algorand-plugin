@@ -13,14 +13,15 @@ Create modern Algorand smart contracts in Algorand TypeScript (PuyaTs) or Algora
 ## How to Proceed
 
 1. **Search documentation first:**
-   - Use `kapa_search_algorand_knowledge_sources` MCP tool for conceptual guidance
+   - Use `get_knowledge_doc` or `list_knowledge_docs` from the Algorand MCP server (Remote Full or Local) for conceptual guidance
+   - Categories: `arcs`, `sdks`, `algokit`, `algokit-utils`, `tealscript`, `puya`, `developers`, `clis`, `nodes`
    - If MCP unavailable, use web search: `site:dev.algorand.co {concept}`
-   - If no results, proceed with caution using known patterns
 
 2. **Retrieve canonical examples:**
-   - Priority 1: `algorandfoundation/devportal-code-examples`
-   - Priority 2: `algorandfoundation/puya-ts` (TypeScript) or `algorandfoundation/puya` (Python)
-   - Priority 3: `algorandfoundation/algokit-typescript-template` or `algorandfoundation/algokit-python-template`
+   - Use WebFetch with raw GitHub URLs from priority repositories:
+   - Priority 1: `https://raw.githubusercontent.com/algorandfoundation/devportal-code-examples/main/`
+   - Priority 2: `https://raw.githubusercontent.com/algorandfoundation/puya-ts/main/examples/` (TypeScript) or `https://raw.githubusercontent.com/algorandfoundation/puya/main/examples/` (Python)
+   - Priority 3: `https://raw.githubusercontent.com/algorandfoundation/algokit-typescript-template/main/` or `https://raw.githubusercontent.com/algorandfoundation/algokit-python-template/main/`
    - Always include corresponding test files
 
 3. **Generate code:**

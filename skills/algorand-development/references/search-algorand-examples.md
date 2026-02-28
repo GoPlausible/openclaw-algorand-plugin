@@ -1,22 +1,22 @@
 
 # Searching Algorand Examples
 
-Find working contract examples and code patterns from Algorand Foundation repositories using GitHub tools.
+Find working contract examples and code patterns from Algorand Foundation repositories using WebFetch with raw GitHub URLs.
 
 ## Overview / Core Workflow
 
 1. Identify what pattern or example the user needs
-2. Choose the appropriate tool (`github_search_code`, `github_get_file_contents`, or `github_search_repositories`)
+2. Use WebFetch to fetch raw file contents from priority GitHub repositories
 3. Search priority repositories first (devportal-code-examples, puya-ts)
 4. Retrieve the relevant file(s)
 5. Also fetch corresponding test files when applicable
 
 ## How to proceed
 
-1. **Determine the search type:**
-   - Looking for a specific pattern → use `github_search_code`
-   - Need a specific file → use `github_get_file_contents`
-   - Discovering repositories → use `github_search_repositories`
+1. **Determine what you need:**
+   - Looking for a specific file → use WebFetch with the raw GitHub URL
+   - Need to browse a directory → use WebFetch with the GitHub API: `https://api.github.com/repos/{owner}/{repo}/contents/{path}`
+   - Looking for documentation → use `get_knowledge_doc` from Algorand MCP (Remote Full or Local)
 
 2. **Search priority repositories first:**
 
@@ -27,20 +27,20 @@ Find working contract examples and code patterns from Algorand Foundation reposi
    | 3 | `algorandfoundation/puya` | Python examples |
    | 4 | `algorandfoundation/algokit-*` | Templates and utilities |
 
-3. **Execute the search:**
+3. **Fetch files with WebFetch:**
 
    ```
-   # Search for code patterns
-   github_search_code query:"BoxMap org:algorandfoundation language:typescript"
+   # Get a specific file
+   WebFetch url:https://raw.githubusercontent.com/algorandfoundation/puya-ts/main/examples/voting/contract.algo.ts
 
-   # Get specific file
-   github_get_file_contents owner:algorandfoundation repo:puya-ts path:examples/voting/contract.algo.ts
+   # List directory contents (via GitHub API)
+   WebFetch url:https://api.github.com/repos/algorandfoundation/puya-ts/contents/examples
 
-   # List directory contents
-   github_get_file_contents owner:algorandfoundation repo:puya-ts path:examples
+   # Get a README or changelog
+   WebFetch url:https://raw.githubusercontent.com/algorandfoundation/algokit-utils-ts/main/CHANGELOG.md
 
-   # Find repositories
-   github_search_repositories query:"topic:algorand smart-contract"
+   # Get devportal examples
+   WebFetch url:https://raw.githubusercontent.com/algorandfoundation/devportal-code-examples/main/projects/typescript-examples/contracts/HelloWorld/contract.algo.ts
    ```
 
 4. **Always fetch test files:**
@@ -51,33 +51,35 @@ Find working contract examples and code patterns from Algorand Foundation reposi
 
 - **Search algorandfoundation first** — Official repos have vetted, up-to-date examples
 - **Always include test files** — They demonstrate correct usage patterns
-- **Use specific queries** — Include `org:algorandfoundation` and `language:typescript` for better results
+- **Use raw.githubusercontent.com** for file contents — faster and returns plain text
+- **Use api.github.com** for directory listings — returns JSON with file names and paths
 - **Check file paths in devportal-code-examples:**
   - TypeScript: `projects/typescript-examples/contracts/`
   - Python: `projects/python-examples/contracts/`
 - **Prefer puya-ts/examples for complex patterns** — Voting, AMM, auction examples are comprehensive
 
-## If GitHub MCP Tools Unavailable
+## Raw GitHub URL Patterns
 
-Use web search as fallback:
+```
+# File contents (plain text)
+https://raw.githubusercontent.com/{owner}/{repo}/{branch}/{path}
 
-- **For code search**: `site:github.com algorandfoundation {pattern} language:typescript`
-- **For specific files**: Browse directly to `https://github.com/algorandfoundation/puya-ts/tree/main/examples`
-- **For repos**: Search `site:github.com algorand {topic}`
+# Directory listing (JSON)
+https://api.github.com/repos/{owner}/{repo}/contents/{path}
 
-Key URLs to browse directly:
-- https://github.com/algorandfoundation/devportal-code-examples
-- https://github.com/algorandfoundation/puya-ts/tree/main/examples
-- https://github.com/algorandfoundation/puya/tree/main/examples
+# Search code (JSON) - use web search as alternative
+https://api.github.com/search/code?q={query}+org:algorandfoundation+language:typescript
+```
 
 ## Common Variations / Edge Cases
 
 | Scenario | Approach |
 |----------|----------|
-| Pattern not found in algorandfoundation | Expand search to all of GitHub |
-| Need Python instead of TypeScript | Search `algorandfoundation/puya` instead |
+| Pattern not found in algorandfoundation | Use web search for broader GitHub results |
+| Need Python instead of TypeScript | Use `algorandfoundation/puya` instead of `puya-ts` |
 | Looking for deployment patterns | Check `algokit-*-template` repos |
-| Need ARC standard implementation | Search for "ARC-{number}" in code |
+| Need ARC standard implementation | Use `get_knowledge_doc` with `arcs` category |
+| Need documentation | Use `get_knowledge_doc` or `list_knowledge_docs` from Algorand MCP |
 
 ## References / Further Reading
 

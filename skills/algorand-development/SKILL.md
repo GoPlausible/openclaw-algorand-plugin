@@ -36,10 +36,10 @@ Build, test, deploy, and manage local networks with AlgoKit CLI.
 
 ### Searching Algorand Examples
 
-Find working contract examples and code patterns from Algorand Foundation repositories.
+Find working contract examples and code patterns from Algorand Foundation repositories using WebFetch with raw GitHub URLs.
 
 - [search-algorand-examples.md](./references/search-algorand-examples.md) — Search workflow and priority repos
-- [search-algorand-examples-reference.md](./references/search-algorand-examples-reference.md) — GitHub MCP tools reference
+- [search-algorand-examples-reference.md](./references/search-algorand-examples-reference.md) — WebFetch patterns and knowledge base reference
 
 ### Creating Projects
 
@@ -76,7 +76,7 @@ Diagnose and fix common Algorand development errors.
 | Topic | Files | Description |
 | ----- | ----- | ----------- |
 | AlgoKit CLI | 2 | Build, test, deploy commands and localnet management |
-| Search Examples | 2 | GitHub MCP tools for finding Algorand code examples |
+| Search Examples | 2 | WebFetch patterns for finding Algorand code examples |
 | Create Project | 2 | algokit init templates, presets, and options |
 | Build Contracts | 2 | Language-agnostic contract building workflow |
 | ARC Standards | 3 | ARC-4 ABI, ARC-32/56 app specs |

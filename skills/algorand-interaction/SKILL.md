@@ -1,126 +1,179 @@
 ---
 name: algorand-interaction
-description: Interact with Algorand blockchain via GoPlausible Remote MCP servers — wallet operations, ALGO/ASA transactions, account info, NFD lookups, atomic groups, Tinyman swaps. Use when user asks about Algorand wallet, balances, sending ALGO or tokens, asset opt-in, transactions, NFD names, DEX swaps, or account details. Supports both MCP Lite (wallet-focused) and Full MCP (includes smart contracts, indexer, knowledge base).
-metadata: {"openclaw": {"requires": {"bins": ["mcporter"]}, "emoji": "🔷"}}
+description: Interact with Algorand blockchain via the Algorand MCP server — wallet operations, ALGO/ASA transactions, smart contracts, account info, NFD lookups, atomic groups, Tinyman swaps, TEAL compilation, knowledge base. Use when user asks about Algorand wallet, balances, sending ALGO or tokens, asset opt-in, transactions, NFD names, DEX swaps, smart contracts, or account details.
 ---
 
-# Algorand Remote MCP Interaction (GoPlausible)
+# Algorand MCP Interaction
 
-Interact with Algorand Mainnet via MCP servers.
+Interact with Algorand blockchain through the Algorand MCP server (99 tools across 11 categories).
 
-## MCP Server Selection
+## Key Characteristics
 
-| Server | URL | Use For |
-|--------|-----|---------|
-| **Lite** | `https://algorandmcplite.goplausible.xyz/sse` | Wallet ops, payments, assets, NFD, swaps |
-| **Full** | `https://algorandmcp.goplausible.xyz/sse` | + Smart contracts, indexer, TEAL, knowledge docs |
-
-**Network:** Mainnet only (testnet support coming soon)
+- **Secure signing** — use `wallet_*` tools to sign; private keys are never available to you
+- **Multi-network** — supports `mainnet`, `testnet`, and `localnet`
+- **Spending limits** — per-transaction (`allowance`) and daily (`dailyAllowance`) limits enforced by wallet
 
 ## Session Start Checklist
 
 **At EVERY session start:**
 
-1. **Check wallet**: `wallet_get_info` — verify wallet exists and is configured
-2. **Show quick reference**: Common assets table + workflow steps to user
+1. **Check wallet**: `wallet_get_info` with target `network` — verify an account exists and is active
+2. **If no accounts**: Guide user to create one with `wallet_add_account` (sets nickname and spending limits)
+3. **If needs funding**: Generate ARC-26 QR with `generate_algorand_uri` or direct to testnet faucet: https://lora.algokit.io/testnet/fund
+4. **Confirm network**: Always confirm which network (`mainnet`, `testnet`, `localnet`) before transactions
+
+## Network Selection
+
+Every tool that touches the blockchain accepts a `network` parameter:
+
+| Value | Description |
+|-------|-------------|
+| `mainnet` | Algorand mainnet (default) — **real value, exercise caution** |
+| `testnet` | Algorand testnet — safe for development |
+| `localnet` | Local dev network (requires `ALGORAND_LOCALNET_URL` env var) |
+
+Default to `testnet` during development.
 
 ## Pre-Transaction Validation
 
 Before ANY transaction:
 
-1. **MBR Check**: Account needs 0.1 ALGO minimum + 0.1 per asset/app opt-in
-2. **Asset Opt-In**: Verify with `algod_get_account_asset_info` before transfers
-3. **Fees**: Every txn costs 0.001 ALGO (1000 microAlgos)
-4. **Balance Check**: Always fetch current balance before signing
-5. **Top-up QR**: If funds insufficient, use `generate_algorand_qrcode` for PeraWallet top-up
-6. **Order**: ALGO funding first, then asset transactions
+1. **MBR Check**: Account needs 0.1 ALGO base + 0.1 per asset/app opt-in
+2. **Asset Opt-In**: Verify with `api_algod_get_account_asset_info` before ASA transfers
+3. **Fees**: Every txn costs 0.001 ALGO (1,000 microAlgos) minimum
+4. **Balance Check**: Fetch current balance with `wallet_get_info` or `api_algod_get_account_info`
+5. **Spending Limits**: Wallet enforces per-transaction and daily limits
+6. **Order**: Fund account with ALGO first, then asset transactions
 
 ## Common Mainnet Assets
 
-| Asset | ID | Decimals |
-|-------|-----|----------|
+| Asset | ASA ID | Decimals |
+|-------|--------|----------|
+| ALGO | native | 6 |
 | USDC | 31566704 | 6 |
 | USDT | 312769 | 6 |
-| ALGO | N/A | 6 |
 | goETH | 386192725 | 8 |
 | goBTC | 386195940 | 8 |
 
-> Always verify asset IDs — scam tokens use similar names.
+> Always verify asset IDs on-chain — scam tokens use similar names.
+
+## Amounts and Decimals
+
+| Asset | Unit | 1 Whole Token = |
+|-------|------|-----------------|
+| ALGO | microAlgos | 1,000,000 |
+| USDC (ASA 31566704) | micro-units | 1,000,000 (6 decimals) |
+| Custom ASAs | base units | Depends on `decimals` field |
+
+Always check asset's `decimals` field with `api_algod_get_asset_by_id` before computing amounts.
 
 ## Transaction Types
 
-- **pay**: ALGO transfers
-- **axfer**: Asset transfers, opt-in, clawback
-- **acfg**: Asset create/configure/destroy
-- **appl**: Smart contract calls
-- **afrz**: Asset freeze/unfreeze
-- **keyreg**: Consensus key registration
+- **pay**: ALGO transfers → `make_payment_txn`
+- **axfer**: Asset transfers, opt-in, clawback → `make_asset_transfer_txn`
+- **acfg**: Asset create/configure/destroy → `make_asset_create_txn`, `make_asset_config_txn`, `make_asset_destroy_txn`
+- **afrz**: Asset freeze/unfreeze → `make_asset_freeze_txn`
+- **appl**: Smart contract calls → `make_app_create_txn`, `make_app_call_txn`, `make_app_update_txn`, `make_app_delete_txn`, `make_app_optin_txn`, `make_app_closeout_txn`, `make_app_clear_txn`
+- **keyreg**: Consensus key registration → `make_keyreg_txn`
 
-## Single Transaction Workflow
+## Wallet Transaction Workflow (Recommended)
 
 | Step | Tool | Purpose |
 |------|------|---------|
-| 1 | `wallet_get_info` | Verify wallet |
-| 2 | Query tools | Get blockchain data |
-| 3 | `sdk_txn_*` tools | Create transaction |
-| 4 | `wallet_sign_transaction` | Sign |
-| 5 | `sdk_submit_transaction` | Submit |
-| 6 | Query tools | Verify result |
+| 1 | `wallet_get_info` | Verify active account, check balance |
+| 2 | Query tools | Get blockchain data (account info, asset info, etc.) |
+| 3 | `make_*_txn` | Build the transaction |
+| 4 | `wallet_sign_transaction` | Sign with active wallet account (enforces limits) |
+| 5 | `send_raw_transaction` | Submit signed transaction to network |
+| 6 | Query tools | Verify result on-chain |
+
+### One-Step Asset Opt-In
+
+For asset opt-ins, use the shortcut:
+```
+wallet_optin_asset { assetId: 31566704, network: "testnet" }
+```
+
+## External Key Transaction Workflow
+
+When the user provides their own secret key (not using the wallet):
+
+| Step | Tool | Purpose |
+|------|------|---------|
+| 1 | `make_*_txn` | Build the transaction |
+| 2 | `sign_transaction` | Sign with provided secret key hex |
+| 3 | `send_raw_transaction` | Submit signed transaction |
 
 ## Atomic Group Transaction Workflow
 
+For atomic (all-or-nothing) multi-transaction groups:
+
 | Step | Tool | Purpose |
 |------|------|---------|
-| 1 | `wallet_get_info` | Verify wallet |
-| 2 | Query tools | Get blockchain data |
-| 3 | `sdk_create_atomic_group` | Create grouped txns (auto-assigns group ID) |
-| 4 | `wallet_sign_atomic_group` | Sign all txns in group |
-| 5 | `sdk_submit_atomic_group` | Submit (all-or-nothing) |
-| 6 | Query tools | Verify result |
+| 1 | `make_*_txn` (multiple) | Build each transaction |
+| 2 | `assign_group_id` | Assign group ID to all transactions |
+| 3 | `wallet_sign_transaction_group` | Sign all transactions in group with wallet |
+| 4 | `send_raw_transaction` | Submit all signed transactions |
 
 ## Tool Categories
 
-**Wallet**: `wallet_get_info`, `wallet_sign_transaction`, `wallet_sign_atomic_group`, `wallet_get_assets`
+**Wallet** (10): `wallet_add_account`, `wallet_remove_account`, `wallet_list_accounts`, `wallet_switch_account`, `wallet_get_info`, `wallet_get_assets`, `wallet_sign_transaction`, `wallet_sign_transaction_group`, `wallet_sign_data`, `wallet_optin_asset`
 
-**Account**: `algod_get_account_info`, `sdk_check_account_balance`, `algod_get_account_asset_info`
+**Account** (8): `create_account`, `rekey_account`, `mnemonic_to_mdk`, `mdk_to_mnemonic`, `secret_key_to_mnemonic`, `mnemonic_to_secret_key`, `seed_from_mnemonic`, `mnemonic_from_seed`
 
-**Transactions**: `sdk_txn_payment_transaction`, `sdk_txn_asset_optin`, `sdk_txn_transfer_asset`, `sdk_create_atomic_group`, `sdk_assign_group_id`
+**Utility** (13): `ping`, `validate_address`, `encode_address`, `decode_address`, `get_application_address`, `bytes_to_bigint`, `bigint_to_bytes`, `encode_uint64`, `decode_uint64`, `verify_bytes`, `sign_bytes`, `encode_obj`, `decode_obj`
 
-**Submit**: `sdk_submit_transaction`, `sdk_submit_atomic_group`
+**Transaction Building** (16): `make_payment_txn`, `make_keyreg_txn`, `make_asset_create_txn`, `make_asset_config_txn`, `make_asset_destroy_txn`, `make_asset_freeze_txn`, `make_asset_transfer_txn`, `make_app_create_txn`, `make_app_update_txn`, `make_app_delete_txn`, `make_app_optin_txn`, `make_app_closeout_txn`, `make_app_clear_txn`, `make_app_call_txn`, `assign_group_id`, `sign_transaction`
 
-**Assets**: `algod_get_asset_info`, `pera_verified_asset_query`, `pera_verified_assets_search`
+**Algod** (5): `compile_teal`, `disassemble_teal`, `send_raw_transaction`, `simulate_raw_transactions`, `simulate_transactions`
 
-**NFD**: `api_nfd_get_nfd`, `api_nfd_get_nfds_for_address`
+**Algod API** (13): `api_algod_get_account_info`, `api_algod_get_account_application_info`, `api_algod_get_account_asset_info`, `api_algod_get_application_by_id`, `api_algod_get_application_box`, `api_algod_get_application_boxes`, `api_algod_get_asset_by_id`, `api_algod_get_pending_transaction`, `api_algod_get_pending_transactions_by_address`, `api_algod_get_pending_transactions`, `api_algod_get_transaction_params`, `api_algod_get_node_status`, `api_algod_get_node_status_after_block`
 
-**Utility**: `sdk_validate_address`, `generate_algorand_qrcode`, `generate_algorand_receipt`, `generate_ap2_mandate`
+**Indexer API** (17): `api_indexer_lookup_account_by_id`, `api_indexer_lookup_account_assets`, `api_indexer_lookup_account_app_local_states`, `api_indexer_lookup_account_created_applications`, `api_indexer_search_for_accounts`, `api_indexer_lookup_applications`, `api_indexer_lookup_application_logs`, `api_indexer_search_for_applications`, `api_indexer_lookup_application_box`, `api_indexer_lookup_application_boxes`, `api_indexer_lookup_asset_by_id`, `api_indexer_lookup_asset_balances`, `api_indexer_lookup_asset_transactions`, `api_indexer_search_for_assets`, `api_indexer_lookup_transaction_by_id`, `api_indexer_lookup_account_transactions`, `api_indexer_search_for_transactions`
 
-**DEX**: `tinyman_*` — Tinyman swap tools
+**NFDomains** (6): `api_nfd_get_nfd`, `api_nfd_get_nfds_for_addresses`, `api_nfd_get_nfd_activity`, `api_nfd_get_nfd_analytics`, `api_nfd_browse_nfds`, `api_nfd_search_nfds`
 
-**Full MCP Only**: `sdk_compile_teal`, `sdk_encode_obj`, `sdk_decode_obj`, `list_knowledge_docs`, `get_knowledge_doc`
+**Tinyman DEX** (9): `api_tinyman_get_pool`, `api_tinyman_get_pool_analytics`, `api_tinyman_get_pool_creation_quote`, `api_tinyman_get_liquidity_quote`, `api_tinyman_get_remove_liquidity_quote`, `api_tinyman_get_swap_quote`, `api_tinyman_get_asset_optin_quote`, `api_tinyman_get_validator_optin_quote`, `api_tinyman_get_validator_optout_quote`
+
+**ARC-26 URI** (1): `generate_algorand_uri`
+
+**Knowledge Base** (1): `get_knowledge_doc`
+
+## Pagination
+
+API responses are paginated. All API tools accept optional `itemsPerPage` (default 10) and `pageToken` parameters. Pass `pageToken` from a previous response to fetch the next page.
 
 ## References
 
 For detailed tool documentation:
-- **Lite MCP**: See [references/algorand-remote-mcp-lite.md](references/algorand-remote-mcp-lite.md)
-- **Full MCP**: See [references/algorand-remote-mcp.md](references/algorand-remote-mcp.md)
+- **Tool Reference**: See [references/algorand-mcp.md](references/algorand-mcp.md)
 
 For workflow examples:
-- **Lite Examples**: See [references/examples-algorand-remote-mcp-lite.md](references/examples-algorand-remote-mcp-lite.md)
-- **Full Examples**: See [references/examples-algorand-remote-mcp.md](references/examples-algorand-remote-mcp.md)
+- **Examples**: See [references/examples-algorand-mcp.md](references/examples-algorand-mcp.md)
 
 ## NFD Important Note
 
-When using NFD (`.algo` names), always use `depositAccount` field for transactions, NOT other address fields.
+When using NFD (`.algo` names), always use the `depositAccount` field from the NFD response for transactions, NOT other address fields.
 
 ## Security
 
-- **Mainnet = real value** — double-check everything
-- Private keys stored in HashiCorp Vault (server-side signing via OAuth+OIDC)
-- Never expose mnemonics or keys
-- Verify recipient addresses (transactions are irreversible)
+- **Mainnet = real value** — always confirm with user before mainnet transactions
+- Never log, display, or store mnemonics or secret keys — use `wallet_*` tools for signing
+- Verify recipient addresses with `validate_address` — transactions are irreversible
+- Verify asset IDs on-chain — scam tokens use similar names
+- Respect wallet spending limits — if rejected, inform user rather than bypassing
 
 ## Links
 
 - GoPlausible: https://goplausible.com
-- x402: https://x402.goplausible.xyz
+- Algorand: https://algorand.co
+- x402 Gateway: https://x402.goplausible.xyz
 - Facilitator: https://facilitator.goplausible.xyz
+- Testnet Faucet: https://lora.algokit.io/testnet/fund
+- Algorand Developer Docs: https://dev.algorand.co/
+- Algorand Developer Docs Github : https://github.com/algorandfoundation/devportal
+- Algorand Developer Examples Github : https://github.com/algorandfoundation/devportal-code-examples
+- [GoPlausible x402-avm Documentation and Example code](https://github.com/GoPlausible/.github/blob/main/profile/algorand-x402-documentation/README.md)
+- [GoPlausible x402-avm Examples template Projects](https://github.com/GoPlausible/x402-avm/tree/branch-v2-algorand-publish/examples/)
+- [CAIP-2 Specification](https://github.com/ChainAgnostic/CAIPs/blob/main/CAIPs/caip-2.md)
+- [Coinbase x402 Protocol](https://github.com/coinbase/x402)

@@ -2,161 +2,261 @@
 
 ## Overview
 
-This project develops Algorand blockchain applications including smart contracts, frontend interfaces and x402 applications. When working here, always leverage the available skills and MCP tools before writing code—they provide canonical syntax, examples, and documentation that prevent errors and save time.
+This is an Algorand plugin that enables three core capabilities equally:
 
-## Creating New Projects
+1. **Blockchain Interaction** — Interact with Algorand directly via the Algorand MCP server (99 tools): wallet management, ALGO/ASA transactions, smart contracts, NFD lookups, Tinyman swaps, TEAL compilation, and developer knowledge base
+2. **Algorand Development** — Build smart contracts, typed clients, React frontends, and deploy applications using AlgoKit CLI and skills (TypeScript via PuyaTs, Python via PuyaPy)
+3. **x402 Payment Protocol** — Build HTTP-native payment applications using the x402 protocol with Algorand as a first-class chain (clients, servers, facilitators, paywalls)
 
-Before initializing any AlgoKit project:
-
-1. **Load the skill**: Use `algorand-development` skill (create-project topic)
-2. **For TypeScript**: `algokit init -n <name> -t typescript --answer preset_name production --defaults`
-3. **For Python**: `algokit init -n <name> -t python --answer preset_name production --defaults`
-
-## Writing Smart Contracts
-
-Before writing ANY Algorand contract code:
-
-1. **Load the skill first**: Use `algorand-typescript` or `algorand-python` skill (build-smart-contracts topic)
-2. **Search docs**: Call `kapa_search_algorand_knowledge_sources` for concepts
-3. **Get examples**: Use `github_get_file_contents` from:
-   - `algorandfoundation/devportal-code-examples`
-   - `algorandfoundation/puya-ts` (TypeScript) or `algorandfoundation/puya` (Python)
-4. **Write code** following skill guidance
-5. **Build/test**: `algokit project run build && algokit project run test`
-
-## Deploying & Calling Contracts
-
-Use the **CLI and generated typed clients** for deployment and interaction.
-
-### Workflow
-
-1. **Load the skill**: Use `algorand-typescript` skill (call-smart-contracts topic) or `algorand-python` skill
-2. **Start localnet**: `algokit localnet start`
-3. **Build contracts**: `algokit project run build`
-4. **Deploy to localnet**: `algokit project deploy localnet`
-   - This runs `deploy-config.ts` which uses the generated client
-   - Handles idempotent deployment (safe to re-run)
-   - Note the App ID from the deployment output
-
-### Contract Interaction
-
-After deployment, interact with contracts using the generated typed client:
-
-1. **Write interaction scripts** in `deploy-config.ts` or separate scripts
-2. **Use the typed client** generated from the ARC-56 app spec
-3. **Run scripts**: `npx tsx scripts/call-contract.ts`
-
-See the `algorand-typescript` skill (call-smart-contracts topic) for detailed patterns and examples.
-
-## Building React Frontends
-
-Before building a React frontend that interacts with Algorand contracts:
-
-1. **Load the skill**: Use `algorand-typescript` skill (deploy-react-frontend topic)
-2. **Prerequisites**: Deployed contract with known App ID, ARC-56 app spec
-3. **Generate typed client**: `algokit generate client MyContract.arc56.json --output src/contracts/MyContractClient.ts`
-4. **Install deps**: `npm install @algorandfoundation/algokit-utils @txnlab/use-wallet-react algosdk`
-5. **Follow the "signer handoff" pattern**:
-   - Set up `WalletProvider` with `@txnlab/use-wallet-react`
-   - Get `transactionSigner` from `useWallet()` hook
-   - Register signer: `algorand.setSigner(activeAddress, transactionSigner)`
-   - Create typed client with `defaultSender: activeAddress`
+Always leverage skills and MCP tools before writing code — they provide canonical syntax, examples, and documentation that prevent errors and save time.
 
 ## Available Skills
 
-Six skills cover Algorand development, x402 payments, and blockchain interaction. Each skill has a single `SKILL.md` router plus a `references/` folder with all implementation guides and API references.
+Six skills cover all three capabilities. Each skill has a `SKILL.md` router plus a `references/` folder with implementation guides and API references.
 
-| Task                              | Skill                      |
-| --------------------------------- | -------------------------- |
-| CLI, examples, general workflows  | `algorand-development`     |
-| TypeScript contracts & tools      | `algorand-typescript`      |
-| Python contracts & tools          | `algorand-python`          |
-| Blockchain interaction via MCP    | `algorand-interaction`     |
-| TypeScript x402 development       | `algorand-x402-typescript` |
-| Python x402 development           | `algorand-x402-python`     |
+| Capability | Task | Skill |
+|------------|------|-------|
+| **Interaction** | Blockchain interaction via MCP | `algorand-interaction` |
+| **Development** | CLI, examples, general workflows | `algorand-development` |
+| **Development** | TypeScript contracts & tools | `algorand-typescript` |
+| **Development** | Python contracts & tools | `algorand-python` |
+| **x402** | TypeScript x402 development | `algorand-x402-typescript` |
+| **x402** | Python x402 development | `algorand-x402-python` |
 
-**Skill structure:**
-```
-algorand-development/           algorand-typescript/            algorand-python/
-├── SKILL.md  (router)          ├── SKILL.md  (router)          ├── SKILL.md  (router)
-└── references/                 └── references/                 └── references/
-    ├── use-algokit-cli.md          ├── algorand-typescript-         ├── build-smart-contracts-
-    ├── search-algorand-                syntax.md                        decorators.md
-    │   examples.md                 ├── test-smart-contracts.md      ├── build-smart-contracts-
-    ├── create-project.md           ├── call-smart-contracts.md          storage.md
-    ├── build-smart-contracts.md    ├── deploy-react-frontend.md     ├── use-algokit-utils-
-    ├── implement-arc-standards.md  ├── use-algokit-utils.md             reference.md
-    └── troubleshoot-errors.md      └── ...                          └── ...
-```
+## Knowledge & Examples
 
-**algorand-development topics:** `use-algokit-cli`, `search-algorand-examples`, `create-project`, `build-smart-contracts`, `implement-arc-standards`, `troubleshoot-errors`
+Before writing code, search for documentation and examples:
 
-**algorand-typescript topics:** `algorand-typescript-syntax`, `algorand-ts-migration`, `test-smart-contracts`, `call-smart-contracts`, `deploy-react-frontend`, `create-project`, `build-smart-contracts`, `use-algokit-utils`, `implement-arc-standards`, `troubleshoot-errors`
-
-**algorand-python topics:** `create-project`, `build-smart-contracts`, `use-algokit-utils`, `implement-arc-standards`, `troubleshoot-errors`
-
-## MCP Tools
-
-**Important:** These tools are provided by MCP servers. If a tool isn't available when you try to use it, the MCP server may not be configured. Check for a `.mcp.json` (Claude Code) or `opencode.json` (OpenCode) file in the project root. If the config exists but tools still aren't available, restart your coding agent.
-
-**Note:** MCP tool names may have different prefixes depending on your coding agent. For example:
-- Claude Code: `mcp__kapa__search_algorand_knowledge_sources`
-- Other agents may use: `kapa_search_algorand_knowledge_sources`
-
-The tool functionality is the same regardless of prefix.
-
-### Documentation Search (Kapa)
-
-| Tool                                      | Purpose                       |
-| ----------------------------------------- | ----------------------------- |
-| `kapa_search_algorand_knowledge_sources` | Search official Algorand docs |
-
-### GitHub (Code Examples)
-
-| Tool                         | Purpose                          |
-| ---------------------------- | -------------------------------- |
-| `github_get_file_contents`   | Retrieve example code from repos |
-| `github_search_code`         | Find code patterns across repos  |
-| `github_search_repositories` | Discover repos by topic/name     |
-
-## Troubleshooting
-
-### MCP Tools Not Available
-
-If MCP tools aren't available, use these fallbacks:
-
-| Missing Tool                              | Fallback                                                        |
-| ----------------------------------------- | --------------------------------------------------------------- |
-| `kapa_search_algorand_knowledge_sources` | Use web search for "site:dev.algorand.co {query}"               |
-| `github_get_file_contents`                | Use web search or browse GitHub directly                        |
-| `github_search_code`                      | Use web search for "site:github.com algorandfoundation {query}" |
-
-**To fix MCP configuration:**
-
-1. **Check config exists**: Look for `.mcp.json` (Claude Code), `opencode.json` (OpenCode), or `.cursor/mcp.json` (Cursor)
-2. **Verify server entries**: Config should include `kapa` and `github` MCP servers
-3. **Restart the agent**: MCP tools load at startup; restart after config changes
-
-**Note:** You can always proceed without MCPs by:
-
-- Using web search for documentation (dev.algorand.co)
-- Browsing GitHub repos directly (algorandfoundation/puya-ts, algorandfoundation/devportal-code-examples)
-- Using CLI commands for all deployment and testing
-
-### Localnet Connection Errors
-
-If localnet commands fail with "network unreachable" or connection errors:
-
-1. **Start localnet**: `algokit localnet start`
-2. **Verify it's running**: `algokit localnet status`
-3. **Reset if needed**: `algokit localnet reset`
+1. **Algorand MCP knowledge base**: Use `get_knowledge_doc` for Algorand developer docs (ARCs, SDKs, AlgoKit, Puya, etc.)
+2. **GitHub examples**: Use WebFetch with raw GitHub URLs from priority repos:
+   - `https://raw.githubusercontent.com/algorandfoundation/devportal-code-examples/main/`
+   - `https://raw.githubusercontent.com/algorandfoundation/puya-ts/main/examples/` (TypeScript)
+   - `https://raw.githubusercontent.com/algorandfoundation/puya/main/examples/` (Python)
+3. **x402 resources**: Use WebFetch with x402-avm GitHub repos and documentation
+4. **Load the relevant skill** for step-by-step guidance
 
 ## Plan Mode
 
 - Make the plan extremely concise. Sacrifice grammar for the sake of concision.
 - At the end of each plan, give me a list of unresolved questions to answer, if any.
 
-## X402 Development
+---
+
+## Algorand Development
+
+Smart contracts, typed clients, frontends, and deployment using AlgoKit CLI and language-specific skills.
+
+### Creating Projects
+
+1. **Load the skill**: Use `algorand-development` skill (create-project topic)
+2. **TypeScript**: `algokit init -n <name> -t typescript --answer preset_name production --defaults`
+3. **Python**: `algokit init -n <name> -t python --answer preset_name production --defaults`
+
+### Writing Smart Contracts
+
+1. **Load the skill**: Use `algorand-typescript` or `algorand-python` skill (build-smart-contracts topic)
+2. **Search docs**: Use `get_knowledge_doc` from the Algorand MCP for conceptual guidance
+3. **Get examples**: Use WebFetch with raw GitHub URLs (see Knowledge & Examples above)
+4. **Write code** following skill guidance
+5. **Build/test**: `algokit project run build && algokit project run test`
+
+### Deploying & Calling Contracts
+
+1. **Load the skill**: Use `algorand-typescript` skill (call-smart-contracts topic) or `algorand-python` skill
+2. **Start localnet**: `algokit localnet start`
+3. **Build**: `algokit project run build`
+4. **Deploy**: `algokit project deploy localnet` — uses generated typed client, idempotent
+5. **Interact**: Write scripts using the typed client generated from the ARC-56 app spec
+
+### Building React Frontends
+
+1. **Load the skill**: Use `algorand-typescript` skill (deploy-react-frontend topic)
+2. **Prerequisites**: Deployed contract with known App ID, ARC-56 app spec
+3. **Generate typed client**: `algokit generate client MyContract.arc56.json --output src/contracts/MyContractClient.ts`
+4. **Install deps**: `npm install @algorandfoundation/algokit-utils @txnlab/use-wallet-react algosdk`
+5. **Follow the "signer handoff" pattern** with `WalletProvider` + `useWallet()` hook
+
+### Development Skill Topics
+
+**algorand-development:** `use-algokit-cli`, `search-algorand-examples`, `create-project`, `build-smart-contracts`, `implement-arc-standards`, `troubleshoot-errors`
+
+**algorand-typescript:** `algorand-typescript-syntax`, `algorand-ts-migration`, `test-smart-contracts`, `call-smart-contracts`, `deploy-react-frontend`, `create-project`, `build-smart-contracts`, `use-algokit-utils`, `implement-arc-standards`, `troubleshoot-errors`
+
+**algorand-python:** `create-project`, `build-smart-contracts`, `use-algokit-utils`, `implement-arc-standards`, `troubleshoot-errors`
+
+---
+
+## Algorand MCP Interaction
+
+The `algorand-interaction` skill provides direct blockchain interaction via the Algorand MCP server — wallet management, transactions, asset transfers, DEX swaps, NFD lookups, smart contract deployment, TEAL compilation, and developer knowledge base.
+
+The Algorand MCP server provides **99 tools** across 11 categories. Use `wallet_*` tools for signing — private keys are never available to you. Per-transaction and daily spending limits are enforced by the wallet.
+
+### Network Selection
+
+Every tool that interacts with the blockchain accepts a `network` parameter:
+
+| Value | Description |
+|-------|-------------|
+| `mainnet` | Algorand mainnet (default if omitted) — **real value, exercise caution** |
+| `testnet` | Algorand testnet — safe for development and testing |
+| `localnet` | Local development network (requires `ALGORAND_LOCALNET_URL` env var) |
+
+Always confirm with the user which network to use before transactions. Default to `testnet` during development.
+
+### Session Start Checklist
+
+**At EVERY session start:**
+
+1. **Check wallet**: Call `wallet_get_info` with target network to verify a wallet account exists and is active
+2. **If no accounts**: Guide user to create one with `wallet_add_account` (sets nickname and spending limits)
+3. **If needs funding**: Generate ARC-26 QR with `generate_algorand_uri` or direct to testnet faucet: https://lora.algokit.io/testnet/fund
+4. **Confirm network**: Always confirm which network before transactions
+
+### Pre-Transaction Validation
+
+Before ANY transaction:
+
+1. **MBR**: Account needs 0.1 ALGO base + 0.1 per asset/app opt-in
+2. **Asset Opt-In**: Verify with `api_algod_get_account_asset_info` before ASA transfers
+3. **Fees**: Every txn costs 0.001 ALGO (1,000 microAlgos) minimum
+4. **Balance Check**: Fetch current balance with `wallet_get_info` or `api_algod_get_account_info`
+5. **Spending Limits**: Wallet enforces per-transaction and daily limits
+6. **Order**: Fund account with ALGO first, then asset transactions
+
+### Common Mainnet Assets
+
+| Asset | ASA ID | Decimals |
+|-------|--------|----------|
+| ALGO | native | 6 |
+| USDC | 31566704 | 6 |
+| USDT | 312769 | 6 |
+| goETH | 386192725 | 8 |
+| goBTC | 386195940 | 8 |
+
+> Always verify asset IDs on-chain — scam tokens use similar names.
+
+### Amounts and Decimals
+
+| Asset | Unit | 1 Whole Token = |
+|-------|------|-----------------|
+| ALGO | microAlgos | 1,000,000 |
+| USDC (ASA 31566704) | micro-units | 1,000,000 (6 decimals) |
+| Custom ASAs | base units | Depends on `decimals` field |
+
+Always check the asset's `decimals` field with `api_algod_get_asset_by_id` before computing amounts.
+
+### Wallet Transaction Workflow (Recommended)
+
+| Step | Tool | Purpose |
+|------|------|---------|
+| 1 | `wallet_get_info` | Verify active account, check balance |
+| 2 | Query tools | Get blockchain data (account info, asset info, etc.) |
+| 3 | `make_*_txn` | Build the transaction |
+| 4 | `wallet_sign_transaction` | Sign with active wallet account (enforces limits) |
+| 5 | `send_raw_transaction` | Submit signed transaction to network |
+| 6 | Query tools | Verify result on-chain |
+
+#### One-Step Asset Opt-In
+
+For asset opt-ins, use the shortcut:
+```
+wallet_optin_asset { assetId: 31566704, network: "testnet" }
+```
+
+### External Key Transaction Workflow
+
+When the user provides their own secret key (not using the wallet):
+
+| Step | Tool | Purpose |
+|------|------|---------|
+| 1 | `make_*_txn` | Build the transaction |
+| 2 | `sign_transaction` | Sign with provided secret key hex |
+| 3 | `send_raw_transaction` | Submit signed transaction |
+
+### Atomic Group Transaction Workflow
+
+For atomic (all-or-nothing) multi-transaction groups:
+
+| Step | Tool | Purpose |
+|------|------|---------|
+| 1 | `make_*_txn` (multiple) | Build each transaction |
+| 2 | `assign_group_id` | Assign group ID to all transactions |
+| 3 | `wallet_sign_transaction_group` | Sign all transactions in group with wallet |
+| 4 | `send_raw_transaction` | Submit all signed transactions |
+
+### Tool Categories
+
+**Wallet** (10 tools): `wallet_add_account`, `wallet_remove_account`, `wallet_list_accounts`, `wallet_switch_account`, `wallet_get_info`, `wallet_get_assets`, `wallet_sign_transaction`, `wallet_sign_transaction_group`, `wallet_sign_data`, `wallet_optin_asset`
+
+**Account** (8 tools): `create_account`, `rekey_account`, `mnemonic_to_mdk`, `mdk_to_mnemonic`, `secret_key_to_mnemonic`, `mnemonic_to_secret_key`, `seed_from_mnemonic`, `mnemonic_from_seed`
+
+**Utility** (13 tools): `ping`, `validate_address`, `encode_address`, `decode_address`, `get_application_address`, `bytes_to_bigint`, `bigint_to_bytes`, `encode_uint64`, `decode_uint64`, `verify_bytes`, `sign_bytes`, `encode_obj`, `decode_obj`
+
+**Transaction Building** (16 tools): `make_payment_txn`, `make_keyreg_txn`, `make_asset_create_txn`, `make_asset_config_txn`, `make_asset_destroy_txn`, `make_asset_freeze_txn`, `make_asset_transfer_txn`, `make_app_create_txn`, `make_app_update_txn`, `make_app_delete_txn`, `make_app_optin_txn`, `make_app_closeout_txn`, `make_app_clear_txn`, `make_app_call_txn`, `assign_group_id`, `sign_transaction`
+
+**Algod** (5 tools): `compile_teal`, `disassemble_teal`, `send_raw_transaction`, `simulate_raw_transactions`, `simulate_transactions`
+
+**Algod API** (13 tools): `api_algod_get_account_info`, `api_algod_get_account_application_info`, `api_algod_get_account_asset_info`, `api_algod_get_application_by_id`, `api_algod_get_application_box`, `api_algod_get_application_boxes`, `api_algod_get_asset_by_id`, `api_algod_get_pending_transaction`, `api_algod_get_pending_transactions_by_address`, `api_algod_get_pending_transactions`, `api_algod_get_transaction_params`, `api_algod_get_node_status`, `api_algod_get_node_status_after_block`
+
+**Indexer API** (17 tools): `api_indexer_lookup_account_by_id`, `api_indexer_lookup_account_assets`, `api_indexer_lookup_account_app_local_states`, `api_indexer_lookup_account_created_applications`, `api_indexer_search_for_accounts`, `api_indexer_lookup_applications`, `api_indexer_lookup_application_logs`, `api_indexer_search_for_applications`, `api_indexer_lookup_application_box`, `api_indexer_lookup_application_boxes`, `api_indexer_lookup_asset_by_id`, `api_indexer_lookup_asset_balances`, `api_indexer_lookup_asset_transactions`, `api_indexer_search_for_assets`, `api_indexer_lookup_transaction_by_id`, `api_indexer_lookup_account_transactions`, `api_indexer_search_for_transactions`
+
+**NFDomains** (6 tools): `api_nfd_get_nfd`, `api_nfd_get_nfds_for_addresses`, `api_nfd_get_nfd_activity`, `api_nfd_get_nfd_analytics`, `api_nfd_browse_nfds`, `api_nfd_search_nfds`
+
+**Tinyman AMM** (9 tools): `api_tinyman_get_pool`, `api_tinyman_get_pool_analytics`, `api_tinyman_get_pool_creation_quote`, `api_tinyman_get_liquidity_quote`, `api_tinyman_get_remove_liquidity_quote`, `api_tinyman_get_swap_quote`, `api_tinyman_get_asset_optin_quote`, `api_tinyman_get_validator_optin_quote`, `api_tinyman_get_validator_optout_quote`
+
+**ARC-26 URI** (1 tool): `generate_algorand_uri`
+
+**Knowledge Base** (1 tool): `get_knowledge_doc` — categories: `arcs`, `sdks`, `algokit`, `algokit-utils`, `tealscript`, `puya`, `liquid-auth`, `python`, `developers`, `clis`, `nodes`, `details`
+
+### Skill Structure
+
+```
+algorand-interaction/
+├── SKILL.md  (router)
+└── references/
+    ├── algorand-mcp.md            # Tool reference
+    └── examples-algorand-mcp.md   # Workflow examples
+```
+
+### Pagination
+
+API responses are paginated. Every API tool accepts optional `itemsPerPage` (default 10) and `pageToken` parameters. Pass `pageToken` from a previous response to fetch the next page.
+
+### Error Handling
+
+| Error | Cause | Solution |
+|-------|-------|----------|
+| `No active account` | No wallet account configured | Guide user to `wallet_add_account` |
+| `Invalid Algorand address format` | Bad address | Check with `validate_address` |
+| `Spending limit exceeded` | Transaction exceeds `allowance` or `dailyAllowance` | Inform user, adjust limits |
+| `Asset hasn't been opted in` | Recipient not opted in to ASA | Opt-in first with `wallet_optin_asset` |
+| `Overspend` / negative balance | Insufficient funds for amount + fee + MBR | Add funds or reduce amount |
+
+### NFD Important Note
+
+When using NFD (`.algo` names) for transactions, always use the `depositAccount` field from the NFD data response — NOT other address fields.
+
+### Security
+
+- **Mainnet = real value** — always confirm with user before mainnet transactions
+- Never log, display, or store mnemonics or secret keys — use `wallet_*` tools for signing
+- Verify addresses with `validate_address` — transactions are irreversible
+- Verify asset IDs on-chain — scam tokens use similar names
+- Respect wallet spending limits — if rejected, inform user rather than bypassing
+
+### Links
+
+- GoPlausible: https://goplausible.com
+- Algorand: https://algorand.co
+- Testnet Faucet: https://lora.algokit.io/testnet/fund
+- Algorand Developer Docs: https://dev.algorand.co/
+- Algorand Developer Docs Github: https://github.com/algorandfoundation/devportal
+- Algorand Developer Examples Github: https://github.com/algorandfoundation/devportal-code-examples
+
+---
+
+## X402 Payment Protocol
 
 x402 is an HTTP-native payment protocol built on the HTTP 402 "Payment Required" status code. Three components work together: **Client** requests a protected resource, **Server** responds with 402 and structured payment requirements, and **Facilitator** verifies and settles the payment on-chain. The client signs a transaction, retries the request with an `X-PAYMENT` header, and the server forwards it to the facilitator for verification and settlement before granting access.
 
@@ -300,27 +400,12 @@ Protocol definitions live in the SDK; implementations are provided by users/exam
 
 ### X402 Skills
 
-Two aggregated skills cover all x402 development. Each skill has a single `SKILL.md` that acts as a router, plus a `references/` folder containing all implementation guides, API references, and code examples as named files.
+Two skills cover all x402 development. Each has a `SKILL.md` router plus a `references/` folder with implementation guides, API references, and code examples.
 
 | Task                        | Skill                      |
 | --------------------------- | -------------------------- |
 | TypeScript x402 development | `algorand-x402-typescript` |
 | Python x402 development     | `algorand-x402-python`     |
-
-**Skill structure:**
-```
-algorand-x402-typescript/          algorand-x402-python/
-├── SKILL.md  (router)             ├── SKILL.md  (router)
-└── references/                    └── references/
-    ├── {topic}.md                     ├── {topic}.md
-    ├── {topic}-reference.md           ├── {topic}-reference.md
-    └── {topic}-examples.md            └── {topic}-examples.md
-```
-
-Each topic has three reference files:
-- **`{topic}.md`** — Step-by-step implementation guide (formerly the sub-skill's SKILL.md)
-- **`{topic}-reference.md`** — API details and type signatures
-- **`{topic}-examples.md`** — Complete, runnable code samples
 
 **TypeScript topics:** `explain-algorand-x402-typescript`, `create-typescript-x402-client`, `create-typescript-x402-server`, `create-typescript-x402-nextjs`, `create-typescript-x402-facilitator`, `create-typescript-x402-paywall`, `use-typescript-x402-core-avm`
 
@@ -345,222 +430,9 @@ Each topic has three reference files:
 
 ### External Algorand x402 Resources
 
-- [GoPlausible x402-avm Documentation](https://github.com/GoPlausible/.github/blob/main/profile/algorand-x402-documentation/README.md)
-- [GoPlausible x402-avm Examples](https://github.com/GoPlausible/x402-avm/tree/branch-v2-algorand-publish/examples/)
-- [Coinbase x402 Protocol](https://github.com/coinbase/x402)
-- [CAIP-2 Specification](https://github.com/ChainAgnostic/CAIPs/blob/main/CAIPs/caip-2.md)
-
-
-## Algorand Remote MCP Interaction
-
-The `algorand-interaction` skill provides direct blockchain interaction via GoPlausible's Remote MCP servers. This skill is for **runtime operations** — wallet management, transactions, asset transfers, DEX swaps, NFD lookups — as opposed to the development skills which focus on building applications.
-
-### MCP Servers
-
-**Algorand Remote MCP (Full)** — Complete Algorand tooling for advanced users, developers, and agents needing full blockchain capabilities.
-
-**Algorand Remote MCP Lite (Wallet Edition)** — Subset of tools for agents that just need an agentic wallet with basic interactions (payments, transfers, swaps) without advanced development tools.
-
-| Server | URL | Use Case |
-|--------|-----|----------|
-| **Full** | `https://algorandmcp.goplausible.xyz/sse` | Full Algorand tooling: wallet, transactions, smart contracts, TEAL, indexer, knowledge base |
-| **Lite** | `https://algorandmcplite.goplausible.xyz/sse` | Agentic wallet: payments, transfers, swaps, NFD, QR codes, receipts |
-
-**Network:** Mainnet only (testnet support coming soon)
-
-### Authentication & Security
-
-- **OAuth + OIDC** authentication for secure access
-- **HashiCorp Vault** for wallet keypair storage and management
-- **Server-side signing** — no private keys needed from agent
-- Private keys never leave the vault; cryptographic operations happen within
-
-### Session Start Checklist
-
-**At EVERY session start:**
-
-1. **Check wallet**: Call `wallet_get_info` to verify wallet exists and is configured
-2. **Show references**: Present common assets table + workflow quick reference to user
-
-### Pre-Transaction Validation
-
-Before ANY transaction:
-
-1. **MBR**: Account needs 0.1 ALGO minimum + 0.1 per asset/app opt-in
-2. **Asset Opt-In**: Verify with `algod_get_account_asset_info` before transfers
-3. **Fees**: Every txn costs 0.001 ALGO (1000 microAlgos)
-4. **Balance**: Always fetch current balance before signing
-5. **Top-up QR**: If funds insufficient, use `generate_algorand_qrcode` for PeraWallet top-up
-6. **Order**: ALGO funding first, then asset transactions
-
-### Common Mainnet Assets
-
-| Asset | ID | Decimals |
-|-------|-----|----------|
-| USDC | 31566704 | 6 |
-| USDT | 312769 | 6 |
-| ALGO | N/A (native) | 6 |
-| goETH | 386192725 | 8 |
-| goBTC | 386195940 | 8 |
-
-> Always verify asset IDs with `pera_verified_asset_*` tools — scam tokens use similar names.
-
-### Single Transaction Workflow
-
-| Step | Tool | Purpose |
-|------|------|---------|
-| 1 | `wallet_get_info` | Verify wallet configuration |
-| 2 | Query tools | Get account/asset data |
-| 3 | `sdk_txn_*` | Create unsigned transaction |
-| 4 | `wallet_sign_transaction` | Sign the transaction |
-| 5 | `sdk_submit_transaction` | Submit to network |
-| 6 | `indexer_lookup_transaction_by_id` | Verify result |
-
-### Atomic Group Transaction Workflow
-
-| Step | Tool | Purpose |
-|------|------|---------|
-| 1 | `wallet_get_info` | Verify wallet configuration |
-| 2 | Query tools | Get account/asset data |
-| 3 | `sdk_create_atomic_group` | Create grouped transactions (auto-assigns group ID) |
-| 4 | `wallet_sign_atomic_group` | Sign all transactions in group |
-| 5 | `sdk_submit_atomic_group` | Submit atomic group (all-or-nothing) |
-| 6 | `indexer_lookup_transaction_by_id` | Verify result |
-
-**Manual grouping alternative:** Create individual transactions with `sdk_txn_*`, then use `sdk_assign_group_id` to assign group ID before signing.
-
----
-
-### Algorand Remote MCP Lite (Wallet Edition) — Tool Categories
-
-**Wallet Management**
-| Tool | Purpose |
-|------|---------|
-| `wallet_get_info` | Verify wallet exists and is configured (use FIRST every session) |
-| `wallet_get_assets` | Get assets held by wallet |
-| `wallet_sign_transaction` | Sign a single transaction |
-| `wallet_sign_atomic_group` | Sign multiple transactions as atomic group |
-
-**Account Information**
-| Tool | Purpose |
-|------|---------|
-| `algod_get_account_info` | Get full account information |
-| `algod_get_account_asset_info` | Check if account holds specific asset (verify opt-in) |
-| `sdk_check_account_balance` | Check ALGO balance |
-
-**Transaction Creation**
-| Tool | Purpose |
-|------|---------|
-| `sdk_txn_payment_transaction` | Create ALGO payment |
-| `sdk_txn_asset_optin` | Opt-in to receive an asset |
-| `sdk_txn_transfer_asset` | Transfer ASA tokens |
-| `sdk_create_atomic_group` | Create atomic transaction group |
-| `sdk_assign_group_id` | Assign group ID for atomic execution |
-
-**Transaction Submission & Lookup**
-| Tool | Purpose |
-|------|---------|
-| `sdk_submit_transaction` | Submit signed transaction |
-| `sdk_submit_atomic_group` | Submit signed atomic group |
-| `indexer_lookup_transaction_by_id` | Look up transaction details |
-| `indexer_lookup_account_transactions` | Get account transaction history |
-
-**Asset Information**
-| Tool | Purpose |
-|------|---------|
-| `algod_get_asset_info` | Get asset configuration details |
-| `pera_verified_asset_query` | Check asset verification status and details |
-| `pera_verified_assets_search` | Search for verified assets |
-
-**NFD (Algorand Name Service)**
-| Tool | Purpose |
-|------|---------|
-| `api_nfd_get_nfd` | Get NFD (.algo name) info — use `depositAccount` for transactions! |
-| `api_nfd_get_nfds_for_address` | Get all NFDs owned by an address |
-
-**Utility & Extras**
-| Tool | Purpose |
-|------|---------|
-| `sdk_validate_address` | Validate Algorand address format |
-| `generate_algorand_qrcode` | Generate ARC-26 QR code for instant top-ups (PeraWallet) |
-| `generate_algorand_receipt` | Generate transaction receipt with QR code |
-| `generate_ap2_mandate` | Generate AP2 payment mandates for agentic checkout |
-
-**Tinyman DEX**
-| Tool | Purpose |
-|------|---------|
-| `tinyman_*` | Tinyman DEX swap tools for token exchanges |
-
----
-
-### Algorand Remote MCP (Full) — Tool Categories
-
-*Includes all Lite tools plus the following:*
-
-**Extended Wallet Management**
-| Tool | Purpose |
-|------|---------|
-| `wallet_get_address` | Get wallet address |
-| `wallet_get_publickey` | Get wallet public key |
-| `wallet_reset_account` | ⚠️ DANGEROUS: Delete keys and create new (transfer funds first!) |
-
-**Extended Asset Information**
-| Tool | Purpose |
-|------|---------|
-| `algod_get_asset_holding` | Get asset holding for specific address |
-| `pera_asset_verification_status` | Check if asset is verified |
-| `pera_verified_asset_details` | Get detailed verified asset info |
-| `pera_verified_asset_search` | Search verified assets |
-
-**Smart Contract / Application Management**
-| Tool | Purpose |
-|------|---------|
-| `sdk_txn_create_application` | Deploy smart contract |
-| `sdk_txn_call_application` | Call smart contract method |
-| `sdk_txn_update_application` | Update smart contract |
-
-**Developer Utilities**
-| Tool | Purpose |
-|------|---------|
-| `sdk_compile_teal` | Compile TEAL program |
-| `sdk_encode_obj` | Encode object to msgpack |
-| `sdk_decode_obj` | Decode msgpack to object |
-
-**Knowledge Base**
-| Tool | Purpose |
-|------|---------|
-| `list_knowledge_docs` | List knowledge documents by category prefix |
-| `get_knowledge_doc` | Get specific knowledge document (ARCs, SDKs, AlgoKit, etc.) |
-
-**Knowledge Categories:** `arcs`, `sdks`, `algokit`, `algokit-utils`, `tealscript`, `puya`, `liquid-auth`, `python`, `developers`, `clis`, `nodes`, `details`
-
----
-
-### Skill Structure
-
-```
-algorand-interaction/
-├── SKILL.md  (router)
-└── references/
-    ├── algorand-remote-mcp-lite.md          # Lite MCP tool reference
-    ├── algorand-remote-mcp.md               # Full MCP tool reference
-    ├── examples-algorand-remote-mcp-lite.md # Lite workflows & examples
-    └── examples-algorand-remote-mcp.md      # Full workflows & examples
-```
-
-### NFD Important Note
-
-When using NFD (`.algo` names) for transactions, always use the `depositAccount` field from the NFD data response — NOT other address fields.
-
-### Security
-
-- **Mainnet = real value** — double-check everything
-- Private keys stored in HashiCorp Vault (server-side signing)
-- Never expose mnemonics or keys
-- Verify recipient addresses (transactions are irreversible)
-
-### Links
-
-- GoPlausible: https://goplausible.com
 - x402 Gateway: https://x402.goplausible.xyz
 - Facilitator: https://facilitator.goplausible.xyz
+- [GoPlausible x402-avm Documentation and Example code](https://github.com/GoPlausible/.github/blob/main/profile/algorand-x402-documentation/README.md)
+- [GoPlausible x402-avm Examples template Projects](https://github.com/GoPlausible/x402-avm/tree/branch-v2-algorand-publish/examples/)
+- [Coinbase x402 Protocol](https://github.com/coinbase/x402)
+- [CAIP-2 Specification](https://github.com/ChainAgnostic/CAIPs/blob/main/CAIPs/caip-2.md)
