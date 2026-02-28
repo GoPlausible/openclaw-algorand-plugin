@@ -33,6 +33,6 @@
   },
   "dependencies": {
     "@clack/prompts": "^0.7.0",
-    "algorand-mcp": "^3.0.4"
+    "algorand-mcp": "^3.0.5"
   }
 }
