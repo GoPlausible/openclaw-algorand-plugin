@@ -93,7 +93,7 @@ function updatePluginConfig(newConfig: AlgorandPluginConfig): { success: boolean
 
 function configureMcporter(): { success: boolean; message: string } {
   const mcpCommand = getMcpBinaryPath();
-  
+
   try {
     // Check if mcporter is available
     execSync("which mcporter", { encoding: "utf-8" });
@@ -203,7 +203,8 @@ export default function register(api: PluginApi) {
           body?: string;
           paymentHeader?: string;
         }) => {
-          return await x402Fetch(params);
+          const result = await x402Fetch(params);
+          return { content: [{ type: "text", text: JSON.stringify(result, null, 2) }] };
         },
       },
       { scope: "agent" },
@@ -275,14 +276,14 @@ export default function register(api: PluginApi) {
         .description("Show Algorand plugin status")
         .action(() => {
           const mcp = checkMcpBinary();
-          
+
           // Check mcporter config
           let mcporterConfigured = false;
           try {
             const list = execSync("mcporter config list 2>/dev/null || echo ''", { encoding: "utf-8" });
             mcporterConfigured = list.includes("algorand-mcp");
-          } catch {}
-          
+          } catch { }
+
           console.log("\n🔷 Algorand Plugin Status\n");
           console.log("  Skills:");
           console.log("    • algorand-development");
@@ -312,7 +313,7 @@ export default function register(api: PluginApi) {
         .action(() => {
           const mcp = checkMcpBinary();
           const command = mcp.path || "npx algorand-mcp";
-          
+
           console.log("\n🔷 Algorand MCP Configuration\n");
           console.log("  For external coding agents, add this to their MCP config:\n");
           console.log("  Claude Code (.mcp.json):");
