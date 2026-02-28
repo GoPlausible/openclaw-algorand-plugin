@@ -13,6 +13,30 @@ Interact with Algorand blockchain through the Algorand MCP server (99 tools acro
 - **Multi-network** — supports `mainnet`, `testnet`, and `localnet`
 - **Spending limits** — per-transaction (`allowance`) and daily (`dailyAllowance`) limits enforced by wallet
 
+## mcporter Syntax (Critical)
+
+When calling Algorand MCP tools via mcporter, use the correct syntax:
+
+**Correct:**
+```bash
+mcporter call algorand-mcp.tool_name --args '{"param": "value", "network": "testnet"}'
+```
+
+**Also correct (flag-style):**
+```bash
+mcporter call algorand-mcp.tool_name param=value network=testnet
+```
+
+**Wrong — args not sent properly:**
+```bash
+mcporter call algorand-mcp tool_name '{"param": "value"}'  # Space instead of dot, missing --args
+```
+
+Key points:
+- Use `server.tool` (dot notation), NOT `server tool` (space)
+- Use `--args '{"json"}'` for JSON payloads
+- Or use `param=value` / `param:value` flag syntax
+
 ## Session Start Checklist
 
 **At EVERY session start:**

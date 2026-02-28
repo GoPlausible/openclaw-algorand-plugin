@@ -152,7 +152,7 @@ async function handle402Response(
     // Body may not be readable
   }
 
-  // Try to parse the 402 response body for PaymentRequirements
+  // Try to parse x402 payment requirements
   let parsed: {
     x402Version?: number;
     accepts?: unknown[];
@@ -160,10 +160,24 @@ async function handle402Response(
     resource?: unknown;
   } | null = null;
 
-  try {
-    parsed = JSON.parse(bodyText);
-  } catch {
-    // Not JSON — return raw
+  // First, check the payment-required header (base64-encoded JSON)
+  const paymentRequiredHeader = responseHeaders["payment-required"];
+  if (paymentRequiredHeader) {
+    try {
+      const decoded = Buffer.from(paymentRequiredHeader, "base64").toString("utf-8");
+      parsed = JSON.parse(decoded);
+    } catch {
+      // Header not valid base64 JSON — try body next
+    }
+  }
+
+  // Fallback: try parsing the body as JSON
+  if (!parsed) {
+    try {
+      parsed = JSON.parse(bodyText);
+    } catch {
+      // Not JSON — return raw
+    }
   }
 
   if (parsed && parsed.accepts && Array.isArray(parsed.accepts)) {

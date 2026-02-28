@@ -196,13 +196,13 @@ export default function register(api: PluginApi) {
           },
           required: ["url"],
         },
-        handler: async (params: {
+        async execute(_id: string, params: {
           url: string;
           method?: string;
           headers?: Record<string, string>;
           body?: string;
           paymentHeader?: string;
-        }) => {
+        }) {
           const result = await x402Fetch(params);
           return { content: [{ type: "text", text: JSON.stringify(result, null, 2) }] };
         },
