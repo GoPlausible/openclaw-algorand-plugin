@@ -511,3 +511,104 @@ simulate_transactions {
 ```
 
 This lets you verify a transaction will succeed before actually submitting it.
+
+---
+
+## x402 Payment Workflow
+
+When `x402_fetch` returns a 402 response, follow these steps to pay for the resource.
+
+### Understanding the 402 Response
+
+The 402 response contains an `accepts` array. Each entry has:
+- `scheme` — payment scheme (e.g., `"exact"`)
+- `network` — CAIP-2 network identifier
+- `maxAmountRequired` — amount to pay (in base units)
+- `asset` — `"0"` for native ALGO, or ASA ID as string
+- `payTo` — recipient address
+- `extra.feePayer` — facilitator address that pays transaction fees
+
+### CAIP-2 Network Mapping
+
+| CAIP-2 Identifier | Network |
+|--------------------|---------|
+| `algorand:SGO1GKSzyE7IEPItTxCByw9x8FmnrCDexi9/cOUJOiI=` | `testnet` |
+| `algorand:wGHE2Pwdvd7S12BL5FaOP20EGYesN73ktiC1qzkkit8=` | `mainnet` |
+
+### Step 1: Check wallet
+```
+wallet_get_info { "network": "<network>" }
+```
+
+### Step 2: Build fee payer transaction
+
+The facilitator pays fees. Build a 0-amount payment from the fee payer to itself:
+```
+make_payment_txn {
+  "from": "<feePayer>",
+  "to": "<feePayer>",
+  "amount": 0,
+  "network": "<network>"
+}
+```
+
+### Step 3: Build payment transaction
+
+**For native ALGO (asset = "0"):**
+```
+make_payment_txn {
+  "from": "<your_address>",
+  "to": "<payTo>",
+  "amount": <maxAmountRequired>,
+  "network": "<network>"
+}
+```
+
+**For ASA (asset is an ASA ID):**
+```
+make_asset_transfer_txn {
+  "from": "<your_address>",
+  "to": "<payTo>",
+  "assetIndex": <asset>,
+  "amount": <maxAmountRequired>,
+  "network": "<network>"
+}
+```
+
+### Step 4: Group the transactions
+```
+assign_group_id {
+  "transactions": [fee_payer_txn, payment_txn]
+}
+```
+
+### Step 5: Sign ONLY the payment transaction (index 1)
+```
+wallet_sign_transaction {
+  "transaction": <grouped_payment_txn>,
+  "network": "<network>"
+}
+```
+> Leave the fee payer transaction (index 0) unsigned — the facilitator signs it server-side.
+
+### Step 6: Construct the X-PAYMENT payload
+
+Build this JSON string:
+```json
+{
+  "x402Version": 2,
+  "scheme": "exact",
+  "network": "<CAIP-2 network identifier from accepts>",
+  "payload": {
+    "paymentGroup": ["<base64 unsigned fee txn>", "<base64 signed payment txn>"],
+    "paymentIndex": 1
+  }
+}
+```
+
+### Step 7: Retry with payment
+
+Call `x402_fetch` again with `paymentHeader` set to the JSON string from Step 6.
+The server verifies the payment, submits the transaction group, and returns the resource.
+
+> **Important**: The `paymentGroup` array order must match: index 0 = unsigned fee payer txn, index 1 = signed payment txn. The `paymentIndex` indicates which transaction carries the actual payment.

@@ -1,5 +1,6 @@
 import { ALGORAND_MCP, GOPLAUSIBLE_SERVICES } from "./lib/mcp-servers.js";
 import { runSetup, type AlgorandPluginConfig } from "./setup.js";
+import { x402Fetch } from "./lib/x402-fetch.js";
 import { readFileSync, writeFileSync, existsSync, mkdirSync } from "node:fs";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
@@ -155,6 +156,59 @@ function checkMcpBinary(): { available: boolean; path?: string } {
 
 export default function register(api: PluginApi) {
   const pluginConfig = api.config.plugins?.entries?.[PLUGIN_ID]?.config ?? {};
+
+  // ─────────────────────────────────────────────────────────────
+  // x402 Fetch Tool
+  // ─────────────────────────────────────────────────────────────
+  if (pluginConfig.enableX402 !== false) {
+    api.registerTool(
+      {
+        name: "x402_fetch",
+        description:
+          "Fetch a URL with x402 payment protocol support. On HTTP 402, returns structured PaymentRequirements and step-by-step instructions to build payment using algorand-mcp tools. Use paymentHeader to retry with a signed payment.",
+        parameters: {
+          type: "object",
+          properties: {
+            url: {
+              type: "string",
+              description: "The URL to fetch",
+            },
+            method: {
+              type: "string",
+              description: "HTTP method (default: GET)",
+              enum: ["GET", "POST", "PUT", "PATCH", "DELETE"],
+              default: "GET",
+            },
+            headers: {
+              type: "object",
+              description: "Additional request headers as key-value pairs",
+              additionalProperties: { type: "string" },
+            },
+            body: {
+              type: "string",
+              description: "Request body (for POST/PUT/PATCH)",
+            },
+            paymentHeader: {
+              type: "string",
+              description:
+                "JSON string for X-PAYMENT header — the signed payment payload from the x402 payment flow",
+            },
+          },
+          required: ["url"],
+        },
+        handler: async (params: {
+          url: string;
+          method?: string;
+          headers?: Record<string, string>;
+          body?: string;
+          paymentHeader?: string;
+        }) => {
+          return await x402Fetch(params);
+        },
+      },
+      { scope: "agent" },
+    );
+  }
 
   // ─────────────────────────────────────────────────────────────
   // CLI Commands

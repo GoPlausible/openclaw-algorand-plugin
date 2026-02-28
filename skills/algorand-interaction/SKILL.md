@@ -143,12 +143,26 @@ For atomic (all-or-nothing) multi-transaction groups:
 
 API responses are paginated. All API tools accept optional `itemsPerPage` (default 10) and `pageToken` parameters. Pass `pageToken` from a previous response to fetch the next page.
 
+## x402 Payment Workflow for OpenClaw agents
+
+When `x402_fetch` returns HTTP 402 with `PaymentRequirements`, use the atomic group transaction pattern to build the payment:
+
+1. Build fee payer transaction (0-amount from facilitator's `feePayer` address)
+2. Build payment transaction (ALGO or ASA transfer to `payTo`)
+3. Group both transactions with `assign_group_id`
+4. Sign only the payment transaction (index 1) with wallet — leave fee payer unsigned
+5. Construct X-PAYMENT JSON and retry with `x402_fetch`
+
+Map CAIP-2 network identifiers from `accepts[].network` to `testnet` or `mainnet`.
+
+See [references/examples-algorand-mcp.md](references/examples-algorand-mcp.md) for the full step-by-step workflow.
+
 ## References
 
 For detailed tool documentation:
 - **Tool Reference**: See [references/algorand-mcp.md](references/algorand-mcp.md)
 
-For workflow examples:
+For workflow examples (including x402 payment):
 - **Examples**: See [references/examples-algorand-mcp.md](references/examples-algorand-mcp.md)
 
 ## NFD Important Note
