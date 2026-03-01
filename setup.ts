@@ -11,34 +11,34 @@ export async function runSetup(
 ): Promise<AlgorandPluginConfig | null> {
   p.intro("🔷 Algorand Plugin Setup — powered by GoPlausible");
 
-  // Step 1: Verify algorand-mcp binary is available
-  let mcpAvailable = false;
-  let mcpPath = "";
-  try {
-    mcpPath = execSync("npm list @goplausible/algorand-mcp", { encoding: "utf-8" }).trim();
-    mcpAvailable = true;
-  } catch {
-    // Binary not found in PATH
-  }
+  // // Step 1: Verify algorand-mcp binary is available
+  // let mcpAvailable = false;
+  // let mcpPath = "";
+  // try {
+  //   mcpPath = execSync("npm list @goplausible/algorand-mcp", { encoding: "utf-8" }).trim();
+  //   mcpAvailable = true;
+  // } catch {
+  //   // Binary not found in PATH
+  // }
 
-  if (mcpAvailable) {
-    p.note(
-      `MCP Server: ${ALGORAND_MCP.name}\n` +
-        `Type: ${ALGORAND_MCP.type} (local)\n` +
-        `Command: ${ALGORAND_MCP.command}\n` +
-        `Path: ${mcpPath}\n` +
-        `Status: ✅ Available`,
-      "Algorand MCP"
-    );
-  } else {
-    p.log.warn(
-      `algorand-mcp binary not found in PATH.\n\n` +
-        `Options:\n` +
-        `  • Run with npx: npx algorand-mcp\n` +
-        `  • Install globally: npm install -g algorand-mcp\n` +
-        `  • Add node_modules/.bin to PATH`
-    );
-  }
+  // if (mcpAvailable) {
+  //   p.note(
+  //     `MCP Server: ${ALGORAND_MCP.name}\n` +
+  //       `Type: ${ALGORAND_MCP.type} (local)\n` +
+  //       `Command: ${ALGORAND_MCP.command}\n` +
+  //       `Path: ${mcpPath}\n` +
+  //       `Status: ✅ Available`,
+  //     "Algorand MCP"
+  //   );
+  // } else {
+  //   p.log.warn(
+  //     `algorand-mcp binary not found in PATH.\n\n` +
+  //       `Options:\n` +
+  //       `  • Run with npx: npx algorand-mcp\n` +
+  //       `  • Install globally: npm install -g algorand-mcp\n` +
+  //       `  • Add node_modules/.bin to PATH`
+  //   );
+  // }
 
   // Step 2: x402 integration
   const enableX402 = await p.confirm({
