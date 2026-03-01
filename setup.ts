@@ -60,20 +60,14 @@ export async function runSetup(
     `x402 Micropayments: ${config.enableX402 ? "Enabled" : "Disabled"}\n\n` +
       `MCP Server Setup:\n` +
       `  The Algorand MCP server (${ALGORAND_MCP.command}) provides 99 blockchain tools.\n` +
-      `  Configure it in your coding agent's MCP config:\n` +
-      `  • Claude Code: .mcp.json\n` +
-      `  • Cursor: .cursor/mcp.json\n` +
-      `  • OpenCode: opencode.json`,
-    "Configuration"
+      `  x402 micropayment and AP2 mandate verifiable credentials flows are fully supported in Algorand MCP.\n` ,
   );
 
   p.outro(
     `🔷 Algorand plugin configured!\n\n` +
       `   Next steps:\n` +
-      `   1. Run \`openclaw algorand-plugin init\` to add plugin memory\n` +
-      `   2. Configure algorand-mcp in your coding agent's MCP config\n` +
       `   3. Restart OpenClaw gateway\n\n` +
-      `   Docs: ${GOPLAUSIBLE_SERVICES.website}`
+      `   GoPlausible website: ${GOPLAUSIBLE_SERVICES.website}`
   );
 
   return config;
