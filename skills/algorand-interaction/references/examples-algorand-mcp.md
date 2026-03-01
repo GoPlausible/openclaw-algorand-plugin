@@ -610,9 +610,9 @@ encode_unsigned_transaction {
   "transaction": <grouped_fee_payer_txn>
 }
 ```
-> This produces the canonical `algosdk.encodeUnsignedTransaction()` base64 encoding needed for the X-PAYMENT payload.
+> This produces the canonical `algosdk.encodeUnsignedTransaction()` base64 encoding needed for the PAYMENT-SIGNATURE payload.
 
-### Step 7: Construct the X-PAYMENT payload
+### Step 7: Construct the PAYMENT-SIGNATURE payload
 
 Build this JSON string:
 ```json
@@ -623,13 +623,17 @@ Build this JSON string:
   "payload": {
     "paymentGroup": ["<base64 from encode_unsigned_transaction>", "<base64 from wallet_sign_transaction>"],
     "paymentIndex": 1
-  }
+  },
+  "accepted": <the exact accepts[] entry you chose to pay with — copy it verbatim as an object>
 }
 ```
 
+> **Critical**: The `accepted` field is REQUIRED. It must be an exact copy of the `accepts[]` entry you chose (including all fields: scheme, network, price, payTo, asset, maxAmountRequired, extra, etc.). Without it, the server cannot match your payment to a requirement and will reject with 402.
+
 ### Step 8: Retry with payment
 
-Call `x402_fetch` again with `paymentHeader` set to the JSON string from Step 6.
+Call `x402_fetch` again with `paymentHeader` set to the JSON string from Step 7.
+The `x402_fetch` tool will base64-encode it and send it as the `PAYMENT-SIGNATURE` header.
 The server verifies the payment, submits the transaction group, and returns the resource.
 
 > **Important**: The `paymentGroup` array order must match: index 0 = unsigned fee payer txn, index 1 = signed payment txn. The `paymentIndex` indicates which transaction carries the actual payment.

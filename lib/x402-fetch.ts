@@ -68,8 +68,12 @@ const PAYMENT_INSTRUCTIONS = `To pay for this resource, follow these steps using
      "payload": {
        "paymentGroup": ["<base64 from encode_unsigned_transaction>", "<base64 from wallet_sign_transaction>"],
        "paymentIndex": 1
-     }
+     },
+     "accepted": <the exact accepts[] entry you chose — copy it verbatim as an object, including all fields: scheme, network, price, payTo, asset, maxAmountRequired, extra, etc.>
    }
+
+   IMPORTANT: The "accepted" field MUST be an exact copy of the accepts[] entry you chose to pay with.
+   Without it, the server cannot match your payment to a requirement and will reject with 402.
 
 8. Retry the request using x402_fetch with paymentHeader set to the JSON string above.
 

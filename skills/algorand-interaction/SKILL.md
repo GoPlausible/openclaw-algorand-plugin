@@ -177,7 +177,9 @@ When `x402_fetch` returns HTTP 402 with `PaymentRequirements`, use the atomic gr
 3. Group both transactions with `assign_group_id`
 4. Sign only the payment transaction (index 1) with wallet and tool wallet_sign_transaction — leave fee payer unsigned
 5. Encode the unsigned fee payer transaction (index 0) with `encode_unsigned_transaction`
-6. Construct X-PAYMENT JSON and retry with `x402_fetch`
+6. Construct PAYMENT-SIGNATURE JSON payload — **must include `accepted` field** (the exact `accepts[]` entry chosen) — and retry with `x402_fetch`
+
+**Critical**: The `accepted` field is REQUIRED. It must be an exact copy of the `accepts[]` entry you chose to pay with (including all fields: scheme, network, price, payTo, asset, maxAmountRequired, extra, etc.). Without it, the server cannot match your payment and will reject with 402.
 
 Map CAIP-2 network identifiers from `accepts[].network` to `testnet` or `mainnet`.
 
