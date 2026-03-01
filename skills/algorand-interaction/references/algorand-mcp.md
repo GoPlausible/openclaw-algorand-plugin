@@ -199,12 +199,16 @@ Build unsigned transaction objects. Must be signed before submission.
   "to": "receiver_address",
   "amount": 1000000,
   "note": "optional note",
+  "fee": 1000,
+  "flatFee": false,
   "closeRemainderTo": "optional",
   "rekeyTo": "optional",
   "network": "testnet"
 }
 ```
 > Amount in microAlgos: 1 ALGO = 1,000,000
+> `fee` (optional): transaction fee in microAlgos. Default: 1000 (minimum fee).
+> `flatFee` (optional): if `true`, use `fee` exactly as specified; if `false` (default), SDK may adjust fee based on transaction size.
 
 ### make_keyreg_txn
 - **Purpose**: Create a key registration transaction for consensus participation
@@ -285,9 +289,13 @@ Build unsigned transaction objects. Must be signed before submission.
   "to": "receiver_address",
   "assetIndex": 31566704,
   "amount": 1000000,
+  "fee": 1000,
+  "flatFee": false,
   "network": "testnet"
 }
 ```
+> `fee` (optional): transaction fee in microAlgos. Default: 1000 (minimum fee).
+> `flatFee` (optional): if `true`, use `fee` exactly as specified; if `false` (default), SDK may adjust fee based on transaction size.
 
 ### make_app_create_txn
 - **Purpose**: Deploy a smart contract
