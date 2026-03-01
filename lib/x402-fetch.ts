@@ -60,7 +60,7 @@ const PAYMENT_INSTRUCTIONS = `To pay for this resource, follow these steps using
    encode_unsigned_transaction { transaction: <grouped_fee_payer_txn> }
    — Returns base64 bytes of the unsigned transaction (canonical algosdk encoding).
 
-7. Construct the X-PAYMENT payload as JSON:
+7. Construct the PAYMENT-SIGNATURE payload as JSON:
    {
      "x402Version": 2,
      "scheme": "exact",
@@ -81,8 +81,9 @@ export async function x402Fetch(params: X402FetchParams): Promise<X402FetchResul
   const requestHeaders: Record<string, string> = { ...headers };
 
   if (paymentHeader) {
-    requestHeaders["X-PAYMENT"] = paymentHeader;
-    requestHeaders["PAYMENT-SIGNATURE"] = paymentHeader;
+    // x402 v2 protocol requires base64-encoded JSON in the PAYMENT-SIGNATURE header
+    const encoded = Buffer.from(paymentHeader).toString("base64");
+    requestHeaders["PAYMENT-SIGNATURE"] = encoded;
   }
 
   try {
