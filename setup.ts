@@ -35,7 +35,7 @@ export async function runSetup(
   //     `algorand-mcp binary not found in PATH.\n\n` +
   //       `Options:\n` +
   //       `  • Run with npx: npx algorand-mcp\n` +
-  //       `  • Install globally: npm install -g algorand-mcp\n` +
+  //       `  • Install globally: npm install -g @goplausible/algorand-mcp\n` +
   //       `  • Add node_modules/.bin to PATH`
   //   );
   // }

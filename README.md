@@ -53,7 +53,7 @@ openclaw algorand-plugin mcp-config  # Show MCP config snippet for external codi
 
 ## MCP Server
 
-The plugin bundles [`algorand-mcp`](https://www.npmjs.com/package/algorand-mcp) as an npm dependency. It runs locally via stdio through [mcporter](https://www.npmjs.com/package/mcporter).
+The plugin bundles [`@goplausible/algorand-mcp`](https://www.npmjs.com/package/@goplausible/algorand-mcp) as an npm dependency. It runs locally via stdio through [mcporter](https://www.npmjs.com/package/mcporter).
 
 - **99 tools** across 11 categories (wallet, transactions, algod, indexer, NFD, Tinyman, TEAL, knowledge base, and more)
 - **Multi-network**: `mainnet`, `testnet`, `localnet`
