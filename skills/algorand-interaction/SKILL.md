@@ -175,7 +175,7 @@ When `x402_fetch` returns HTTP 402 with `PaymentRequirements`, use the atomic gr
 1. Build fee payer transaction (0-amount from facilitator's `feePayer` address)
 2. Build payment transaction (ALGO or ASA transfer to `payTo`)
 3. Group both transactions with `assign_group_id`
-4. Sign only the payment transaction (index 1) with wallet — leave fee payer unsigned
+4. Sign only the payment transaction (index 1) with wallet and tool wallet_sign_transaction — leave fee payer unsigned
 5. Encode the unsigned fee payer transaction (index 0) with `encode_unsigned_transaction`
 6. Construct X-PAYMENT JSON and retry with `x402_fetch`
 
