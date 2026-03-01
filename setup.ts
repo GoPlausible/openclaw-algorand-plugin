@@ -15,7 +15,7 @@ export async function runSetup(
   let mcpAvailable = false;
   let mcpPath = "";
   try {
-    mcpPath = execSync("which algorand-mcp", { encoding: "utf-8" }).trim();
+    mcpPath = execSync("npm list @goplausible/algorand-mcp", { encoding: "utf-8" }).trim();
     mcpAvailable = true;
   } catch {
     // Binary not found in PATH
