@@ -1,5 +1,5 @@
 import * as p from "@clack/prompts";
-import { execSync } from "node:child_process";
+// import { execSync } from "node:child_process";
 import { ALGORAND_MCP, GOPLAUSIBLE_SERVICES } from "./lib/mcp-servers.js";
 
 export interface AlgorandPluginConfig {
