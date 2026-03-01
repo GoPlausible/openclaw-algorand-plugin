@@ -18,7 +18,7 @@
 ## Installation
 
 ```bash
-openclaw plugins install openclaw-algorand-plugin
+openclaw plugins install @goplausible/openclaw-algorand-plugin
 ```
 
 Or install from local path:
