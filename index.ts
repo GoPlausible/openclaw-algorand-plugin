@@ -3,6 +3,7 @@ import { runSetup, type AlgorandPluginConfig } from "./setup.js";
 import { x402Fetch } from "./lib/x402-fetch.js";
 import { readFileSync, writeFileSync, existsSync, mkdirSync } from "node:fs";
 import { dirname, join } from "node:path";
+import { homedir } from "node:os";
 import { fileURLToPath } from "node:url";
 import { execSync } from "node:child_process";
 
@@ -39,11 +40,11 @@ interface PluginApi {
 
 function getWorkspacePath(api: PluginApi): string {
   return api.config.agents?.defaults?.workspace ||
-    join(process.env.HOME || "~", ".openclaw", "workspace");
+    join(homedir(), ".openclaw", "workspace");
 }
 
 function getConfigPath(): string {
-  return join(process.env.HOME || "~", ".openclaw", "openclaw.json");
+  return join(homedir(), ".openclaw", "openclaw.json");
 }
 
 function getMcpBinaryPath(): string {
