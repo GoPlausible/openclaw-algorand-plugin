@@ -1,6 +1,6 @@
 {
   "name": "openclaw-algorand-plugin",
-  "version": "0.3.0",
+  "version": "0.5.0",
   "description": "Algorand blockchain integration for OpenClaw — by GoPlausible",
   "author": "GoPlausible <info@goplausible.com>",
   "homepage": "https://goplausible.com",
