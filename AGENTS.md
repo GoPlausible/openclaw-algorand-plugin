@@ -122,7 +122,7 @@ Before ANY transaction:
 2. **Asset Opt-In**: Verify with `api_algod_get_account_asset_info` before ASA transfers
 3. **Fees**: Every txn costs 0.001 ALGO (1,000 microAlgos) minimum
 4. **Balance Check**: Fetch current balance with `wallet_get_info` or `api_algod_get_account_info`
-5. **Spending Limits**: Wallet enforces per-transaction and daily limits
+5. **Spending Limits**: Wallet enforces per-transaction (`allowance`) and daily (`dailyAllowance`) limits. Setting either to `0` means **unlimited**
 6. **Order**: Fund account with ALGO first, then asset transactions
 
 ### Common Mainnet Assets
