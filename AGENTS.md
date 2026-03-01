@@ -432,7 +432,8 @@ Two skills cover all x402 development. Each has a `SKILL.md` router plus a `refe
 
 ### External Algorand x402 Resources
 
-- x402 Gateway: https://x402.goplausible.xyz
+- Algorand x402: https://x402.goplausible.xyz
+- Algorand x402 test endpoints: https://example.x402.goplausible.xyz/
 - Facilitator: https://facilitator.goplausible.xyz
 - [GoPlausible x402-avm Documentation and Example code](https://github.com/GoPlausible/.github/blob/main/profile/algorand-x402-documentation/README.md)
 - [GoPlausible x402-avm Examples template Projects](https://github.com/GoPlausible/x402-avm/tree/branch-v2-algorand-publish/examples/)

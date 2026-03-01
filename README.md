@@ -4,16 +4,16 @@
 
 ## Features
 
-- **MCP Integration**: Connect to Algorand Remote MCP servers for blockchain operations
-- **Interactive Setup**: Guided wizard for configuration and OAuth authentication
+- **Local MCP Server**: Bundled `algorand-mcp` (99 tools) — wallet, transactions, smart contracts, TEAL, indexer, DEX, NFD, knowledge base
+- **x402 Payment Protocol**: Built-in `x402_fetch` tool for HTTP-native payments on Algorand
+- **Interactive Setup**: Guided wizard for configuration
 - **Skills Included** (6 skills):
-  - `algorand-development` — CLI, examples, general workflows
-  - `algorand-typescript` — TypeScript contracts & tools
-  - `algorand-python` — Python contracts & tools
+  - `algorand-development` — AlgoKit CLI, project creation, general workflows
+  - `algorand-typescript` — TypeScript smart contracts (PuyaTs)
+  - `algorand-python` — Python smart contracts (PuyaPy)
   - `algorand-interaction` — Blockchain interaction via MCP (wallet, transactions, swaps, NFD)
-  - `algorand-x402-typescript` — TypeScript x402 micropayments
-  - `algorand-x402-python` — Python x402 micropayments
-- **AGENTS.md**: Comprehensive documentation for all Algorand skills
+  - `algorand-x402-typescript` — x402 payments in TypeScript
+  - `algorand-x402-python` — x402 payments in Python
 
 ## Installation
 
@@ -32,49 +32,53 @@ openclaw plugins install ./path/to/openclaw-algorand-plugin
 After installing, run these commands:
 
 ```bash
-# 1. Copy AGENTS.md to your workspace (contains skill documentation)
+# 1. Initialize plugin (write memory file + configure mcporter)
 openclaw algorand-plugin init
 
-# 2. Run interactive setup (choose MCP server, authenticate)
+# 2. Run interactive setup (configure x402 toggle)
 openclaw algorand-plugin setup
+
+# 3. Restart the gateway
+openclaw gateway restart
 ```
 
 ## Commands
 
 ```bash
-openclaw algorand-plugin init      # Copy AGENTS.md to workspace
-openclaw algorand-plugin setup     # Run interactive setup wizard
-openclaw algorand-plugin auth      # Authenticate with Algorand MCP (OAuth)
-openclaw algorand-plugin status    # Show current configuration
-openclaw algorand-plugin use lite  # Switch to MCP Lite (wallet edition)
-openclaw algorand-plugin use full  # Switch to full MCP
+openclaw algorand-plugin init        # Write plugin memory + configure mcporter
+openclaw algorand-plugin setup       # Run interactive setup wizard
+openclaw algorand-plugin status      # Show plugin status (binary, mcporter, config)
+openclaw algorand-plugin mcp-config  # Show MCP config snippet for external coding agents
 ```
 
-## MCP Servers
+## MCP Server
 
-| Server | URL | Features |
-|--------|-----|----------|
-| **Full** | `https://algorandmcp.goplausible.xyz/sse` | Complete Algorand tooling: wallet, transactions, smart contracts, TEAL, indexer, knowledge base |
-| **Lite** | `https://algorandmcplite.goplausible.xyz/sse` | Agentic wallet: payments, transfers, swaps, NFD, QR codes, receipts |
+The plugin bundles [`algorand-mcp`](https://www.npmjs.com/package/algorand-mcp) as an npm dependency. It runs locally via stdio through [mcporter](https://www.npmjs.com/package/mcporter).
 
-**Authentication**: OAuth + OIDC with HashiCorp Vault for secure keypair management
-**Network**: Mainnet only (testnet support coming soon)
+- **99 tools** across 11 categories (wallet, transactions, algod, indexer, NFD, Tinyman, TEAL, knowledge base, and more)
+- **Multi-network**: `mainnet`, `testnet`, `localnet`
+- **Secure wallet**: Per-transaction and daily spending limits, private keys never exposed to agents
+
+## x402 Payment Protocol
+
+When `enableX402` is enabled (default), the plugin registers the `x402_fetch` tool — an HTTP fetch with [x402](https://github.com/coinbase/x402) payment protocol support.
+
+- Fetches URLs normally; on HTTP 402, returns structured `PaymentRequirements` with step-by-step instructions
+- Agent builds payment using algorand-mcp wallet tools (atomic group with facilitator-sponsored fees)
+- Agent retries with signed `PAYMENT-SIGNATURE` header to complete the payment and access the resource
 
 ## Configuration
 
-Config is stored in OpenClaw's config under `plugins.entries.openclaw-algorand-plugin.config`:
+Config is stored in `~/.openclaw/openclaw.json` under `plugins.entries.openclaw-algorand-plugin.config`:
 
-```json5
+```json
 {
-  plugins: {
-    entries: {
-      algorand: {
-        enabled: true,
-        config: {
-          mcpServer: "lite",
-          mcpServerUrl: "https://algorandmcplite.goplausible.xyz/sse",
-          enableX402: true,
-          authenticated: true
+  "plugins": {
+    "allow": ["openclaw-algorand-plugin"],
+    "entries": {
+      "openclaw-algorand-plugin": {
+        "config": {
+          "enableX402": true
         }
       }
     }
@@ -87,17 +91,20 @@ Config is stored in OpenClaw's config under `plugins.entries.openclaw-algorand-p
 | Skill | Purpose |
 |-------|---------|
 | `algorand-development` | AlgoKit CLI, project creation, general workflows |
-| `algorand-typescript` | TypeScript smart contracts (TEALScript/Puya-TS) |
-| `algorand-python` | Python smart contracts (Puya) |
-| `algorand-interaction` | MCP-based blockchain interaction (wallet, txns, DEX) |
-| `algorand-x402-typescript` | x402 micropayments in TypeScript |
-| `algorand-x402-python` | x402 micropayments in Python |
+| `algorand-typescript` | TypeScript smart contracts (PuyaTs) |
+| `algorand-python` | Python smart contracts (PuyaPy) |
+| `algorand-interaction` | MCP-based blockchain interaction (wallet, txns, DEX, NFD, x402) |
+| `algorand-x402-typescript` | x402 payments in TypeScript |
+| `algorand-x402-python` | x402 payments in Python |
 
 ## Links
 
 - **GoPlausible**: https://goplausible.com
-- **x402 Gateway**: https://x402.goplausible.xyz
-- **Facilitator**: https://facilitator.goplausible.xyz
+- **Algorand**: https://algorand.co
+- **Algorand Developer Docs**: https://dev.algorand.co/
+- **Algorand x402**: https://x402.goplausible.xyz
+- **Algorand x402 test endpoints**: https://example.x402.goplausible.xyz/
+- **Algorand x402 Facilitator**: https://facilitator.goplausible.xyz
 - **OpenClaw**: https://openclaw.ai
 
 ## License

@@ -10,4 +10,5 @@ export const GOPLAUSIBLE_SERVICES = {
   website: "https://goplausible.com",
   x402: "https://x402.goplausible.xyz",
   facilitator: "https://facilitator.goplausible.xyz",
+  test: "https://example.x402.goplausible.xyz/",
 } as const;

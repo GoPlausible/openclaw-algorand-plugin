@@ -302,7 +302,9 @@ export default function register(api: PluginApi) {
           console.log("");
           console.log("  Links:");
           console.log(`    GoPlausible: ${GOPLAUSIBLE_SERVICES.website}`);
-          console.log(`    x402 Gateway: ${GOPLAUSIBLE_SERVICES.x402}`);
+          console.log(`    Algorand x402: ${GOPLAUSIBLE_SERVICES.x402}`);
+          console.log(`    Algorand x402 Facilitator: ${GOPLAUSIBLE_SERVICES.facilitator}`);
+          console.log(`    Algorand x402 Test endpoints: ${GOPLAUSIBLE_SERVICES.test}`);
           console.log("");
         });
 

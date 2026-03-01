@@ -209,8 +209,9 @@ When using NFD (`.algo` names), always use the `depositAccount` field from the N
 
 - GoPlausible: https://goplausible.com
 - Algorand: https://algorand.co
-- x402 Gateway: https://x402.goplausible.xyz
-- Facilitator: https://facilitator.goplausible.xyz
+- Algorand x402: https://x402.goplausible.xyz
+- Algorand x402 test endpoints: https://example.x402.goplausible.xyz/
+- Algorand x402 Facilitator: https://facilitator.goplausible.xyz
 - Testnet Faucet: https://lora.algokit.io/testnet/fund
 - Testnet USDC Faucet: https://faucet.circle.com/
 - Algorand Developer Docs: https://dev.algorand.co/
