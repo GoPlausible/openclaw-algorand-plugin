@@ -638,6 +638,8 @@ Build this JSON string:
 
 > **Critical**: The `accepted` field is REQUIRED. It must be an exact copy of the `accepts[]` entry you chose (including all fields: scheme, network, price, payTo, asset, maxAmountRequired, extra, etc.). Without it, the server cannot match your payment to a requirement and will reject with 402.
 
+> **CRITICAL — Base64 blob handling**: When building the `paymentGroup` array, you MUST use the EXACT `bytes` value from `encode_unsigned_transaction` and the EXACT `blob` value from `wallet_sign_transaction`. NEVER manually re-type, truncate, or partially copy these base64 strings. Even a single character corruption (e.g., `5` → `4`) causes "signature does not match sender" errors. Copy each complete blob verbatim — do not attempt to reconstruct or abbreviate them.
+
 ### Step 8: Retry with payment
 
 Call `x402_fetch` again with `paymentHeader` set to the JSON string from Step 7.
@@ -645,3 +647,12 @@ The `x402_fetch` tool will base64-encode it and send it as the `PAYMENT-SIGNATUR
 The server verifies the payment, submits the transaction group, and returns the resource.
 
 > **Important**: The `paymentGroup` array order must match: index 0 = unsigned fee payer txn, index 1 = signed payment txn. The `paymentIndex` indicates which transaction carries the actual payment.
+
+### Common x402 Errors
+
+| Error | Cause | Solution |
+|-------|-------|---------|
+| `Payment transaction signature does not match sender` | Base64 blob was corrupted when constructing `paymentHeader` JSON | Use EXACT `bytes`/`blob` values from tool responses — never re-type or partially copy base64 strings |
+| `402` returned despite payment header | Missing `accepted` field in payload, or `accepted` doesn't match an `accepts[]` entry exactly | Copy the chosen `accepts[]` entry verbatim into the `accepted` field |
+| `402` with expired transactions | Too much time between building transactions and sending payment | Rebuild transactions immediately before sending — `firstValid`/`lastValid` window is ~1000 rounds |
+| `Simulation failed` | Insufficient balance, asset not opted in, or group structure wrong | Check USDC/ALGO balance, verify opt-in, ensure group order is [feePayer, payment] |

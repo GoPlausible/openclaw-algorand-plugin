@@ -53,6 +53,7 @@ mcporter call algorand-mcp.search_assets name=USDC network=mainnet
 - Default to testnet during development
 - Every transaction costs 0.001 ALGO minimum
 - Account needs 0.1 ALGO base + 0.1 per asset/app opt-in (MBR)
+- **CRITICAL — x402 Base64 blob handling**: When constructing the `paymentHeader` JSON for `x402_fetch`, NEVER manually re-type or partially copy base64 blob strings. Use the EXACT `bytes` value from `encode_unsigned_transaction` and the EXACT `blob` value from `wallet_sign_transaction` — copy each value in full. Even a single character corruption (e.g., `5` → `4`) causes "signature does not match sender" errors and the payment will be rejected.
 
 ## Common Mainnet Assets
 

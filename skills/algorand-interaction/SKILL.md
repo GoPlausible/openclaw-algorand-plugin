@@ -181,6 +181,8 @@ When `x402_fetch` returns HTTP 402 with `PaymentRequirements`, use the atomic gr
 
 **Critical**: The `accepted` field is REQUIRED. It must be an exact copy of the `accepts[]` entry you chose to pay with (including all fields: scheme, network, price, payTo, asset, maxAmountRequired, extra, etc.). Without it, the server cannot match your payment and will reject with 402.
 
+**Critical — Base64 blob handling**: When constructing the `paymentHeader` JSON string for `x402_fetch`, NEVER manually re-type or partially copy base64 blob strings. Use the EXACT `bytes` value from `encode_unsigned_transaction` and the EXACT `blob` value from `wallet_sign_transaction` — copy each complete value verbatim into the `paymentGroup` array. Even a single character corruption (e.g., `5` → `4`) causes "signature does not match sender" errors and the payment will be rejected.
+
 Map CAIP-2 network identifiers from `accepts[].network` to `testnet` or `mainnet`.
 
 See [references/examples-algorand-mcp.md](references/examples-algorand-mcp.md) for the full step-by-step workflow.
