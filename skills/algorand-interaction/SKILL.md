@@ -1,11 +1,11 @@
 ---
 name: algorand-interaction
-description: Interact with Algorand blockchain via the Algorand MCP server — wallet operations, ALGO/ASA transactions, smart contracts, account info, NFD lookups, atomic groups, Tinyman swaps, TEAL compilation, knowledge base. Use when user asks about Algorand wallet, balances, sending ALGO or tokens, asset opt-in, transactions, NFD names, DEX swaps, smart contracts, or account details.
+description: Interact with Algorand blockchain via the Algorand MCP server — wallet operations, ALGO/ASA transactions, smart contracts, account info, NFD lookups, atomic groups, Tinyman swaps, Haystack Router DEX-aggregated swaps, TEAL compilation, knowledge base. Use when user asks about Algorand wallet, balances, sending ALGO or tokens, asset opt-in, transactions, NFD names, DEX swaps, smart contracts, or account details.
 ---
 
 # Algorand MCP Interaction
 
-Interact with Algorand blockchain through the Algorand MCP server (99 tools across 11 categories).
+Interact with Algorand blockchain through the Algorand MCP server (101+ tools across 12 categories).
 
 ## Key Characteristics
 
@@ -159,6 +159,8 @@ For atomic (all-or-nothing) multi-transaction groups:
 **NFDomains** (6): `api_nfd_get_nfd`, `api_nfd_get_nfds_for_addresses`, `api_nfd_get_nfd_activity`, `api_nfd_get_nfd_analytics`, `api_nfd_browse_nfds`, `api_nfd_search_nfds`
 
 **Tinyman DEX** (9): `api_tinyman_get_pool`, `api_tinyman_get_pool_analytics`, `api_tinyman_get_pool_creation_quote`, `api_tinyman_get_liquidity_quote`, `api_tinyman_get_remove_liquidity_quote`, `api_tinyman_get_swap_quote`, `api_tinyman_get_asset_optin_quote`, `api_tinyman_get_validator_optin_quote`, `api_tinyman_get_validator_optout_quote`
+
+**Haystack Router** (3): `api_haystack_get_swap_quote`, `api_haystack_execute_swap`, `api_haystack_needs_optin` — DEX-aggregated swaps across Tinyman V2, Pact, Folks with optimal routing. See the **haystack-router-interaction** skill for detailed workflows and reference docs.
 
 **ARC-26 URI** (1): `generate_algorand_uri`
 

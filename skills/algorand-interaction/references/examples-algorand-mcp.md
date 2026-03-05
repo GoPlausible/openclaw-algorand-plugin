@@ -398,6 +398,55 @@ api_tinyman_get_pool {
 
 ---
 
+## Haystack Router Swap (DEX-Aggregated)
+
+Best-price swap across multiple DEXes (Tinyman V2, Pact, Folks). For detailed reference, see the **haystack-router-interaction** skill.
+
+### Step 1: Check wallet
+```
+wallet_get_info { "network": "mainnet" }
+```
+
+### Step 2: Check opt-in (if swapping to an ASA)
+```
+api_haystack_needs_optin {
+  "address": "[wallet_address]",
+  "assetId": 31566704,
+  "network": "mainnet"
+}
+```
+If `needsOptIn: true`:
+```
+wallet_optin_asset { "assetId": 31566704, "network": "mainnet" }
+```
+
+### Step 3: Get a quote (show user before executing)
+```
+api_haystack_get_swap_quote {
+  "fromASAID": 0,
+  "toASAID": 31566704,
+  "amount": 1000000,
+  "type": "fixed-input",
+  "address": "[wallet_address]",
+  "network": "mainnet"
+}
+```
+> Present to user: expected output, USD values, route, price impact.
+
+### Step 4: Execute swap (after user confirms)
+```
+api_haystack_execute_swap {
+  "fromASAID": 0,
+  "toASAID": 31566704,
+  "amount": 1000000,
+  "slippage": 1,
+  "network": "mainnet"
+}
+```
+> Signs via wallet, submits, and confirms atomically. Returns confirmed round and tx IDs.
+
+---
+
 ## Using the Knowledge Base
 
 ### Get a specific document

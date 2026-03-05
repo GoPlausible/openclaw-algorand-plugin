@@ -4,15 +4,16 @@
 
 This is an Algorand plugin that enables three core capabilities equally:
 
-1. **Blockchain Interaction** — Interact with Algorand directly via the Algorand MCP server (99 tools): wallet management, ALGO/ASA transactions, smart contracts, NFD lookups, Tinyman swaps, TEAL compilation, and developer knowledge base
+1. **Blockchain Interaction** — Interact with Algorand directly via the Algorand MCP server (101+ tools): wallet management, ALGO/ASA transactions, smart contracts, NFD lookups, Tinyman swaps, Haystack Router DEX-aggregated swaps, TEAL compilation, and developer knowledge base
 2. **Algorand Development** — Build smart contracts, typed clients, React frontends, and deploy applications using AlgoKit CLI and skills (TypeScript via PuyaTs, Python via PuyaPy)
 3. **x402 Payment Protocol** — Build HTTP-native payment applications using the x402 protocol with Algorand as a first-class chain (clients, servers, facilitators, paywalls)
+4. **Haystack Router** — DEX aggregator and smart order routing on Algorand — build swap UIs with the SDK or execute swaps via MCP tools
 
 Always leverage skills and MCP tools before writing code — they provide canonical syntax, examples, and documentation that prevent errors and save time.
 
 ## Available Skills
 
-Six skills cover all three capabilities. Each skill has a `SKILL.md` router plus a `references/` folder with implementation guides and API references.
+Eight skills cover all four capabilities. Each skill has a `SKILL.md` router plus a `references/` folder with implementation guides and API references.
 
 | Capability | Task | Skill |
 |------------|------|-------|
@@ -22,6 +23,8 @@ Six skills cover all three capabilities. Each skill has a `SKILL.md` router plus
 | **Development** | Python contracts & tools | `algorand-python` |
 | **x402** | TypeScript x402 development | `algorand-x402-typescript` |
 | **x402** | Python x402 development | `algorand-x402-python` |
+| **Haystack Router** | Build swap apps with SDK | `haystack-router-development` |
+| **Haystack Router** | Execute swaps via MCP tools | `haystack-router-interaction` |
 
 ## Knowledge & Examples
 
@@ -88,9 +91,9 @@ Smart contracts, typed clients, frontends, and deployment using AlgoKit CLI and 
 
 ## Algorand MCP Interaction
 
-The `algorand-interaction` skill provides direct blockchain interaction via the Algorand MCP server — wallet management, transactions, asset transfers, DEX swaps, NFD lookups, smart contract deployment, TEAL compilation, and developer knowledge base.
+The `algorand-interaction` skill provides direct blockchain interaction via the Algorand MCP server — wallet management, transactions, asset transfers, DEX swaps, Haystack Router aggregated swaps, NFD lookups, smart contract deployment, TEAL compilation, and developer knowledge base.
 
-The Algorand MCP server provides **99 tools** across 11 categories. Use `wallet_*` tools for signing — private keys are never available to you. Per-transaction and daily spending limits are enforced by the wallet.
+The Algorand MCP server provides **101+ tools** across 12 categories. Use `wallet_*` tools for signing — private keys are never available to you. Per-transaction and daily spending limits are enforced by the wallet.
 
 ### Network Selection
 
@@ -208,6 +211,8 @@ For atomic (all-or-nothing) multi-transaction groups:
 
 **ARC-26 URI** (1 tool): `generate_algorand_uri`
 
+**Haystack Router** (3 tools): `api_haystack_get_swap_quote`, `api_haystack_execute_swap`, `api_haystack_needs_optin`
+
 **Knowledge Base** (1 tool): `get_knowledge_doc` — categories: `arcs`, `sdks`, `algokit`, `algokit-utils`, `tealscript`, `puya`, `liquid-auth`, `python`, `developers`, `clis`, `nodes`, `details`
 
 ### Skill Structure
@@ -255,6 +260,46 @@ When using NFD (`.algo` names) for transactions, always use the `depositAccount`
 - Algorand Developer Docs: https://dev.algorand.co/
 - Algorand Developer Docs Github: https://github.com/algorandfoundation/devportal
 - Algorand Developer Examples Github: https://github.com/algorandfoundation/devportal-code-examples
+
+---
+
+## Haystack Router (DEX Aggregator)
+
+Haystack Router is a DEX aggregator and smart order routing protocol on Algorand. It finds optimal swap routes across multiple DEXes (Tinyman V2, Pact, Folks) and LST protocols (tALGO, xALGO), then executes them atomically through on-chain smart contracts.
+
+Two skills cover Haystack Router — one for building applications with the SDK, one for interacting via MCP tools:
+
+| Task | Skill |
+|------|-------|
+| Build swap apps with `@txnlab/haystack-router` SDK | `haystack-router-development` |
+| Execute swaps via Algorand MCP tools | `haystack-router-interaction` |
+
+### When to Use Which Skill
+
+- **haystack-router-interaction** — Use when the user wants to get quotes or execute swaps directly through the Algorand MCP wallet. No SDK or API key needed. Three tools: `api_haystack_get_swap_quote`, `api_haystack_execute_swap`, `api_haystack_needs_optin`.
+- **haystack-router-development** — Use when the user wants to build an application integrating the `@txnlab/haystack-router` SDK — React swap UIs, Node.js automation, RouterClient, middleware, fees/referrals.
+
+### MCP Swap Workflow
+
+```
+wallet_get_info → api_haystack_needs_optin (if ASA) → wallet_optin_asset (if needed) →
+api_haystack_get_swap_quote (preview for user) → user confirms →
+api_haystack_execute_swap (signs via wallet, submits, confirms)
+```
+
+### Key Concepts
+
+- **Amounts** are always in base units (microAlgos for ALGO, smallest unit for ASAs)
+- **ASA IDs**: 0 = ALGO, 31566704 = USDC, etc.
+- **Quote types**: `fixed-input` (default) — specify input amount; `fixed-output` — specify desired output
+- **Slippage**: Percentage tolerance on output (e.g., 1 = 1%)
+- **Routing**: Multi-hop and parallel (combo) swaps for optimal pricing across Tinyman V2, Pact, Folks
+
+### Development Skill Topics
+
+**haystack-router-development:** `getting-started`, `quotes`, `swaps`, `react-integration`, `node-automation`, `configuration`, `fees-and-referrals`, `api-reference`, `migration`
+
+**haystack-router-interaction:** `getting-started`, `quotes`, `swaps`, `node-automation`, `configuration`
 
 ---
 

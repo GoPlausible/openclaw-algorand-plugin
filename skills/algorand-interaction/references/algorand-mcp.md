@@ -14,8 +14,9 @@
 7. [Indexer API Tools](#indexer-api-tools)
 8. [NFDomains API Tools](#nfdomains-api-tools)
 9. [Tinyman DEX API Tools](#tinyman-dex-api-tools)
-10. [ARC-26 URI Tools](#arc-26-uri-tools)
-11. [Knowledge Base Tools](#knowledge-base-tools)
+10. [Haystack Router Tools](#haystack-router-tools)
+11. [ARC-26 URI Tools](#arc-26-uri-tools)
+12. [Knowledge Base Tools](#knowledge-base-tools)
 
 ---
 
@@ -688,6 +689,52 @@ Decentralized exchange operations on Tinyman AMM.
 ### api_tinyman_get_validator_optout_quote
 - **Purpose**: Get a quote for opting out of the Tinyman validator
 - **Parameters**: Validator opt-out parameters
+
+---
+
+## Haystack Router Tools
+
+DEX-aggregated swaps across Tinyman V2, Pact, and Folks with smart order routing. For detailed workflows and the full SDK guide, see the **haystack-router-interaction** and **haystack-router-development** skills.
+
+### api_haystack_get_swap_quote
+- **Purpose**: Get an optimized swap quote across multiple DEXes without executing
+- **Parameters**:
+```json
+{
+  "fromASAID": 0,
+  "toASAID": 31566704,
+  "amount": 1000000,
+  "type": "fixed-input",
+  "address": "optional — enables opt-in detection",
+  "maxGroupSize": 16,
+  "maxDepth": 4,
+  "network": "mainnet"
+}
+```
+- **Returns**: `expectedOutput`, `inputAmount`, `usdIn`, `usdOut`, `userPriceImpact`, `route`, `flattenedRoute`, `requiredAppOptIns`, `protocolFees`
+
+### api_haystack_execute_swap
+- **Purpose**: All-in-one swap: quote → sign (via wallet) → submit → confirm. Enforces wallet spending limits.
+- **Parameters**:
+```json
+{
+  "fromASAID": 0,
+  "toASAID": 31566704,
+  "amount": 1000000,
+  "slippage": 1,
+  "type": "fixed-input",
+  "note": "optional text note",
+  "maxGroupSize": 16,
+  "maxDepth": 4,
+  "network": "mainnet"
+}
+```
+- **Returns**: `status`, `confirmedRound`, `txIds`, `signer`, `nickname`, quote details, `summary` (inputAmount, outputAmount, totalFees, transactionCount)
+
+### api_haystack_needs_optin
+- **Purpose**: Check if an address needs to opt into an asset before swapping
+- **Parameters**: `{ "address": "ALGO_ADDRESS", "assetId": 31566704, "network": "mainnet" }`
+- **Returns**: `{ address, assetId, needsOptIn: true/false, network }`
 
 ---
 

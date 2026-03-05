@@ -2,14 +2,16 @@
   "id": "openclaw-algorand-plugin",
   "name": "Algorand Integration",
   "description": "Algorand blockchain integration with MCP and skills — by GoPlausible",
-  "version": "1.0.1",
+  "version": "1.2.0",
   "skills": [
     "skills/algorand-development",
     "skills/algorand-typescript",
     "skills/algorand-python",
     "skills/algorand-interaction",
     "skills/algorand-x402-typescript",
-    "skills/algorand-x402-python"
+    "skills/algorand-x402-python",
+    "skills/haystack-router-development",
+    "skills/haystack-router-interaction"
   ],
   "configSchema": {
     "type": "object",
