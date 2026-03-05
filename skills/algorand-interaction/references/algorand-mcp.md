@@ -710,6 +710,7 @@ DEX-aggregated swaps across Tinyman V2, Pact, and Folks with smart order routing
   "network": "mainnet"
 }
 ```
+- **`type`**: `"fixed-input"` = `amount` is the input (spend exactly this much); `"fixed-output"` = `amount` is the output (receive exactly this much). See **Swap Type Rules** below.
 - **Returns**: `expectedOutput`, `inputAmount`, `usdIn`, `usdOut`, `userPriceImpact`, `route`, `flattenedRoute`, `requiredAppOptIns`, `protocolFees`
 
 ### api_haystack_execute_swap
@@ -728,7 +729,22 @@ DEX-aggregated swaps across Tinyman V2, Pact, and Folks with smart order routing
   "network": "mainnet"
 }
 ```
+- **`type`**: `"fixed-input"` = `amount` is the input (spend exactly this much); `"fixed-output"` = `amount` is the output (receive exactly this much). See **Swap Type Rules** below.
 - **Returns**: `status`, `confirmedRound`, `txIds`, `signer`, `nickname`, quote details, `summary` (inputAmount, outputAmount, totalFees, transactionCount)
+
+### Swap Type Rules
+
+> **CRITICAL**: The `type` parameter determines which side of the swap is exact. Getting this wrong means the user spends more or receives less than intended.
+
+| User intent | type | amount is | fromASAID | toASAID |
+|-------------|------|-----------|-----------|---------|
+| "Buy 10 ALGO with USDC" | `fixed-output` | 10000000 (output) | USDC | ALGO |
+| "Buy USDC for 10 ALGO" | `fixed-input` | 10000000 (input) | ALGO | USDC |
+| "Swap 5 USDC to ALGO" | `fixed-input` | 5000000 (input) | USDC | ALGO |
+| "I want exactly 100 USDC" | `fixed-output` | 100000000 (output) | ALGO | USDC |
+
+- **"Buy X of Y"** → `fixed-output`, amount = X in base units of Y, toASAID = Y
+- **"Swap/sell/use X of Y"** → `fixed-input`, amount = X in base units of Y, fromASAID = Y
 
 ### api_haystack_needs_optin
 - **Purpose**: Check if an address needs to opt into an asset before swapping

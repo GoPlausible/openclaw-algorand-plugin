@@ -56,10 +56,22 @@ The SDK is the **only** supported integration path. Do not call the API directly
 
 - **Amounts** are always in base units (microAlgos for ALGO, smallest unit for ASAs)
 - **ASA IDs**: 0 = ALGO, 31566704 = USDC, etc.
-- **Quote types**: `fixed-input` (default) — specify input amount; `fixed-output` — specify desired output
-- **Slippage**: Percentage tolerance on output (e.g., 1 = 1%). Applied to the final output, not individual hops
+- **Slippage**: Percentage tolerance on output (e.g., 1 = 1%). Applied to the final output, not individual hops.
+- **Quote types**: `fixed-input` (default) — specify input amount; `fixed-output` — specify desired output.
 - **Routing**: Supports multi-hop and parallel (combo) swaps for optimal pricing
 - **Middleware**: Plugin system for custom pre/post-swap transactions (e.g., auto opt-out)
+
+### fixed-input vs fixed-output
+
+| Type | `amount` specifies | Other side | Example |
+|------|-------------------|------------|---------|
+| `fixed-input` (default) | Input (what you send) | Estimated output | "Swap 10 ALGO for USDC" — spend exactly 10 ALGO |
+| `fixed-output` | Output (what you get) | Estimated input | "Buy 10 ALGO with USDC" — receive exactly 10 ALGO |
+
+- **"Buy X of Y"** → `fixed-output`, amount = X in base units of Y, toASAID = Y
+- **"Swap/sell/use X of Y"** → `fixed-input`, amount = X in base units of Y, fromASAID = Y
+- **"I want exactly X of Y"** → `fixed-output`, amount = X in base units of Y, toASAID = Y
+- The `amount` field always refers to the **fixed side** — never the estimated side
 
 ## Reference Files
 

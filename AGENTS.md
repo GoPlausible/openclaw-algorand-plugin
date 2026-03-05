@@ -293,9 +293,25 @@ api_haystack_execute_swap (signs via wallet, submits, confirms)
 
 - **Amounts** are always in base units (microAlgos for ALGO, smallest unit for ASAs)
 - **ASA IDs**: 0 = ALGO, 31566704 = USDC, etc.
-- **Quote types**: `fixed-input` (default) — specify input amount; `fixed-output` — specify desired output
+- **Quote types**: `fixed-input` (default) — specify input amount; `fixed-output` — specify desired output.
 - **Slippage**: Percentage tolerance on output (e.g., 1 = 1%)
 - **Routing**: Multi-hop and parallel (combo) swaps for optimal pricing across Tinyman V2, Pact, Folks
+
+### CRITICAL: fixed-input vs fixed-output
+
+The `type` parameter determines which side of the swap is exact. **Getting this wrong means the user spends more or receives less than intended.**
+
+| User says | type | amount is | fromASAID | toASAID |
+|-----------|------|-----------|-----------|---------|
+| "Buy 10 ALGO with USDC" | `fixed-output` | 10000000 (output) | USDC | ALGO |
+| "Swap 10 ALGO for USDC" | `fixed-input` | 10000000 (input) | ALGO | USDC |
+| "I want exactly 100 USDC" | `fixed-output` | 100000000 (output) | ALGO | USDC |
+| "Sell 10 ALGO" | `fixed-input` | 10000000 (input) | ALGO | USDC |
+
+- **"Buy X of Y"** → `fixed-output`, amount = X in base units of Y, toASAID = Y
+- **"Swap/sell/use X of Y"** → `fixed-input`, amount = X in base units of Y, fromASAID = Y
+- **"I want exactly X of Y"** → `fixed-output`, amount = X in base units of Y, toASAID = Y
+- **When ambiguous, ask the user** — "Do you want to spend exactly X or receive exactly X?"
 
 ### Development Skill Topics
 

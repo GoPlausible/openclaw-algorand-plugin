@@ -122,9 +122,38 @@ Step 4: User confirms → Execute
 
 - **Amounts** are always in base units (microAlgos for ALGO, smallest unit for ASAs)
 - **ASA IDs**: 0 = ALGO, 31566704 = USDC, etc.
+- **Slippage**: Percentage tolerance on output (e.g., 1 = 1%). Applied to the final output, not individual hops.
 - **Quote types**: `fixed-input` (default) — specify input amount; `fixed-output` — specify desired output
-- **Slippage**: Percentage tolerance on output (e.g., 1 = 1%). Applied to the final output, not individual hops
 - **Routing**: Supports multi-hop and parallel (combo) swaps for optimal pricing
+
+## CRITICAL: fixed-input vs fixed-output — Choosing the Correct Swap Type
+
+The `type` parameter determines which side of the swap is exact. Getting this wrong means the user spends more or receives less than intended. **Parse the user's intent carefully.**
+
+| Type | Meaning | `amount` specifies | The other side is | Use when |
+|------|---------|-------------------|-------------------|----------|
+| `fixed-input` | Spend exactly this much | **Input** amount (what you send) | Estimated (output varies) | "Swap 10 ALGO for USDC", "Sell 10 ALGO", "Use 10 ALGO to buy USDC" |
+| `fixed-output` | Receive exactly this much | **Output** amount (what you get) | Estimated (input varies) | "Buy 10 ALGO with USDC", "I want exactly 5 USDC", "Get me 10 ALGO" |
+
+### Mapping User Intent — Examples
+
+| User says | Type | fromASAID | toASAID | amount | Why |
+|-----------|------|-----------|---------|--------|-----|
+| "Buy 10 ALGO with USDC" | `fixed-output` | 31566704 (USDC) | 0 (ALGO) | 10000000 | User wants **exactly 10 ALGO** out |
+| "Buy USDC for 10 ALGO" | `fixed-input` | 0 (ALGO) | 31566704 (USDC) | 10000000 | User wants to **spend exactly 10 ALGO** |
+| "Swap 5 USDC to ALGO" | `fixed-input` | 31566704 (USDC) | 0 (ALGO) | 5000000 | User wants to **spend exactly 5 USDC** |
+| "I want exactly 100 USDC" | `fixed-output` | 0 (ALGO) | 31566704 (USDC) | 100000000 | User wants **exactly 100 USDC** out |
+| "Sell 10 ALGO" | `fixed-input` | 0 (ALGO) | 31566704 (USDC) | 10000000 | User wants to **spend exactly 10 ALGO** |
+| "Get me 10 ALGO" | `fixed-output` | 31566704 (USDC) | 0 (ALGO) | 10000000 | User wants **exactly 10 ALGO** out |
+
+### Rules
+
+1. **"Buy X of Y"** → `fixed-output`, amount = X (in base units of Y), toASAID = Y
+2. **"Swap/sell/use X of Y for Z"** → `fixed-input`, amount = X (in base units of Y), fromASAID = Y
+3. **"I want exactly X of Y"** → `fixed-output`, amount = X (in base units of Y), toASAID = Y
+4. **When ambiguous, ask the user**: "Do you want to spend exactly X or receive exactly X?"
+5. **The `amount` field always refers to the fixed side** — input amount for `fixed-input`, output amount for `fixed-output`
+6. **Always show the quote** before executing so the user can verify the estimated other side
 
 ## Reference Files
 

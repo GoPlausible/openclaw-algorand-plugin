@@ -402,6 +402,16 @@ api_tinyman_get_pool {
 
 Best-price swap across multiple DEXes (Tinyman V2, Pact, Folks). For detailed reference, see the **haystack-router-interaction** skill.
 
+### CRITICAL: fixed-input vs fixed-output
+
+| User says | type | amount is | fromASAID | toASAID |
+|-----------|------|-----------|-----------|---------|
+| "Swap 10 ALGO for USDC" | `fixed-input` | 10000000 (input — spend exactly 10 ALGO) | 0 (ALGO) | 31566704 (USDC) |
+| "Buy 10 ALGO with USDC" | `fixed-output` | 10000000 (output — receive exactly 10 ALGO) | 31566704 (USDC) | 0 (ALGO) |
+
+- **"Buy X of Y"** → `fixed-output`, amount = X in base units of Y, toASAID = Y
+- **"Swap/sell/use X of Y"** → `fixed-input`, amount = X in base units of Y, fromASAID = Y
+
 ### Step 1: Check wallet
 ```
 wallet_get_info { "network": "mainnet" }
@@ -421,24 +431,41 @@ wallet_optin_asset { "assetId": 31566704, "network": "mainnet" }
 ```
 
 ### Step 3: Get a quote (show user before executing)
+
+**Example A — "Swap 10 ALGO for USDC" (fixed-input):**
 ```
 api_haystack_get_swap_quote {
   "fromASAID": 0,
   "toASAID": 31566704,
-  "amount": 1000000,
+  "amount": 10000000,
   "type": "fixed-input",
   "address": "[wallet_address]",
   "network": "mainnet"
 }
 ```
-> Present to user: expected output, USD values, route, price impact.
+
+**Example B — "Buy 10 ALGO with USDC" (fixed-output):**
+```
+api_haystack_get_swap_quote {
+  "fromASAID": 31566704,
+  "toASAID": 0,
+  "amount": 10000000,
+  "type": "fixed-output",
+  "address": "[wallet_address]",
+  "network": "mainnet"
+}
+```
+> Present to user: expected output (or estimated input), USD values, route, price impact.
 
 ### Step 4: Execute swap (after user confirms)
+
+Use the **same `type`, `fromASAID`, `toASAID`, and `amount`** as the quote:
 ```
 api_haystack_execute_swap {
   "fromASAID": 0,
   "toASAID": 31566704,
-  "amount": 1000000,
+  "amount": 10000000,
+  "type": "fixed-input",
   "slippage": 1,
   "network": "mainnet"
 }
