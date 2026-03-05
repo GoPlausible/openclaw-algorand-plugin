@@ -36,17 +36,10 @@ const PAYMENT_INSTRUCTIONS = `To pay for this resource, follow these steps using
      "algorand:wGHE2Pwdvd7S12BL5FaOP20EGYesN73ktiC1qzkkit8=" → "mainnet"
 
 2. Build fee payer transaction (facilitator sponsors fees for the group):
-   make_payment_txn {
-     from: "<feePayer from accepts[].extra.feePayer>",
-     to: "<feePayer>",
-     amount: 0,
-     fee: 2000,
-     flatFee: true,
-     network: "<network>"
-   }
-   — fee: 2000 covers both transactions in the group (1000 each). flatFee: true prevents SDK override.
+   make_payment_txn { from: "<feePayer from accepts[].extra.feePayer>", to: "<feePayer>", amount: 0, fee: N×1000 (N=group size, e.g. 2000 for 2 txns), flatFee: true, network: "<network>" }
+   — NEVER set fee=0 on the fee payer — this causes "txgroup had 0 in fees" errors.
 
-3. Build payment transaction (fee = 0 since facilitator covers it):
+3. Build payment transaction:
    — For native ALGO (asset "0"):
      make_payment_txn { from: "<your_address>", to: "<payTo>", amount: <maxAmountRequired>, fee: 0, flatFee: true, network: "<network>" }
    — For ASA (asset is ASA ID):

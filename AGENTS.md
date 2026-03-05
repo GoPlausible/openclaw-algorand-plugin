@@ -370,9 +370,11 @@ V1 legacy identifiers (`algorand-mainnet`, `algorand-testnet`) are still support
 ### Algorand-Specific Features
 
 **Fee Abstraction** — Algorand's atomic transaction groups enable fee abstraction. The facilitator pays transaction fees on behalf of the client through a 2-transaction group:
-1. Transaction 0 (fee payer): Self-payment by facilitator, amount=0, fee covers both txns
-2. Transaction 1 (payment): ASA transfer from client to payTo, fee=0
+1. Transaction 0 (fee payer): `make_payment_txn` — from=feePayer, to=feePayer, amount=0, **fee=N×1000** (N=group size, e.g. 2000 for 2 txns), **flatFee=true**
+2. Transaction 1 (payment): `make_payment_txn` or `make_asset_transfer_txn` — from=client, to=payTo, **fee=0**, **flatFee=true**
 Both transactions share an atomic group ID — they execute all-or-nothing.
+
+> Pass `fee` and `flatFee` directly as input parameters to `make_*_txn` tools. NEVER set fee=0 on the fee payer — this causes "txgroup had 0 in fees" errors.
 
 **ASA Support:**
 

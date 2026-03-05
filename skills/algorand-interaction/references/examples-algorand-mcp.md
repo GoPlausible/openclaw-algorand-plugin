@@ -627,7 +627,8 @@ wallet_get_info { "network": "<network>" }
 
 ### Step 2: Build fee payer transaction
 
-The facilitator sponsors fees for the entire group. Set `fee: 2000` (covers both transactions at 1000 each) and `flatFee: true` to prevent the SDK from overriding:
+The facilitator sponsors fees for the entire group. The fee payer's `fee` must equal **N × 1000 µAlgo** (N = total transactions in group). For a 2-txn group: fee = 2 × 1000 = **2000**. NEVER set fee=0 on the fee payer.
+
 ```
 make_payment_txn {
   "from": "<feePayer>",
@@ -641,7 +642,7 @@ make_payment_txn {
 
 ### Step 3: Build payment transaction
 
-The payment transaction fee is 0 since the facilitator covers it. Set `flatFee: true` to prevent the SDK from adding a fee:
+The payment transaction fee is 0 since the facilitator covers it.
 
 **For native ALGO (asset = "0"):**
 ```

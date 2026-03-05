@@ -176,12 +176,14 @@ API responses are paginated. All API tools accept optional `itemsPerPage` (defau
 
 When `x402_fetch` returns HTTP 402 with `PaymentRequirements`, use the atomic group transaction pattern to build the payment:
 
-1. Build fee payer transaction (0-amount from facilitator's `feePayer` address, `fee: 2000`, `flatFee: true` — covers fees for both txns)
-2. Build payment transaction (ALGO or ASA transfer to `payTo`, `fee: 0`, `flatFee: true` — facilitator covers fee)
+1. Build fee payer transaction: `make_payment_txn` with from=feePayer, to=feePayer, amount=0, **fee=N×1000** (N=group size, e.g. 2000 for 2 txns), **flatFee=true**
+2. Build payment transaction: `make_payment_txn` or `make_asset_transfer_txn` to `payTo`, **fee=0**, **flatFee=true**
 3. Group both transactions with `assign_group_id`
-4. Sign only the payment transaction (index 1) with wallet and tool wallet_sign_transaction — leave fee payer unsigned
+4. Sign only the payment transaction (index 1) with `wallet_sign_transaction` — leave fee payer unsigned
 5. Encode the unsigned fee payer transaction (index 0) with `encode_unsigned_transaction`
 6. Construct PAYMENT-SIGNATURE JSON payload — **must include `accepted` field** (the exact `accepts[]` entry chosen) — and retry with `x402_fetch`
+
+> **IMPORTANT: Fee Abstraction** — Pass `fee` and `flatFee` directly as input parameters to `make_*_txn` tools. Fee payer: `fee=N×1000`, `flatFee=true`. Payment: `fee=0`, `flatFee=true`. NEVER set fee=0 on the fee payer — this causes "txgroup had 0 in fees" errors.
 
 **Critical**: The `accepted` field is REQUIRED. It must be an exact copy of the `accepts[]` entry you chose to pay with (including all fields: scheme, network, price, payTo, asset, maxAmountRequired, extra, etc.). Without it, the server cannot match your payment and will reject with 402.
 
