@@ -93,7 +93,7 @@ Smart contracts, typed clients, frontends, and deployment using AlgoKit CLI and 
 
 The `algorand-interaction` skill provides direct blockchain interaction via the Algorand MCP server — wallet management, transactions, asset transfers, DEX swaps, Haystack Router aggregated swaps, NFD lookups, smart contract deployment, TEAL compilation, and developer knowledge base.
 
-The Algorand MCP server provides **101+ tools** across 12 categories. Use `wallet_*` tools for signing — private keys are never available to you. Per-transaction and daily spending limits are enforced by the wallet.
+The Algorand MCP server provides **104+ tools** across 13 categories. Use `wallet_*` tools for signing — private keys are never available to you. Per-transaction and daily spending limits are enforced by the wallet.
 
 ### Network Selection
 
@@ -213,6 +213,8 @@ For atomic (all-or-nothing) multi-transaction groups:
 
 **Haystack Router** (3 tools): `api_haystack_get_swap_quote`, `api_haystack_execute_swap`, `api_haystack_needs_optin`
 
+**Pera Asset Verification** (3 tools): `api_pera_asset_verification_status`, `api_pera_verified_asset_details`, `api_pera_verified_asset_search` — mainnet asset verification tiers (verified, trusted, suspicious, unverified), detailed asset info with USD value and logo, and search by name/keyword
+
 **Knowledge Base** (1 tool): `get_knowledge_doc` — categories: `arcs`, `sdks`, `algokit`, `algokit-utils`, `tealscript`, `puya`, `liquid-auth`, `python`, `developers`, `clis`, `nodes`, `details`
 
 ### Skill Structure
@@ -248,7 +250,7 @@ When using NFD (`.algo` names) for transactions, always use the `depositAccount`
 - **Mainnet = real value** — always confirm with user before mainnet transactions
 - Never log, display, or store mnemonics or secret keys — use `wallet_*` tools for signing
 - Verify addresses with `validate_address` — transactions are irreversible
-- Verify asset IDs on-chain — scam tokens use similar names
+- Verify asset IDs on-chain and check verification tier with `api_pera_asset_verification_status` — scam tokens use similar names
 - Respect wallet spending limits — if rejected, inform user rather than bypassing
 
 ### Links

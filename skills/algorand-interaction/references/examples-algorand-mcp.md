@@ -447,6 +447,31 @@ api_haystack_execute_swap {
 
 ---
 
+## Verify an Asset (Pera)
+
+Check if an asset is legitimate before transacting — mainnet only.
+
+### Check verification status
+```
+api_pera_asset_verification_status { "assetId": 31566704 }
+```
+> Returns: `{ asset_id: 31566704, verification_tier: "verified", explorer_url: "..." }`
+> Tiers: `verified` (highest), `trusted`, `suspicious`, `unverified`
+
+### Get detailed asset info with USD value
+```
+api_pera_verified_asset_details { "assetId": 31566704 }
+```
+> Returns: name, unit name, decimals, total supply, USD value, logo, verification tier
+
+### Search for verified assets
+```
+api_pera_verified_asset_search { "query": "USDC", "verifiedOnly": true }
+```
+> Returns array of matching assets filtered to verified/trusted only
+
+---
+
 ## Using the Knowledge Base
 
 ### Get a specific document

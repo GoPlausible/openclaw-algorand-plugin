@@ -5,7 +5,7 @@ description: Interact with Algorand blockchain via the Algorand MCP server — w
 
 # Algorand MCP Interaction
 
-Interact with Algorand blockchain through the Algorand MCP server (101+ tools across 12 categories).
+Interact with Algorand blockchain through the Algorand MCP server (104+ tools across 13 categories).
 
 ## Key Characteristics
 
@@ -162,6 +162,8 @@ For atomic (all-or-nothing) multi-transaction groups:
 
 **Haystack Router** (3): `api_haystack_get_swap_quote`, `api_haystack_execute_swap`, `api_haystack_needs_optin` — DEX-aggregated swaps across Tinyman V2, Pact, Folks with optimal routing. See the **haystack-router-interaction** skill for detailed workflows and reference docs.
 
+**Pera Asset Verification** (3): `api_pera_asset_verification_status`, `api_pera_verified_asset_details`, `api_pera_verified_asset_search` — mainnet asset verification (verified/trusted/suspicious/unverified), detailed asset info with USD value, and search by name/keyword
+
 **ARC-26 URI** (1): `generate_algorand_uri`
 
 **Knowledge Base** (1): `get_knowledge_doc`
@@ -206,7 +208,7 @@ When using NFD (`.algo` names), always use the `depositAccount` field from the N
 - **Mainnet = real value** — always confirm with user before mainnet transactions
 - Never log, display, or store mnemonics or secret keys — use `wallet_*` tools for signing
 - Verify recipient addresses with `validate_address` — transactions are irreversible
-- Verify asset IDs on-chain — scam tokens use similar names
+- Verify asset IDs on-chain and check verification tier with `api_pera_asset_verification_status` — scam tokens use similar names
 - Respect wallet spending limits — if rejected, inform user rather than bypassing
 
 ## Links

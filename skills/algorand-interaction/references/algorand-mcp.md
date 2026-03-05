@@ -15,8 +15,9 @@
 8. [NFDomains API Tools](#nfdomains-api-tools)
 9. [Tinyman DEX API Tools](#tinyman-dex-api-tools)
 10. [Haystack Router Tools](#haystack-router-tools)
-11. [ARC-26 URI Tools](#arc-26-uri-tools)
-12. [Knowledge Base Tools](#knowledge-base-tools)
+11. [Pera Asset Verification Tools](#pera-asset-verification-tools)
+12. [ARC-26 URI Tools](#arc-26-uri-tools)
+13. [Knowledge Base Tools](#knowledge-base-tools)
 
 ---
 
@@ -735,6 +736,34 @@ DEX-aggregated swaps across Tinyman V2, Pact, and Folks with smart order routing
 - **Purpose**: Check if an address needs to opt into an asset before swapping
 - **Parameters**: `{ "address": "ALGO_ADDRESS", "assetId": 31566704, "network": "mainnet" }`
 - **Returns**: `{ address, assetId, needsOptIn: true/false, network }`
+
+---
+
+## Pera Asset Verification Tools
+
+Mainnet asset verification via Pera Wallet API. Use to check if assets are legitimate before transacting.
+
+### api_pera_asset_verification_status
+- **Purpose**: Get the verification tier of a mainnet asset (verified, trusted, suspicious, unverified)
+- **Parameters**: `{ "assetId": 31566704 }`
+- **Returns**: `{ asset_id, verification_tier, explorer_url }`
+- **Note**: Mainnet only. Returns `"unverified"` for unknown assets.
+
+### api_pera_verified_asset_details
+- **Purpose**: Get detailed asset info including name, unit name, decimals, total supply, USD value, logo, verification tier, and collectible status
+- **Parameters**: `{ "assetId": 31566704 }`
+- **Returns**: Full asset object with `name`, `unit_name`, `fraction_decimals`, `total`, `usd_value`, `logo`, `verification_tier`, `is_collectible`, `creator_address`, etc.
+
+### api_pera_verified_asset_search
+- **Purpose**: Search mainnet assets by name, unit name, or keyword with optional verification filter
+- **Parameters**:
+```json
+{
+  "query": "USDC",
+  "verifiedOnly": true
+}
+```
+- **Returns**: Array of `{ asset_id, name, unit_name, decimals, verification_tier, usd_value, logo, creator_address, is_deleted }`
 
 ---
 
