@@ -26,12 +26,11 @@
 Secure wallet management. Private keys are never available to you — use these tools to sign.
 
 ### wallet_add_account
-- **Purpose**: Create a new Algorand account (or import from mnemonic) with nickname and spending limits
+- **Purpose**: Create a new Algorand account with nickname and spending limits
 - **Parameters**:
 ```json
 {
   "nickname": "my-account",
-  "mnemonic": "optional 25-word mnemonic to import",
   "allowance": 5000000,
   "dailyAllowance": 10000000
 }
