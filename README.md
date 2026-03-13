@@ -96,6 +96,9 @@ Config is stored in `~/.openclaw/openclaw.json` under `plugins.entries.openclaw-
 | `algorand-interaction` | MCP-based blockchain interaction (wallet, txns, DEX, NFD, x402) |
 | `algorand-x402-typescript` | x402 payments in TypeScript |
 | `algorand-x402-python` | x402 payments in Python |
+| `haystack-router-development` | Haystack router development |
+| `haystack-router-interaction` | Haystack router interaction |
+| `alpha-arcade-interaction` | Alpha Arcade interaction |
 
 ## Links
 

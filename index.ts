@@ -344,8 +344,8 @@ export default function register(api: PluginApi) {
     async () => {
       console.log("\n🔷 Algorand plugin installed!\n");
       console.log("   This plugin provides:");
-      console.log("   • 6 Algorand development skills (smart contracts, x402, MCP interaction)");
-      console.log("   • algorand-mcp server (99 blockchain tools via mcporter)\n");
+      console.log("   • 9 Algorand skills (Algorand development in TS and Python, x402, MCP interaction, alpha arcade interaction, haystack router development and interaction)");
+      console.log("   • algorand-mcp server (~100 blockchain tools via mcporter)\n");
       console.log("   Next steps:");
       console.log("   1. Run `openclaw algorand-plugin init` — configure mcporter + add plugin memory");
       console.log("   2. Run `openclaw algorand-plugin setup` — configure options & add to allow list");
