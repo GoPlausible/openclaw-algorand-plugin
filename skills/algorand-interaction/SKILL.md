@@ -193,6 +193,22 @@ Map CAIP-2 network identifiers from `accepts[].network` to `testnet` or `mainnet
 
 See [references/examples-algorand-mcp.md](references/examples-algorand-mcp.md) for the full step-by-step workflow.
 
+## Alpha Arcade Prediction Markets
+
+Trade on-chain prediction markets (YES/NO outcomes) denominated in USDC via the Alpha Arcade integration (14 tools).
+
+| Step | Tool | Purpose |
+|------|------|---------|
+| 1 | `wallet_get_info` | Verify active account, check ALGO + USDC balance |
+| 2 | `alpha_get_live_markets` | Browse available markets |
+| 3 | `alpha_get_orderbook` | Check liquidity and prices for a market |
+| 4 | `alpha_create_market_order` or `alpha_create_limit_order` | Place an order |
+| 5 | `alpha_get_positions` / `alpha_get_open_orders` | Check portfolio |
+
+All prices and quantities use **microunits** (1,000,000 = $1.00 or 1 share). Orders require both ALGO (~0.957 per escrow) and USDC collateral.
+
+> For detailed Alpha Arcade workflows (orderbook mechanics, multi-choice markets, split/merge shares, claiming, collateral model), load the `alpha-arcade-interaction` skill.
+
 ## References
 
 For detailed tool documentation:
