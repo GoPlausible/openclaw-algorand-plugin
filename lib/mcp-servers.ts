@@ -1,7 +1,7 @@
 export const ALGORAND_MCP = {
   id: "algorand-mcp",
   name: "Algorand MCP",
-  description: "Local Algorand MCP server — 99 tools for blockchain interaction",
+  description: "Local Algorand MCP server — 107 tools for blockchain interaction",
   type: "stdio" as const,
   command: "algorand-mcp",
 } as const;

@@ -43,7 +43,7 @@ export async function runSetup(
   p.note(
     `x402 Micropayments: ${config.enableX402 ? "Enabled" : "Disabled"}\n\n` +
       `MCP Server Setup:\n` +
-      `  The Algorand MCP server (${ALGORAND_MCP.command}) provides 99 blockchain tools.\n` +
+      `  The Algorand MCP server (${ALGORAND_MCP.command}) provides 107 blockchain tools.\n` +
       `  x402 micropayment and AP2 mandate verifiable credentials flows are fully supported in Algorand MCP.\n` ,
   );
 

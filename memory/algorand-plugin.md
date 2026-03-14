@@ -3,7 +3,7 @@
 This plugin enables three core capabilities:
 
 1. **Algorand Development** — Smart contracts, typed clients, React frontends via AlgoKit CLI and skills
-2. **Blockchain Interaction** — Algorand MCP server (99 tools) via mcporter
+2. **Blockchain Interaction** — Algorand MCP server (107 tools) via mcporter
 3. **x402 Payment Protocol** — HTTP-native payments with Algorand as first-class chain
 
 ## Skill Routing
