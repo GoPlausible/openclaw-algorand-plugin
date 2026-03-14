@@ -1,6 +1,10 @@
 import * as p from "@clack/prompts";
-// import { execSync } from "node:child_process";
+import { execSync } from "node:child_process";
+import { join, dirname } from "node:path";
+import { fileURLToPath } from "node:url";
 import { ALGORAND_MCP, GOPLAUSIBLE_SERVICES } from "./lib/mcp-servers.js";
+
+const __dirname = dirname(fileURLToPath(import.meta.url));
 
 export interface AlgorandPluginConfig {
   enableX402: boolean;
@@ -11,34 +15,14 @@ export async function runSetup(
 ): Promise<AlgorandPluginConfig | null> {
   p.intro("🔷 Algorand Plugin Setup — powered by GoPlausible");
 
-  // // Step 1: Verify algorand-mcp binary is available
-  // let mcpAvailable = false;
-  // let mcpPath = "";
-  // try {
-  //   mcpPath = execSync("npm list @goplausible/algorand-mcp", { encoding: "utf-8" }).trim();
-  //   mcpAvailable = true;
-  // } catch {
-  //   // Binary not found in PATH
-  // }
-
-  // if (mcpAvailable) {
-  //   p.note(
-  //     `MCP Server: ${ALGORAND_MCP.name}\n` +
-  //       `Type: ${ALGORAND_MCP.type} (local)\n` +
-  //       `Command: ${ALGORAND_MCP.command}\n` +
-  //       `Path: ${mcpPath}\n` +
-  //       `Status: ✅ Available`,
-  //     "Algorand MCP"
-  //   );
-  // } else {
-  //   p.log.warn(
-  //     `algorand-mcp binary not found in PATH.\n\n` +
-  //       `Options:\n` +
-  //       `  • Run with npx: npx algorand-mcp\n` +
-  //       `  • Install globally: npm install -g @goplausible/algorand-mcp\n` +
-  //       `  • Add node_modules/.bin to PATH`
-  //   );
-  // }
+  // Step 1: Keyring persistence check & setup
+  p.log.step("Checking keyring persistence for wallet storage...");
+  try {
+    const scriptPath = join(__dirname, "scripts", "setup-keyring.sh");
+    execSync(`bash "${scriptPath}" --setup`, { stdio: "inherit" });
+  } catch {
+    p.log.warn("Keyring setup script failed — you may need to configure manually.");
+  }
 
   // Step 2: x402 integration
   const enableX402 = await p.confirm({

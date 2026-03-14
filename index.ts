@@ -301,6 +301,29 @@ export default function register(api: PluginApi) {
           console.log("  Config:");
           console.log(`    x402:      ${pluginConfig.enableX402 !== false ? "Enabled" : "Disabled"}`);
           console.log("");
+
+          // Keyring status
+          try {
+            const scriptPath = join(__dirname, "scripts", "setup-keyring.sh");
+            const keyringOutput = execSync(`bash "${scriptPath}" --detect`, { encoding: "utf-8", timeout: 5000 });
+            const vars = Object.fromEntries(
+              keyringOutput.trim().split("\n").map((line: string) => line.split("=", 2))
+            );
+            console.log("  Keyring:");
+            if (vars.PERSISTENT === "true") {
+              console.log(`    Storage:   ✅ ${vars.BACKEND}`);
+              console.log(`    Wallets:   ${vars.WALLET_DB_COUNT} account(s) in wallet.db`);
+            } else {
+              console.log(`    Storage:   ⚠️  ${vars.BACKEND} — run \`openclaw algorand-plugin setup\``);
+              if (parseInt(vars.WALLET_DB_COUNT) > 0) {
+                console.log(`    Wallets:   ⚠️  ${vars.WALLET_DB_COUNT} account(s) with mnemonics in volatile storage!`);
+              }
+            }
+          } catch {
+            console.log("  Keyring:");
+            console.log("    Storage:   ❓ Could not detect");
+          }
+          console.log("");
           console.log("  Links:");
           console.log(`    GoPlausible: ${GOPLAUSIBLE_SERVICES.website}`);
           console.log(`    Algorand x402: ${GOPLAUSIBLE_SERVICES.x402}`);
@@ -346,6 +369,16 @@ export default function register(api: PluginApi) {
       console.log("   This plugin provides:");
       console.log("   • 9 Algorand skills (Algorand development in TS and Python, x402, MCP interaction, alpha arcade interaction, haystack router development and interaction)");
       console.log("   • algorand-mcp server (~100 blockchain tools via mcporter)\n");
+      // Keyring persistence warning for headless Linux
+      try {
+        const scriptPath = join(__dirname, "scripts", "setup-keyring.sh");
+        const keyringOutput = execSync(`bash "${scriptPath}" --detect`, { encoding: "utf-8", timeout: 5000 });
+        if (keyringOutput.includes("PERSISTENT=false")) {
+          console.log("   ⚠️  Headless Linux detected — wallet keys use in-memory storage.");
+          console.log("   Run `openclaw algorand-plugin setup` for persistent storage.\n");
+        }
+      } catch { /* ignore on install */ }
+
       console.log("   Next steps:");
       console.log("   1. Run `openclaw algorand-plugin init` — configure mcporter + add plugin memory");
       console.log("   2. Run `openclaw algorand-plugin setup` — configure options & add to allow list");

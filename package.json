@@ -1,6 +1,6 @@
 {
   "name": "@goplausible/openclaw-algorand-plugin",
-  "version": "1.7.2",
+  "version": "1.8.0",
   "publishConfig": {
     "access": "public"
   },
@@ -27,6 +27,7 @@
     "index.ts",
     "setup.ts",
     "lib/",
+    "scripts/",
     "skills/",
     "memory/",
     "openclaw.plugin.json"
