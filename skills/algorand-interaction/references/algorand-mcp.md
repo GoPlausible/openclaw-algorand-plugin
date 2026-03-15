@@ -800,7 +800,12 @@ Mainnet asset verification via Pera Wallet API. Use to check if assets are legit
 ### QR Code Display
 
 **Important:** MCP tool output may not render properly through mcporter → exec pipeline.
-After calling the tool, **extract and paste the QR code directly in your response**:
+After calling the tool, **extract and paste the QR code directly in your response**.
+**Always include ALL THREE in your reply:**
+
+1. UTF-8 QR block (Unicode block characters)
+2. PNG as markdown image: `![QR](data:image/png;base64,...)`
+3. **URI string** — always show this, users need it for wallet deep links
 
 1. Call the tool and capture output
 2. Extract the UTF-8 QR block (Unicode block characters)
