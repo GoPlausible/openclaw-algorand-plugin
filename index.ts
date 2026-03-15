@@ -60,12 +60,19 @@ function getMcpBinaryPath(): string {
 function updatePluginConfig(newConfig: AlgorandPluginConfig): { success: boolean; error?: string } {
   try {
     const configPath = getConfigPath();
-    if (!existsSync(configPath)) {
-      return { success: false, error: `Config file not found: ${configPath}` };
+    const configDir = dirname(configPath);
+
+    // Create ~/.openclaw directory if it doesn't exist
+    if (!existsSync(configDir)) {
+      mkdirSync(configDir, { recursive: true });
     }
 
-    const rawConfig = readFileSync(configPath, "utf-8");
-    const config = JSON.parse(rawConfig);
+    // Create config file with empty object if it doesn't exist
+    let config: Record<string, any> = {};
+    if (existsSync(configPath)) {
+      const rawConfig = readFileSync(configPath, "utf-8");
+      config = JSON.parse(rawConfig);
+    }
 
     // Ensure plugins structure exists
     if (!config.plugins) config.plugins = {};
