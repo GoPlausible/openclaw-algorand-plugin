@@ -1,10 +1,12 @@
 # Algorand Plugin Guide
 
-This plugin enables three core capabilities:
+This plugin enables four core capabilities:
 
 1. **Algorand Development** — Smart contracts, typed clients, React frontends via AlgoKit CLI and skills
-2. **Blockchain Interaction** — Algorand MCP server (107 tools) via mcporter
+2. **Blockchain Interaction** — Algorand MCP server (107 tools) via mcporter (includes Pera asset verification)
 3. **x402 Payment Protocol** — HTTP-native payments with Algorand as first-class chain
+4. **Haystack Router** — DEX aggregator/smart order routing on Algorand (Tinyman V2, Pact, Folks)
+5. **Alpha Arcade** — On-chain prediction markets on Algorand (USDC-denominated, binary/multi-choice)
 
 ## Skill Routing
 
@@ -16,6 +18,10 @@ This plugin enables three core capabilities:
 | Interaction | Blockchain interaction via MCP | `algorand-interaction` |
 | x402 | TypeScript x402 development | `algorand-x402-typescript` |
 | x402 | Python x402 development | `algorand-x402-python` |
+| x402 | Runtime x402 payment (Claude as client) | `algorand-x402-payment` |
+| Haystack | Build swap apps with SDK | `haystack-router-development` |
+| Haystack | Execute swaps via MCP tools | `haystack-router-interaction` |
+| Alpha Arcade | Prediction markets via MCP tools | `alpha-arcade-interaction` |
 
 ## Using Algorand MCP Tools
 
@@ -31,7 +37,7 @@ mcporter call algorand-mcp.get_account_info address=XXXXX network=testnet
 mcporter call algorand-mcp.search_assets name=USDC network=mainnet
 ```
 
-## MCP Tool Categories (101 tools)
+## MCP Tool Categories (107 tools)
 
 - **Wallet** (10) — `wallet_add_account`, `wallet_remove_account`, `wallet_list_accounts`, `wallet_switch_account`, `wallet_get_info`, `wallet_get_assets`, `wallet_sign_transaction`, `wallet_sign_transaction_group`, `wallet_sign_data`, `wallet_optin_asset`
 - **Account Management** (8) — `create_account`, `rekey_account`, `mnemonic_to_mdk`, `mdk_to_mnemonic`, `secret_key_to_mnemonic`, `mnemonic_to_secret_key`, `seed_from_mnemonic`, `mnemonic_from_seed`
@@ -42,8 +48,36 @@ mcporter call algorand-mcp.search_assets name=USDC network=mainnet
 - **Indexer API** (17) — `api_indexer_lookup_account_by_id`, `api_indexer_lookup_account_assets`, `api_indexer_lookup_account_app_local_states`, `api_indexer_lookup_account_created_applications`, `api_indexer_search_for_accounts`, `api_indexer_lookup_applications`, `api_indexer_lookup_application_logs`, `api_indexer_search_for_applications`, `api_indexer_lookup_application_box`, `api_indexer_lookup_application_boxes`, `api_indexer_lookup_asset_by_id`, `api_indexer_lookup_asset_balances`, `api_indexer_lookup_asset_transactions`, `api_indexer_search_for_assets`, `api_indexer_lookup_transaction_by_id`, `api_indexer_lookup_account_transactions`, `api_indexer_search_for_transactions`
 - **NFDomains** (6) — `api_nfd_get_nfd`, `api_nfd_get_nfds_for_addresses`, `api_nfd_get_nfd_activity`, `api_nfd_get_nfd_analytics`, `api_nfd_browse_nfds`, `api_nfd_search_nfds`
 - **Tinyman AMM** (9) — `api_tinyman_get_pool`, `api_tinyman_get_pool_analytics`, `api_tinyman_get_pool_creation_quote`, `api_tinyman_get_liquidity_quote`, `api_tinyman_get_remove_liquidity_quote`, `api_tinyman_get_swap_quote`, `api_tinyman_get_asset_optin_quote`, `api_tinyman_get_validator_optin_quote`, `api_tinyman_get_validator_optout_quote`
-- **ARC-26 URI** (1) — `generate_algorand_uri`
+- **Haystack Router** (3) — `api_haystack_get_swap_quote`, `api_haystack_execute_swap`, `api_haystack_needs_optin`
+- **Pera Asset Verification** (3) — `api_pera_asset_verification_status`, `api_pera_verified_asset_details`, `api_pera_verified_asset_search`
+- **Alpha Arcade** (15) — Read: `alpha_get_live_markets`, `alpha_get_reward_markets`, `alpha_get_market`, `alpha_get_orderbook`, `alpha_get_open_orders`, `alpha_get_positions`. Trade: `alpha_create_limit_order`, `alpha_create_market_order`, `alpha_cancel_order`, `alpha_amend_order`, `alpha_propose_match`, `alpha_split_shares`, `alpha_merge_shares`, `alpha_claim`
+- **ARC-26 URI** (1) — `generate_algorand_qrcode`
 - **Knowledge** (1) — `get_knowledge_doc` (categories: `arcs`, `sdks`, `algokit`, `algokit-utils`, `tealscript`, `puya`, `liquid-auth`, `python`, `developers`, `clis`, `nodes`, `details`)
+
+## QR Code Display (ARC-26 URI)
+
+When generating QR codes with `generate_algorand_qrcode`, the tool returns:
+- UTF-8 text QR code (terminal-friendly)
+- PNG image as base64 (web-friendly)
+- URI string
+
+**Important:** MCP tool output may not render properly through mcporter → exec pipeline.
+After calling the tool, **extract and paste the QR code directly in your response**:
+
+1. Call the tool and capture output
+2. Extract the UTF-8 QR block (Unicode block characters)
+3. Extract the base64 PNG data
+4. Include both in your reply:
+
+```
+[paste UTF-8 QR here]
+```
+
+![QR Code](data:image/png;base64,[paste base64 here])
+
+URI: `algorand://ADDRESS?amount=X&asset=Y`
+
+This ensures the QR renders correctly in both terminal and web interfaces.
 
 ## Key things to remember
 
@@ -70,6 +104,7 @@ mcporter call algorand-mcp.search_assets name=USDC network=mainnet
 - **NEVER use PyTEAL or Beaker** — these are legacy. Use Algorand TypeScript or Algorand Python.
 - **NEVER use AlgoExplorer** — obsolete. Use Allo.info for block/account/transaction data.
 - **NFD (.algo names)**: Always use `depositAccount` field for transactions.
+- **Alpha Arcade prices are microunits**: `yesProb`/`noProb` range 0–1,000,000 (NOT percentages). $0.50 = 500,000. Orders require both ALGO (MBR) and USDC (collateral).
 
 ## External resources
 
@@ -81,9 +116,12 @@ mcporter call algorand-mcp.search_assets name=USDC network=mainnet
 - Testnet Faucet: https://lora.algokit.io/testnet/fund
 - Testnet USDC Faucet: https://faucet.circle.com/
 - Algorand Developer Docs: https://dev.algorand.co/
-- Algorand Developer Docs Github : https://github.com/algorandfoundation/devportal
-- Algorand Developer Examples Github : https://github.com/algorandfoundation/devportal-code-examples
-- GoPlausible x402-avm Documentation and Example code : https://github.com/GoPlausible/.github/blob/main/profile/algorand-x402-documentation/README.md
-- GoPlausible x402-avm Examples template Projects : https://github.com/GoPlausible/x402-avm/tree/branch-v2-algorand-publish/examples/
-- CAIP-2 Specification : https://github.com/ChainAgnostic/CAIPs/blob/main/CAIPs/caip-2.md
-- Coinbase x402 Protocol : https://github.com/coinbase/x402
+- Algorand Developer Docs Github: https://github.com/algorandfoundation/devportal
+- Algorand Developer Examples Github: https://github.com/algorandfoundation/devportal-code-examples
+- GoPlausible x402-avm Documentation and Example code: https://github.com/GoPlausible/.github/blob/main/profile/algorand-x402-documentation/README.md
+- GoPlausible x402-avm Examples template Projects: https://github.com/GoPlausible/x402-avm/tree/branch-v2-algorand-publish/examples/
+- CAIP-2 Specification: https://github.com/ChainAgnostic/CAIPs/blob/main/CAIPs/caip-2.md
+- Coinbase x402 Protocol: https://github.com/coinbase/x402
+- Haystack Router: https://github.com/TxnLab/haystack-router
+- Alpha Arcade: https://alphaarcade.com
+- Alpha Arcade API: https://platform.alphaarcade.com

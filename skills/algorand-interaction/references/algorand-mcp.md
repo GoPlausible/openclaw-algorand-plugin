@@ -782,20 +782,40 @@ Mainnet asset verification via Pera Wallet API. Use to check if assets are legit
 
 ## ARC-26 URI Tools
 
-### generate_algorand_uri
-- **Purpose**: Generate an Algorand payment URI and QR code per ARC-26 specification
+### generate_algorand_qrcode
+- **Purpose**: Generate an Algorand top up payment or asset transferURI and QR code per ARC-26 specification
 - **Parameters**:
 ```json
 {
   "address": "receiver_address",
   "label": "Payment label",
   "amount": 1000000,
-  "asset": 31566704,
+  "asset": 31566704,// optional, if asset transfer; omit or set to 0 for ALGO
   "note": "Payment note",
-  "xnote": "Exclusive note"
+  "xnote": "Exclusive immutable note"
 }
 ```
-- **Returns**: URI string + SVG QR code
+- **Returns**: UTF-8 text QR code (terminal-friendly), PNG image as base64 (web-friendly), URI string
+
+### QR Code Display
+
+**Important:** MCP tool output may not render properly through mcporter → exec pipeline.
+After calling the tool, **extract and paste the QR code directly in your response**:
+
+1. Call the tool and capture output
+2. Extract the UTF-8 QR block (Unicode block characters)
+3. Extract the base64 PNG data
+4. Include both in your reply:
+
+```
+[paste UTF-8 QR here]
+```
+
+![QR Code](data:image/png;base64,[paste base64 here])
+
+URI: `algorand://ADDRESS?amount=X&asset=Y`
+
+This ensures the QR renders correctly in both terminal and web interfaces.
 
 ---
 

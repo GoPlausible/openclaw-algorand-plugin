@@ -43,8 +43,8 @@ Key points:
 
 1. **Check wallet**: `wallet_get_info` with target `network` — verify an account exists and is active
 2. **If no accounts**: Guide user to create one with `wallet_add_account` (sets nickname and spending limits)
-3. **If needs funding**: Generate ARC-26 QR with `generate_algorand_uri` or direct to testnet faucet: https://lora.algokit.io/testnet/fund
-4. **If needs USDC funding**: Generate ARC-26 QR with `generate_algorand_uri` or direct to testnet faucet: https://faucet.circle.com/
+3. **If needs funding**: Generate ARC-26 QR with `generate_algorand_qrcode` or direct to testnet faucet: https://lora.algokit.io/testnet/fund
+4. **If needs USDC funding**: Generate ARC-26 QR with `generate_algorand_qrcode` or direct to testnet faucet: https://faucet.circle.com/
 5. **Confirm network**: Always confirm which network (`mainnet`, `testnet`, `localnet`) before transactions
 
 ## Network Selection
@@ -164,7 +164,7 @@ For atomic (all-or-nothing) multi-transaction groups:
 
 **Pera Asset Verification** (3): `api_pera_asset_verification_status`, `api_pera_verified_asset_details`, `api_pera_verified_asset_search` — mainnet asset verification (verified/trusted/suspicious/unverified), detailed asset info with USD value, and search by name/keyword
 
-**ARC-26 URI** (1): `generate_algorand_uri`
+**ARC-26 URI** (1): `generate_algorand_qrcode`
 
 **Knowledge Base** (1): `get_knowledge_doc`
 
@@ -208,6 +208,31 @@ Trade on-chain prediction markets (YES/NO outcomes) denominated in USDC via the 
 All prices and quantities use **microunits** (1,000,000 = $1.00 or 1 share). Orders require both ALGO (~0.957 per escrow) and USDC collateral.
 
 > For detailed Alpha Arcade workflows (orderbook mechanics, multi-choice markets, split/merge shares, claiming, collateral model), load the `alpha-arcade-interaction` skill.
+
+## QR Code Display (ARC-26 URI)
+
+When generating QR codes with `generate_algorand_qrcode`, the tool returns:
+- UTF-8 text QR code (terminal-friendly)
+- PNG image as base64 (web-friendly)
+- URI string
+
+**Important:** MCP tool output may not render properly through mcporter → exec pipeline.
+After calling the tool, **extract and paste the QR code directly in your response**:
+
+1. Call the tool and capture output
+2. Extract the UTF-8 QR block (Unicode block characters)
+3. Extract the base64 PNG data
+4. Include both in your reply:
+
+```
+[paste UTF-8 QR here]
+```
+
+![QR Code](data:image/png;base64,[paste base64 here])
+
+URI: `algorand://ADDRESS?amount=X&asset=Y`
+
+This ensures the QR renders correctly in both terminal and web interfaces.
 
 ## References
 
