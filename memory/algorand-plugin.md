@@ -63,7 +63,7 @@ When generating QR codes with `generate_algorand_qrcode`, the tool returns:
 
 **Important:** MCP tool output may not render properly through mcporter → exec pipeline.
 After calling the tool, **extract and paste the QR code directly in your response**.
-**Always include ALL THREE in your reply:**
+**Always include ALL THREE in your reply, using --raw flag with mcporter to get the full output including image data:**
 
 1. UTF-8 QR block (Unicode block characters)
 2. PNG as markdown image: `![QR](data:image/png;base64,...)`
