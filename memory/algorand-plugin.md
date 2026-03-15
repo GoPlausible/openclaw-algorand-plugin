@@ -65,13 +65,16 @@ When generating QR codes with `generate_algorand_qrcode`, the tool returns:
 After calling the tool, **extract and paste the QR code directly in your response**.
 **Always include ALL THREE in your reply, using --raw flag with mcporter to get the full output including image data:**
 
-1. UTF-8 QR block (Unicode block characters)
-2. PNG as markdown image: `![QR](data:image/png;base64,...)`
-3. **URI string** — always show this, users need it for wallet deep links
+1. UTF-8 QR block (Unicode block characters) and URI string at the end of the text output.
+2. PNG as markdown image: `![QR](data:image/png;base64,...)`.
+3. **URI string** — always show this, users need it for wallet deep links.
+4. Copy the ENTIRE base64 string exactly — do not reformat, wrap, or edit it.
+5. Verify the ending — PNG base64 typically ends with `==` or a short suffix like `QAAA`.
 
-1. Call the tool and capture output
-2. Extract the UTF-8 QR block (Unicode block characters)
-3. Extract the base64 PNG data
+### Steps to include QR code in reply:
+1. Call the tool with --raw flag and capture output
+2. Content's first array member is text and contains the UTF-8 QR block (Unicode block characters) plus URI string
+3. Content's second array member is image and contains the base64 PNG data
 4. Include both in your reply:
 
 ```
@@ -80,7 +83,6 @@ After calling the tool, **extract and paste the QR code directly in your respons
 
 ![QR Code](data:image/png;base64,[paste base64 here])
 
-URI: `algorand://ADDRESS?amount=X&asset=Y`
 
 This ensures the QR renders correctly in both terminal and web interfaces.
 
