@@ -92,6 +92,42 @@ function updatePluginConfig(newConfig: AlgorandPluginConfig): { success: boolean
   }
 }
 
+function stopExistingMcpProcesses(): { stopped: number; message: string } {
+  try {
+    // Find all running algorand-mcp processes
+    const psOutput = execSync("ps aux 2>/dev/null || tasklist 2>/dev/null || echo ''", { encoding: "utf-8" });
+    const lines = psOutput.split("\n").filter((line: string) => line.includes("algorand-mcp") && !line.includes("grep"));
+
+    if (lines.length === 0) {
+      return { stopped: 0, message: "No existing algorand-mcp processes found" };
+    }
+
+    // Extract PIDs and kill them
+    let stopped = 0;
+    for (const line of lines) {
+      const parts = line.trim().split(/\s+/);
+      const pid = parts[1]; // PID is second column in ps aux
+      if (pid && /^\d+$/.test(pid)) {
+        try {
+          execSync(`kill ${pid} 2>/dev/null`, { encoding: "utf-8" });
+          stopped++;
+        } catch {
+          // Process may have already exited
+        }
+      }
+    }
+
+    // Brief wait for processes to terminate
+    if (stopped > 0) {
+      execSync("sleep 1");
+    }
+
+    return { stopped, message: `Stopped ${stopped} existing algorand-mcp process${stopped !== 1 ? "es" : ""}` };
+  } catch {
+    return { stopped: 0, message: "Could not check for existing processes" };
+  }
+}
+
 function configureMcporter(): { success: boolean; message: string } {
   const mcpCommand = getMcpBinaryPath();
 
@@ -221,12 +257,12 @@ export default function register(api: PluginApi) {
         .command("algorand-plugin")
         .description("Algorand blockchain integration (GoPlausible)");
 
-      // Init command - writes plugin memory file AND configures mcporter
+      // Setup command - initializes (memory + mcporter) then runs interactive config
       algorand
-        .command("init")
-        .description("Initialize Algorand plugin (memory file + mcporter config)")
+        .command("setup")
+        .description("Initialize and configure Algorand plugin")
         .action(async () => {
-          console.log("\n🔷 Initializing Algorand plugin...\n");
+          console.log("\n🔷 Setting up Algorand plugin...\n");
 
           const workspacePath = getWorkspacePath(api);
 
@@ -238,7 +274,15 @@ export default function register(api: PluginApi) {
             console.error(`  ❌ ${memResult.message}`);
           }
 
-          // Step 2: Configure mcporter
+          // Step 2: Stop any existing algorand-mcp processes
+          const stopResult = stopExistingMcpProcesses();
+          if (stopResult.stopped > 0) {
+            console.log(`  ✅ ${stopResult.message}`);
+          } else {
+            console.log(`  ℹ️  ${stopResult.message}`);
+          }
+
+          // Step 3: Configure mcporter
           console.log("");
           const mcpResult = configureMcporter();
           if (mcpResult.success) {
@@ -247,15 +291,8 @@ export default function register(api: PluginApi) {
             console.log(`  ⚠️  ${mcpResult.message}`);
           }
 
-          console.log("\n  Run `openclaw algorand-plugin setup` to configure options.");
-          console.log("  Run `mcporter list algorand-mcp --schema` to verify MCP tools.\n");
-        });
-
-      // Setup wizard
-      algorand
-        .command("setup")
-        .description("Run interactive Algorand plugin setup")
-        .action(async () => {
+          // Step 4: Interactive config
+          console.log("");
           const newConfig = await runSetup(pluginConfig);
           if (newConfig) {
             const result = updatePluginConfig(newConfig);
@@ -269,6 +306,8 @@ export default function register(api: PluginApi) {
               console.log(`   "plugins": { "allow": ["${PLUGIN_ID}"], "entries": { "${PLUGIN_ID}": { "config": ${JSON.stringify(newConfig)} } } }\n`);
             }
           }
+
+          console.log("  Run `mcporter list algorand-mcp --schema` to verify MCP tools.\n");
         });
 
       // Status command
@@ -296,7 +335,7 @@ export default function register(api: PluginApi) {
           console.log("");
           console.log("  MCP Server:");
           console.log(`    Binary:    ${mcp.available ? `✅ ${mcp.path}` : "⚠️  Not found"}`);
-          console.log(`    mcporter:  ${mcporterConfigured ? "✅ Configured" : "⚠️  Not configured (run init)"}`);
+          console.log(`    mcporter:  ${mcporterConfigured ? "✅ Configured" : "⚠️  Not configured (run setup)"}`);
           console.log("");
           console.log("  Config:");
           console.log(`    x402:      ${pluginConfig.enableX402 !== false ? "Enabled" : "Disabled"}`);
@@ -353,7 +392,7 @@ export default function register(api: PluginApi) {
           console.log(`    }`);
           console.log(`  }\n`);
           console.log("  Cursor (.cursor/mcp.json) — same format\n");
-          console.log("  Note: OpenClaw uses mcporter. Run `openclaw algorand-plugin init` to configure.\n");
+          console.log("  Note: OpenClaw uses mcporter. Run `openclaw algorand-plugin setup` to configure.\n");
         });
     },
     { commands: ["algorand-plugin"] }
@@ -380,9 +419,8 @@ export default function register(api: PluginApi) {
       } catch { /* ignore on install */ }
 
       console.log("   Next steps:");
-      console.log("   1. Run `openclaw algorand-plugin init` — configure mcporter + add plugin memory");
-      console.log("   2. Run `openclaw algorand-plugin setup` — configure options & add to allow list");
-      console.log("   3. Restart OpenClaw gateway\n");
+      console.log("   1. Run `openclaw algorand-plugin setup` — initialize + configure plugin");
+      console.log("   2. Restart OpenClaw gateway\n");
       console.log(`   Docs: ${GOPLAUSIBLE_SERVICES.website}\n`);
     },
     { name: "algorand.post-install", description: "Show setup instructions on install" }

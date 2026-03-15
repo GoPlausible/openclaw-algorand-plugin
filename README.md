@@ -26,7 +26,7 @@
 openclaw plugins install @goplausible/openclaw-algorand-plugin
 ```
 
-Or install from local path:
+Or install from local path if you are running from source code:
 
 ```bash
 openclaw plugins install ./path/to/openclaw-algorand-plugin
@@ -37,21 +37,17 @@ openclaw plugins install ./path/to/openclaw-algorand-plugin
 After installing, run these commands:
 
 ```bash
-# 1. Initialize plugin (write memory file + configure mcporter)
-openclaw algorand-plugin init
-
-# 2. Run interactive setup (keyring persistence + x402 toggle)
+# 1. Setup plugin (memory file + mcporter + interactive config)
 openclaw algorand-plugin setup
 
-# 3. Restart the gateway
+# 2. Restart the gateway
 openclaw gateway restart
 ```
 
 ## Commands
 
 ```bash
-openclaw algorand-plugin init        # Write plugin memory + configure mcporter
-openclaw algorand-plugin setup       # Run interactive setup wizard
+openclaw algorand-plugin setup       # Initialize + configure plugin (memory, mcporter, options)
 openclaw algorand-plugin status      # Show plugin status (binary, mcporter, config)
 openclaw algorand-plugin mcp-config  # Show MCP config snippet for external coding agents
 ```
