@@ -33,7 +33,7 @@ mcporter list algorand-mcp
 
 # Call a tool
 mcporter call algorand-mcp.wallet_get_info
-mcporter call algorand-mcp.get_account_info address=XXXXX network=testnet
+mcporter call algorand-mcp.generate_algorand_qrcode --raw address=XXXXX network=testnet asset=0 amount=1000000
 mcporter call algorand-mcp.search_assets name=USDC network=mainnet
 ```
 

@@ -184,6 +184,96 @@ function writeMemoryFile(workspacePath: string): { success: boolean; message: st
   return { success: true, message: `Plugin memory written to ${targetFile}` };
 }
 
+function ensureWorkspaceMemoryIndex(workspacePath: string): { success: boolean; message: string } {
+  const templateFile = join(__dirname, "memory", "MEMORY.md");
+
+  if (!existsSync(templateFile)) {
+    return { success: false, message: "Template MEMORY.md not found in plugin" };
+  }
+
+  const templateContent = readFileSync(templateFile, "utf-8");
+
+  // Extract NEVER FORGET section from template (everything between ## NEVER FORGET and next ## or EOF)
+  const neverForgetMatch = templateContent.match(/## NEVER FORGET\n([\s\S]*?)(?=\n## (?!NEVER)|$)/);
+  if (!neverForgetMatch) {
+    return { success: false, message: "No NEVER FORGET section found in template MEMORY.md" };
+  }
+  const templateNeverForget = neverForgetMatch[1].trimEnd();
+
+  // Check for MEMORY.md or memory.md at workspace root
+  const memoryMdPath = join(workspacePath, "MEMORY.md");
+  const memoryMdLower = join(workspacePath, "memory.md");
+
+  const existingPath = existsSync(memoryMdPath) ? memoryMdPath
+    : existsSync(memoryMdLower) ? memoryMdLower
+    : null;
+
+  if (!existingPath) {
+    // No MEMORY.md exists — create from template
+    writeFileSync(memoryMdPath, templateContent);
+    return { success: true, message: `Created ${memoryMdPath} with NEVER FORGET section` };
+  }
+
+  // MEMORY.md exists — check for NEVER FORGET header
+  let existing = readFileSync(existingPath, "utf-8");
+
+  if (!/## NEVER FORGET/i.test(existing)) {
+    // No NEVER FORGET section — insert after first # heading
+    const firstHeadingEnd = existing.match(/^# .+\n/m);
+    if (firstHeadingEnd) {
+      const insertPos = (firstHeadingEnd.index ?? 0) + firstHeadingEnd[0].length;
+      existing = existing.slice(0, insertPos) + "\n## NEVER FORGET\n" + templateNeverForget + "\n\n" + existing.slice(insertPos);
+    } else {
+      // No heading at all — prepend
+      existing = "# OpenClaw Agent Long-Term Memory\n\n## NEVER FORGET\n" + templateNeverForget + "\n\n" + existing;
+    }
+    writeFileSync(existingPath, existing);
+    return { success: true, message: `Added NEVER FORGET section to ${existingPath}` };
+  }
+
+  // NEVER FORGET exists — merge template items that are missing
+  // Extract existing NEVER FORGET section content
+  const existingNFMatch = existing.match(/## NEVER FORGET\n([\s\S]*?)(?=\n## (?!#)|$)/);
+  const existingNFContent = existingNFMatch ? existingNFMatch[1] : "";
+
+  // Extract individual items (lines starting with *) from template, grouped by subsection
+  const templateLines = templateNeverForget.split("\n");
+  const newLines: string[] = [];
+
+  for (const line of templateLines) {
+    // Add subsection headers and bullet items that don't exist in existing content
+    if (line.startsWith("### ")) {
+      if (!existingNFContent.includes(line)) {
+        newLines.push(line);
+      }
+    } else if (line.startsWith("* ")) {
+      // Check if this bullet's key content already exists (first 50 chars as fingerprint)
+      const fingerprint = line.slice(2, 52).trim();
+      if (!existingNFContent.includes(fingerprint)) {
+        newLines.push(line);
+      }
+    }
+  }
+
+  if (newLines.length === 0) {
+    return { success: true, message: `NEVER FORGET section in ${existingPath} is up to date` };
+  }
+
+  // Append new items at the end of existing NEVER FORGET section
+  const nfEnd = existing.search(/## NEVER FORGET\n[\s\S]*?(?=\n## (?!#)|$)/);
+  if (nfEnd !== -1) {
+    const sectionMatch = existing.match(/## NEVER FORGET\n([\s\S]*?)(?=\n## (?!#)|$)/);
+    if (sectionMatch) {
+      const sectionEnd = (sectionMatch.index ?? 0) + sectionMatch[0].length;
+      const insertion = "\n" + newLines.join("\n") + "\n";
+      existing = existing.slice(0, sectionEnd) + insertion + existing.slice(sectionEnd);
+      writeFileSync(existingPath, existing);
+    }
+  }
+
+  return { success: true, message: `Updated NEVER FORGET section in ${existingPath} (added ${newLines.length} items)` };
+}
+
 function checkMcpBinary(): { available: boolean; path?: string } {
   try {
     const path = execSync("which algorand-mcp", { encoding: "utf-8" }).trim();
@@ -279,6 +369,14 @@ export default function register(api: PluginApi) {
             console.log(`  ✅ ${memResult.message}`);
           } else {
             console.error(`  ❌ ${memResult.message}`);
+          }
+
+          // Step 1b: Ensure MEMORY.md exists at workspace root with NEVER FORGET section
+          const memIndexResult = ensureWorkspaceMemoryIndex(workspacePath);
+          if (memIndexResult.success) {
+            console.log(`  ✅ ${memIndexResult.message}`);
+          } else {
+            console.error(`  ❌ ${memIndexResult.message}`);
           }
 
           // Step 2: Stop any existing algorand-mcp processes
@@ -415,6 +513,14 @@ export default function register(api: PluginApi) {
       console.log("   This plugin provides:");
       console.log("   • 9 Algorand skills (Algorand development in TS and Python, x402, MCP interaction, alpha arcade interaction, haystack router development and interaction)");
       console.log("   • algorand-mcp server (~100 blockchain tools via mcporter)\n");
+
+      // Ensure MEMORY.md exists at workspace root
+      const workspacePath = getWorkspacePath(api);
+      const memIndexResult = ensureWorkspaceMemoryIndex(workspacePath);
+      if (memIndexResult.success) {
+        console.log(`   ✅ ${memIndexResult.message}`);
+      }
+
       // Keyring persistence warning for headless Linux
       try {
         const scriptPath = join(__dirname, "scripts", "setup-keyring.sh");
