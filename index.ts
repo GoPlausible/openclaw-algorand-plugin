@@ -539,6 +539,30 @@ export default function register(api: PluginApi) {
     { name: "algorand.post-install", description: "Show setup instructions on install" }
   );
 
+  // ─────────────────────────────────────────────────────────────
+  // Post-update hook
+  // ─────────────────────────────────────────────────────────────
+  api.registerHook(
+    "plugin:post-update",
+    async () => {
+      console.log("\n🔷 Algorand plugin updated!\n");
+
+      // Ensure MEMORY.md and memory files are up to date
+      const workspacePath = getWorkspacePath(api);
+      const memResult = writeMemoryFile(workspacePath);
+      if (memResult.success) {
+        console.log(`   ✅ ${memResult.message}`);
+      }
+      const memIndexResult = ensureWorkspaceMemoryIndex(workspacePath);
+      if (memIndexResult.success) {
+        console.log(`   ✅ ${memIndexResult.message}`);
+      }
+
+      console.log("\n   Restart OpenClaw gateway to apply changes.\n");
+    },
+    { name: "algorand.post-update", description: "Update memory files on plugin update" }
+  );
+
   api.logger.info(`Algorand plugin registered (skills: 6, MCP: ${ALGORAND_MCP.name})`);
 }
 
