@@ -211,7 +211,19 @@ All prices and quantities use **microunits** (1,000,000 = $1.00 or 1 share). Ord
 
 ## QR Code Display (ARC-26 URI)
 
-When generating QR codes with `generate_algorand_qrcode`, the tool returns:
+`generate_algorand_qrcode` generates an Algorand payment URI and QR code per ARC-26 specification via QRClaw service.
+
+**Parameters:**
+| Parameter | Required | Description |
+|-----------|----------|-------------|
+| `address` | Yes | Receiver Algorand address |
+| `label` | No | Payment label |
+| `amount` | No | Amount in microunits (e.g. 1000000 = 1 ALGO or 1 USDC) |
+| `asset` | No | ASA ID for asset transfers; omit or 0 for ALGO |
+| `note` | No | Payment note |
+| `xnote` | No | Exclusive immutable note |
+
+**Returns:**
 - `qr` — UTF-8 text QR code (terminal-friendly)
 - `uri` — the `algorand://` URI string
 - `link` — shareable hosted QR URL (via QRClaw service)
