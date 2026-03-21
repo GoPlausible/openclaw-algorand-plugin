@@ -229,25 +229,27 @@ All prices and quantities use **microunits** (1,000,000 = $1.00 or 1 share). Ord
 - `link` — shareable hosted QR URL (via QRClaw service)
 - `expires_in` — link validity period
 
-After calling the tool, **extract and paste the QR code directly in your response**.
-**Always include all of these in your reply:**
+**Channel-Aware Output:**
 
-1. **UTF-8 QR block** — Unicode block characters from `qr`. Paste inside a code block.
-2. **URI string** — always show this, users need it for wallet deep links.
-3. **Shareable link** — the hosted QR URL from `link`, so users can share or open it in a browser.
+After calling `generate_algorand_qrcode`, tailor output to the channel:
 
-### Steps to include QR code in reply:
-1. Call the tool and capture output
-2. Extract `qr`, `uri`, and `link` from the response
-3. Include in your reply:
+**TUI / Web channels** (terminal, web UI, canvas):
+1. **UTF-8 QR block** — paste the Unicode block characters from `qr` inside a code fence
+2. **URI string** — the `algorand://` URI for wallet deep links
+3. **Shareable link** — the hosted QR URL from `link`
 
+Example:
 ```
 [paste UTF-8 QR here]
 ```
-
 URI: `algorand://...`
-
 Shareable QR: [link URL]
+
+**Social channels** (Telegram, Discord, WhatsApp, Signal, Slack, IRC, etc.):
+- **Skip** the UTF-8 QR block — too bulky for chat
+- Show only:
+  - **URI string** — for wallet deep links
+  - **Shareable link** — renders nicely in-app as a clickable QR image
 
 ## References
 

@@ -23,7 +23,8 @@
 * `alpha-arcade-interaction` — Load for prediction market trading via MCP tools (browse markets, place orders, manage positions).
 
 ### QR Codes
-* `generate_algorand_qrcode` returns `qr` (UTF-8 text QR), `uri` (algorand:// URI), `link` (shareable hosted QR URL via QRClaw), and `expires_in` (link validity). Always include the UTF-8 QR block, URI string, and shareable link in your response.
+* `generate_algorand_qrcode` returns `qr` (UTF-8 text QR), `uri` (algorand:// URI), `link` (shareable hosted QR URL via QRClaw), and `expires_in` (link validity).
+* **Channel-aware output**: In TUI/Web channels, include UTF-8 QR block + URI + shareable link. In social channels (Telegram, Discord, WhatsApp, Slack, etc.), skip the QR block (too bulky) and show only URI + shareable link.
 
 ### Documentation
 * Use `get_knowledge_doc` MCP tool for Algorand developer documentation (categories: arcs, sdks, algokit, algokit-utils, tealscript, puya, liquid-auth, python, developers, clis, nodes, details).

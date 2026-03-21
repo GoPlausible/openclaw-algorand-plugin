@@ -1,6 +1,6 @@
 {
   "name": "@goplausible/openclaw-algorand-plugin",
-  "version": "1.9.3",
+  "version": "1.9.4",
   "publishConfig": {
     "access": "public"
   },
