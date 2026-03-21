@@ -606,7 +606,7 @@ generate_algorand_qrcode {
 }
 ```
 
-The response includes a URI string and SVG QR code that can be scanned with any Algorand-compatible wallet.
+The response includes `qr` (UTF-8 text QR code), `uri` (the `algorand://` URI), `link` (shareable hosted QR URL via QRClaw), and `expires_in` (link validity period). Share the link or display the QR code for scanning with any Algorand-compatible wallet.
 
 ---
 

@@ -783,44 +783,41 @@ Mainnet asset verification via Pera Wallet API. Use to check if assets are legit
 ## ARC-26 URI Tools
 
 ### generate_algorand_qrcode
-- **Purpose**: Generate an Algorand top up payment or asset transferURI and QR code per ARC-26 specification
+- **Purpose**: Generate an Algorand payment URI and QR code per ARC-26 specification via QRClaw service
 - **Parameters**:
 ```json
 {
   "address": "receiver_address",
   "label": "Payment label",
   "amount": 1000000,
-  "asset": 31566704,// optional, if asset transfer; omit or set to 0 for ALGO
+  "asset": 31566704,
   "note": "Payment note",
-  "xnote": "Exclusive immutable note"
+  "xnote": "Exclusive Immutable note"
 }
 ```
-- **Returns**: UTF-8 text QR code (terminal-friendly), PNG image as base64 (web-friendly), URI string
+- **Returns**: `qr` (UTF-8 text QR code), `uri` (the `algorand://` URI), `link` (shareable hosted QR URL), `expires_in` (link validity period)
 
 ### QR Code Display
 
-**Important:** MCP tool output may not render properly through mcporter → exec pipeline.
 After calling the tool, **extract and paste the QR code directly in your response**.
-**Always include ALL THREE in your reply:**
+**Always include all of these in your reply:**
 
-1. UTF-8 QR block (Unicode block characters)
-2. PNG as markdown image: `![QR](data:image/png;base64,...)`
-3. **URI string** — always show this, users need it for wallet deep links
+1. **UTF-8 QR block** — Unicode block characters from `qr`. Paste inside a code block.
+2. **URI string** — always show this, users need it for wallet deep links.
+3. **Shareable link** — the hosted QR URL from `link`, so users can share or open it in a browser.
 
+**Steps to include QR code in reply:**
 1. Call the tool and capture output
-2. Extract the UTF-8 QR block (Unicode block characters)
-3. Extract the base64 PNG data
-4. Include both in your reply:
+2. Extract `qr`, `uri`, and `link` from the response
+3. Include in your reply:
 
 ```
 [paste UTF-8 QR here]
 ```
 
-![QR Code](data:image/png;base64,[paste base64 here])
-
 URI: `algorand://ADDRESS?amount=X&asset=Y`
 
-This ensures the QR renders correctly in both terminal and web interfaces.
+Shareable QR: [link URL]
 
 ---
 

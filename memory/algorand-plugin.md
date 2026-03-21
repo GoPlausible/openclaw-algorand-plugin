@@ -57,34 +57,30 @@ mcporter call algorand-mcp.search_assets name=USDC network=mainnet
 ## QR Code Display (ARC-26 URI)
 
 When generating QR codes with `generate_algorand_qrcode`, the tool returns:
-- UTF-8 text QR code (terminal-friendly)
-- PNG image as base64 (web-friendly)
-- URI string
+- `qr` — UTF-8 text QR code (terminal-friendly)
+- `uri` — the `algorand://` URI string
+- `link` — shareable hosted QR URL (via QRClaw service)
+- `expires_in` — link validity period
 
-**Important:** MCP tool output may not render properly through mcporter → exec pipeline.
 After calling the tool, **extract and paste the QR code directly in your response**.
-**Always include ALL THREE in your reply, using --raw flag with mcporter to get the full output including image data:**
+**Always include all of these in your reply:**
 
-1. UTF-8 QR block (Unicode block characters) and URI string at the end of the text output.
-2. PNG as markdown image: `![QR](data:image/png;base64,...)`.
-3. **URI string** — always show this, users need it for wallet deep links.
-4. Copy the ENTIRE base64 string exactly — do not reformat, wrap, or edit it.
-5. Verify the ending — PNG base64 typically ends with `==` or a short suffix like `QAAA`.
+1. **UTF-8 QR block** — Unicode block characters from `qr`. Paste inside a code block.
+2. **URI string** — always show this, users need it for wallet deep links.
+3. **Shareable link** — the hosted QR URL from `link`, so users can share or open it in a browser.
 
 ### Steps to include QR code in reply:
-1. Call the tool with --raw flag and capture output
-2. Content's first array member is text and contains the UTF-8 QR block (Unicode block characters) plus URI string
-3. Content's second array member is image and contains the base64 PNG data
-4. Include both in your reply:
+1. Call the tool and capture output
+2. Extract `qr`, `uri`, and `link` from the response
+3. Include in your reply:
 
 ```
 [paste UTF-8 QR here]
 ```
 
-![QR Code](data:image/png;base64,[paste base64 here])
+URI: `algorand://...`
 
-
-This ensures the QR renders correctly in both terminal and web interfaces.
+Shareable QR: [link URL]
 
 ## Key things to remember
 
