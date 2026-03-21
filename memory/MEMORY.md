@@ -23,7 +23,7 @@
 * `alpha-arcade-interaction` — Load for prediction market trading via MCP tools (browse markets, place orders, manage positions).
 
 ### QR Codes
-* When calling `generate_algorand_qrcode`, **USE THE --RAW FLAG** with mcporter to get full output including base64 PNG. Always include UTF-8 QR block, PNG image, and URI string in your response. Copy the ENTIRE base64 string exactly — do not reformat or edit.
+* `generate_algorand_qrcode` returns `qr` (UTF-8 text QR), `uri` (algorand:// URI), `link` (shareable hosted QR URL via QRClaw), and `expires_in` (link validity). Always include the UTF-8 QR block, URI string, and shareable link in your response.
 
 ### Documentation
 * Use `get_knowledge_doc` MCP tool for Algorand developer documentation (categories: arcs, sdks, algokit, algokit-utils, tealscript, puya, liquid-auth, python, developers, clis, nodes, details).
