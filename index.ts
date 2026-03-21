@@ -231,47 +231,117 @@ function ensureWorkspaceMemoryIndex(workspacePath: string): { success: boolean; 
     return { success: true, message: `Added NEVER FORGET section to ${existingPath}` };
   }
 
-  // NEVER FORGET exists — merge template items that are missing
-  // Extract existing NEVER FORGET section content
-  const existingNFMatch = existing.match(/## NEVER FORGET\n([\s\S]*?)(?=\n## (?!#)|$)/);
-  const existingNFContent = existingNFMatch ? existingNFMatch[1] : "";
+  // NEVER FORGET exists — update each subsection individually
+  // Parse template into subsections: { header: string, content: string }[]
+  const parseSubsections = (text: string): { header: string; content: string }[] => {
+    const sections: { header: string; content: string }[] = [];
+    const lines = text.split("\n");
+    let currentHeader = "";
+    let currentLines: string[] = [];
 
-  // Extract individual items (lines starting with *) from template, grouped by subsection
-  const templateLines = templateNeverForget.split("\n");
-  const newLines: string[] = [];
-
-  for (const line of templateLines) {
-    // Add subsection headers and bullet items that don't exist in existing content
-    if (line.startsWith("### ")) {
-      if (!existingNFContent.includes(line)) {
-        newLines.push(line);
-      }
-    } else if (line.startsWith("* ")) {
-      // Check if this bullet's key content already exists (first 50 chars as fingerprint)
-      const fingerprint = line.slice(2, 52).trim();
-      if (!existingNFContent.includes(fingerprint)) {
-        newLines.push(line);
+    for (const line of lines) {
+      if (line.startsWith("### ")) {
+        if (currentHeader) {
+          sections.push({ header: currentHeader, content: currentLines.join("\n").trimEnd() });
+        }
+        currentHeader = line;
+        currentLines = [];
+      } else if (currentHeader) {
+        currentLines.push(line);
       }
     }
-  }
+    if (currentHeader) {
+      sections.push({ header: currentHeader, content: currentLines.join("\n").trimEnd() });
+    }
+    return sections;
+  };
 
-  if (newLines.length === 0) {
+  const templateSections = parseSubsections(templateNeverForget);
+
+  // Extract existing NEVER FORGET section boundaries
+  const nfSectionMatch = existing.match(/(## NEVER FORGET\n)([\s\S]*?)(?=\n## (?!#)|$)/);
+  if (!nfSectionMatch) {
     return { success: true, message: `NEVER FORGET section in ${existingPath} is up to date` };
   }
 
-  // Append new items at the end of existing NEVER FORGET section
-  const nfEnd = existing.search(/## NEVER FORGET\n[\s\S]*?(?=\n## (?!#)|$)/);
-  if (nfEnd !== -1) {
-    const sectionMatch = existing.match(/## NEVER FORGET\n([\s\S]*?)(?=\n## (?!#)|$)/);
-    if (sectionMatch) {
-      const sectionEnd = (sectionMatch.index ?? 0) + sectionMatch[0].length;
-      const insertion = "\n" + newLines.join("\n") + "\n";
-      existing = existing.slice(0, sectionEnd) + insertion + existing.slice(sectionEnd);
-      writeFileSync(existingPath, existing);
+  let nfContent = nfSectionMatch[2];
+  let updated = false;
+
+  for (const templateSec of templateSections) {
+    if (templateSec.header === "### Never Do This") {
+      // Special handling: merge individual bullet items
+      const neverDoRegex = new RegExp(
+        "(### Never Do This\\n)([\\s\\S]*?)(?=\\n### |$)"
+      );
+      const existingNeverDoMatch = nfContent.match(neverDoRegex);
+
+      if (!existingNeverDoMatch) {
+        // Section doesn't exist — append it
+        nfContent = nfContent.trimEnd() + "\n\n" + templateSec.header + "\n" + templateSec.content + "\n";
+        updated = true;
+      } else {
+        // Section exists — check each bullet item
+        let existingBullets = existingNeverDoMatch[2];
+        const templateBullets = templateSec.content.split("\n").filter((l: string) => l.startsWith("* "));
+        const existingBulletLines = existingBullets.split("\n").filter((l: string) => l.startsWith("* "));
+
+        for (const bullet of templateBullets) {
+          // Use first 50 chars after "* " as fingerprint for matching
+          const fingerprint = bullet.slice(2, 52).trim();
+          const existingMatch = existingBulletLines.find(l => l.includes(fingerprint));
+
+          if (existingMatch) {
+            // Item exists — overwrite with template version
+            if (existingMatch !== bullet) {
+              nfContent = nfContent.replace(existingMatch, bullet);
+              updated = true;
+            }
+          } else {
+            // Item doesn't exist — append it
+            existingBullets = existingBullets.trimEnd() + "\n" + bullet;
+            nfContent = nfContent.replace(existingNeverDoMatch[2], existingBullets);
+            updated = true;
+          }
+        }
+      }
+    } else {
+      // Non-"Never Do This" subsections: overwrite entire subsection if exists, add if not
+      const sectionRegex = new RegExp(
+        "(" + templateSec.header.replace(/[.*+?^${}()|[\]\\]/g, "\\$&") + "\\n)([\\s\\S]*?)(?=\\n### |$)"
+      );
+      const existingSecMatch = nfContent.match(sectionRegex);
+
+      if (existingSecMatch) {
+        // Section exists — overwrite its content
+        if (existingSecMatch[2].trimEnd() !== templateSec.content) {
+          nfContent = nfContent.replace(
+            existingSecMatch[0],
+            templateSec.header + "\n" + templateSec.content
+          );
+          updated = true;
+        }
+      } else {
+        // Section doesn't exist — insert before "### Never Do This" or append
+        const neverDoPos = nfContent.indexOf("### Never Do This");
+        if (neverDoPos !== -1) {
+          nfContent = nfContent.slice(0, neverDoPos) + templateSec.header + "\n" + templateSec.content + "\n\n" + nfContent.slice(neverDoPos);
+        } else {
+          nfContent = nfContent.trimEnd() + "\n\n" + templateSec.header + "\n" + templateSec.content + "\n";
+        }
+        updated = true;
+      }
     }
   }
 
-  return { success: true, message: `Updated NEVER FORGET section in ${existingPath} (added ${newLines.length} items)` };
+  if (!updated) {
+    return { success: true, message: `NEVER FORGET section in ${existingPath} is up to date` };
+  }
+
+  // Replace the NEVER FORGET content in the full file
+  existing = existing.replace(nfSectionMatch[2], nfContent);
+  writeFileSync(existingPath, existing);
+
+  return { success: true, message: `Updated NEVER FORGET subsections in ${existingPath}` };
 }
 
 function checkMcpBinary(): { available: boolean; path?: string } {
