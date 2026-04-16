@@ -110,7 +110,26 @@ Always check asset's `decimals` field with `api_algod_get_asset_by_id` before co
 | 3 | `make_*_txn` | Build the transaction |
 | 4 | `wallet_sign_transaction` | Sign with active wallet account (enforces limits) |
 | 5 | `send_raw_transaction` | Submit signed transaction to network |
-| 6 | Query tools | Verify result on-chain |
+| 6 | **Present txID** | Show transaction ID with explorer link (see below) |
+
+### Post-Transaction: Deliver Transaction ID
+
+**ALWAYS** present the transaction ID to the user after any successful transaction submission. Use the correct explorer link based on the network:
+
+| Network | Explorer Link Template |
+|---------|----------------------|
+| `mainnet` | `https://allo.info/tx/{txId}` |
+| `testnet` | `https://lora.algokit.io/testnet/transaction/{txId}` |
+
+Example output after a testnet transaction:
+> Transaction confirmed! `TXID123...`
+> View on explorer: https://lora.algokit.io/testnet/transaction/TXID123...
+
+Example output after a mainnet transaction:
+> Transaction confirmed! `TXID456...`
+> View on explorer: https://allo.info/tx/TXID456...
+
+This applies to ALL transaction types: payments, asset transfers, opt-ins, app calls, atomic groups, and any other operation that yields a transaction ID.
 
 ### One-Step Asset Opt-In
 
@@ -128,6 +147,7 @@ When the user provides their own secret key (not using the wallet):
 | 1 | `make_*_txn` | Build the transaction |
 | 2 | `sign_transaction` | Sign with provided secret key hex |
 | 3 | `send_raw_transaction` | Submit signed transaction |
+| 4 | **Present txID** | Show transaction ID with explorer link |
 
 ## Atomic Group Transaction Workflow
 
@@ -139,6 +159,7 @@ For atomic (all-or-nothing) multi-transaction groups:
 | 2 | `assign_group_id` | Assign group ID to all transactions |
 | 3 | `wallet_sign_transaction_group` | Sign all transactions in group with wallet |
 | 4 | `send_raw_transaction` | Submit all signed transactions |
+| 5 | **Present txIDs** | Show all transaction IDs with explorer links |
 
 ## Tool Categories
 

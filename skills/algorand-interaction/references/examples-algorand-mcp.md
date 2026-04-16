@@ -79,10 +79,21 @@ send_raw_transaction {
 }
 ```
 
-### Step 5: Verify (optional)
+### Step 5: Present transaction ID to user
+
+**ALWAYS** show the transaction ID with the correct explorer link:
+
+- **Mainnet**: `https://allo.info/tx/{txId}`
+- **Testnet**: `https://lora.algokit.io/testnet/transaction/{txId}`
+
+Example (testnet):
+> Transaction confirmed! `[txID_from_step_4]`
+> View on explorer: https://lora.algokit.io/testnet/transaction/[txID_from_step_4]
+
+Optionally verify on-chain:
 ```
 api_indexer_lookup_transaction_by_id {
-  "txId": "[txID_from_step_3]",
+  "txId": "[txID_from_step_4]",
   "network": "testnet"
 }
 ```
@@ -100,7 +111,7 @@ wallet_optin_asset {
 }
 ```
 
-This creates, signs, and submits the opt-in transaction in a single call.
+This creates, signs, and submits the opt-in transaction in a single call. Present the returned txID with explorer link.
 
 ---
 
@@ -141,6 +152,12 @@ send_raw_transaction {
   "network": "testnet"
 }
 ```
+
+### Step 5: Present transaction ID to user
+
+Show the txID with explorer link:
+- **Testnet**: `https://lora.algokit.io/testnet/transaction/{txId}`
+- **Mainnet**: `https://allo.info/tx/{txId}`
 
 ---
 
@@ -204,6 +221,12 @@ send_raw_transaction {
 }
 ```
 
+### Step 8: Present transaction ID to user
+
+Show the txID with explorer link:
+- **Testnet**: `https://lora.algokit.io/testnet/transaction/{txId}`
+- **Mainnet**: `https://allo.info/tx/{txId}`
+
 ---
 
 ## Atomic Group Transaction Workflow
@@ -252,6 +275,12 @@ send_raw_transaction {
 
 > Atomic groups are all-or-nothing: either all transactions succeed or none do.
 
+### Step 5: Present transaction IDs to user
+
+Show all txIDs from the group with explorer links:
+- **Testnet**: `https://lora.algokit.io/testnet/transaction/{txId}`
+- **Mainnet**: `https://allo.info/tx/{txId}`
+
 ---
 
 ## Create an ASA (Algorand Standard Asset)
@@ -298,6 +327,12 @@ api_algod_get_pending_transaction {
 }
 ```
 > The `asset-index` field in the response contains the new ASA ID.
+
+### Step 5: Present transaction ID to user
+
+Show the txID with explorer link:
+- **Testnet**: `https://lora.algokit.io/testnet/transaction/{txId}`
+- **Mainnet**: `https://allo.info/tx/{txId}`
 
 ---
 
@@ -346,6 +381,12 @@ send_raw_transaction {
   "network": "testnet"
 }
 ```
+
+### Step 5: Present transaction ID to user
+
+Show the txID with explorer link:
+- **Testnet**: `https://lora.algokit.io/testnet/transaction/{txId}`
+- **Mainnet**: `https://allo.info/tx/{txId}`
 
 ---
 
@@ -591,6 +632,12 @@ send_raw_transaction {
   "network": "testnet"
 }
 ```
+
+### Step 4: Present transaction ID to user
+
+Show the txID with explorer link:
+- **Testnet**: `https://lora.algokit.io/testnet/transaction/{txId}`
+- **Mainnet**: `https://allo.info/tx/{txId}`
 
 ---
 

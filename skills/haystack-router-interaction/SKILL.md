@@ -76,6 +76,10 @@ All-in-one swap: quote → sign (via wallet) → submit → confirm. Uses the ac
 
 Returns: status, confirmedRound, txIds, signer, nickname, quote details,
          summary (inputAmount, outputAmount, totalFees, transactionCount)
+
+ALWAYS present txIds to user with explorer links after execution:
+  Mainnet: https://allo.info/tx/{txId}
+  Testnet: https://lora.algokit.io/testnet/transaction/{txId}
 ```
 
 ### `api_haystack_needs_optin`
@@ -109,6 +113,11 @@ Step 3: Preview quote (recommended — show user before executing)
 Step 4: User confirms → Execute
   → api_haystack_execute_swap { fromASAID, toASAID, amount, slippage, network }
   → Returns confirmed result with summary
+
+Step 5: Present transaction IDs to user
+  → Show all txIds from the response with explorer links:
+     Mainnet: https://allo.info/tx/{txId}
+     Testnet: https://lora.algokit.io/testnet/transaction/{txId}
 ```
 
 **Key rules:**

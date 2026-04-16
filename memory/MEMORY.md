@@ -26,6 +26,12 @@
 * `generate_algorand_qrcode` returns `qr` (UTF-8 text QR), `uri` (algorand:// URI), `link` (shareable hosted QR URL via QRClaw), and `expires_in` (link validity).
 * **Channel-aware output**: In TUI/Web channels, include UTF-8 QR block + URI + shareable link. In social channels (Telegram, Discord, WhatsApp, Slack, etc.), skip the QR block (too bulky) and show only URI + shareable link.
 
+### Transaction ID Delivery
+* ALWAYS present transaction IDs to the user after any successful transaction submission.
+* **Mainnet** explorer link: `https://allo.info/tx/{txId}`
+* **Testnet** explorer link: `https://lora.algokit.io/testnet/transaction/{txId}`
+* This applies to ALL transaction types: payments, transfers, opt-ins, app calls, atomic groups, Haystack swaps, Alpha Arcade trades, and x402 payments.
+
 ### Documentation
 * Use `get_knowledge_doc` MCP tool for Algorand developer documentation (categories: arcs, sdks, algokit, algokit-utils, tealscript, puya, liquid-auth, python, developers, clis, nodes, details).
 

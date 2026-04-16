@@ -138,6 +138,7 @@ If a trade fails with an "overspend" error, the wallet lacks sufficient ALGO or 
 2. `get_orderbook` — check available liquidity
 3. `create_market_order` (auto-matches) or `create_limit_order` (rests on book)
 4. Save the returned `escrowAppId` — you need it to cancel
+5. **Present txID** — show transaction ID with explorer link (see Post-Transaction below)
 
 ### Checking your portfolio
 1. `get_positions` — see all YES/NO token balances with market titles and asset IDs
@@ -151,15 +152,29 @@ If a trade fails with an "overspend" error, the wallet lacks sufficient ALGO or 
 ### Cancelling an order
 1. `get_open_orders` — find the `escrowAppId` and `owner` address
 2. `cancel_order` with `marketAppId`, `escrowAppId`, and `orderOwner`
+3. **Present txID** — show transaction ID with explorer link
 
 ### Claiming from a resolved market
 1. `get_positions` — find markets with token balances; note the `yesAssetId` or `noAssetId`
 2. `claim` with `marketAppId` and the winning token's `assetId`
+3. **Present txID** — show transaction ID with explorer link
 
 ### Providing liquidity (split/merge)
 1. `split_shares` — convert USDC into equal YES + NO tokens
 2. Place limit orders on both sides of the book for market making
 3. `merge_shares` — convert matched YES + NO tokens back to USDC
+4. **Present txIDs** — show transaction IDs with explorer links for each operation
+
+## Post-Transaction: Deliver Transaction ID
+
+**ALWAYS** present the transaction ID to the user after any successful trading operation (orders, cancellations, amendments, claims, splits, merges). Use the correct explorer link based on the network:
+
+| Network | Explorer Link Template |
+|---------|----------------------|
+| `mainnet` | `https://allo.info/tx/{txId}` |
+| `testnet` | `https://lora.algokit.io/testnet/transaction/{txId}` |
+
+This applies to all Alpha Arcade trading tools: `create_market_order`, `create_limit_order`, `cancel_order`, `amend_order`, `propose_match`, `split_shares`, `merge_shares`, and `claim`.
 
 ## Common Pitfalls
 

@@ -84,6 +84,17 @@ Shareable QR: [link URL]
   - **URI string** — for wallet deep links
   - **Shareable link** — renders nicely in-app as a clickable QR image
 
+## Post-Transaction: Deliver Transaction ID
+
+**ALWAYS** present the transaction ID to the user after any successful transaction. Use the correct explorer link:
+
+| Network | Explorer Link Template |
+|---------|----------------------|
+| `mainnet` | `https://allo.info/tx/{txId}` |
+| `testnet` | `https://lora.algokit.io/testnet/transaction/{txId}` |
+
+This applies to ALL operations that yield a transaction ID: payments, asset transfers, opt-ins, app calls, atomic groups, Haystack Router swaps, Alpha Arcade trades, and x402 payments.
+
 ## Key things to remember
 
 - Always check wallet with `wallet_get_info` before blockchain operations
