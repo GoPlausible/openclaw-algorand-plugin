@@ -1,369 +1,45 @@
+import { definePluginEntry } from "openclaw/plugin-sdk/plugin-entry";
+import { dirname } from "node:path";
+import { fileURLToPath } from "node:url";
+
 import { ALGORAND_MCP, GOPLAUSIBLE_SERVICES } from "./lib/mcp-servers.js";
 import { runSetup, type AlgorandPluginConfig } from "./setup.js";
 import { x402Fetch } from "./lib/x402-fetch.js";
-import { readFileSync, writeFileSync, existsSync, mkdirSync } from "node:fs";
-import { dirname, join } from "node:path";
-import { homedir } from "node:os";
-import { fileURLToPath } from "node:url";
-import { execSync } from "node:child_process";
+import {
+  getMcpBinaryPath,
+  isMcpBinaryBundled,
+  isMcporterConfigured,
+  mcporterConfigPath,
+  upsertMcporterConfig,
+} from "./lib/mcporter.js";
+import {
+  ensureWorkspaceMemoryIndex,
+  resolveWorkspaceDir,
+  runFirstLoadInit,
+  writeMemoryFile,
+  writePluginConfig,
+  type WorkspaceApi,
+} from "./lib/workspace.js";
 
-const __dirname = dirname(fileURLToPath(import.meta.url));
+const PLUGIN_ROOT = dirname(fileURLToPath(import.meta.url));
 const PLUGIN_ID = "openclaw-algorand-plugin";
 
-interface PluginApi {
-  config: {
-    plugins?: {
-      entries?: {
-        "openclaw-algorand-plugin"?: {
-          config?: Partial<AlgorandPluginConfig>;
-        };
-      };
-    };
-    agents?: {
-      defaults?: {
-        workspace?: string;
-      };
-    };
-  };
-  logger: {
-    info: (msg: string) => void;
-    warn: (msg: string) => void;
-    error: (msg: string) => void;
-  };
-  runtime: {
-    openUrl: (url: string) => Promise<void>;
-  };
+type OpenClawPluginApi = WorkspaceApi & {
+  id: string;
+  name: string;
+  version?: string;
+  pluginConfig?: Partial<AlgorandPluginConfig>;
   registerTool: (tool: object, options?: object) => void;
   registerCli: (fn: (ctx: { program: any }) => void, options: { commands: string[] }) => void;
-  registerHook: (event: string, handler: () => Promise<void>, meta: object) => void;
-}
+};
 
-function getWorkspacePath(api: PluginApi): string {
-  return api.config.agents?.defaults?.workspace ||
-    join(homedir(), ".openclaw", "workspace");
-}
+function register(api: OpenClawPluginApi) {
+  const pluginConfig: Partial<AlgorandPluginConfig> = api.pluginConfig ?? {};
+  const workspacePath = resolveWorkspaceDir(api);
 
-function getConfigPath(): string {
-  return join(homedir(), ".openclaw", "openclaw.json");
-}
+  try { runFirstLoadInit(api, PLUGIN_ROOT, workspacePath); }
+  catch (err) { api.logger.warn(`[algorand-plugin] first-load init failed: ${err}`); }
 
-function getMcpBinaryPath(): string {
-  // Check plugin's node_modules first
-  const pluginBin = join(__dirname, "node_modules", ".bin", "algorand-mcp");
-  if (existsSync(pluginBin)) {
-    return pluginBin;
-  }
-  // Fall back to npx
-  return "npx algorand-mcp";
-}
-
-function updatePluginConfig(newConfig: AlgorandPluginConfig): { success: boolean; error?: string } {
-  try {
-    const configPath = getConfigPath();
-    const configDir = dirname(configPath);
-
-    // Create ~/.openclaw directory if it doesn't exist
-    if (!existsSync(configDir)) {
-      mkdirSync(configDir, { recursive: true });
-    }
-
-    // Create config file with empty object if it doesn't exist
-    let config: Record<string, any> = {};
-    if (existsSync(configPath)) {
-      const rawConfig = readFileSync(configPath, "utf-8");
-      config = JSON.parse(rawConfig);
-    }
-
-    // Ensure plugins structure exists
-    if (!config.plugins) config.plugins = {};
-    if (!config.plugins.entries) config.plugins.entries = {};
-    if (!config.plugins.entries[PLUGIN_ID]) {
-      config.plugins.entries[PLUGIN_ID] = {};
-    }
-
-    // Update the plugin config
-    config.plugins.entries[PLUGIN_ID].config = newConfig;
-
-    // Add to plugins.allow if not already there
-    if (!config.plugins.allow) config.plugins.allow = [];
-    if (!config.plugins.allow.includes(PLUGIN_ID)) {
-      config.plugins.allow.push(PLUGIN_ID);
-    }
-
-    // Write back with pretty formatting
-    writeFileSync(configPath, JSON.stringify(config, null, 2));
-
-    return { success: true };
-  } catch (err) {
-    return { success: false, error: String(err) };
-  }
-}
-
-function stopExistingMcpProcesses(): { stopped: number; message: string } {
-  try {
-    // Find all running algorand-mcp processes
-    const psOutput = execSync("ps aux 2>/dev/null || tasklist 2>/dev/null || echo ''", { encoding: "utf-8" });
-    const lines = psOutput.split("\n").filter((line: string) => line.includes("algorand-mcp") && !line.includes("grep"));
-
-    if (lines.length === 0) {
-      return { stopped: 0, message: "No existing algorand-mcp processes found" };
-    }
-
-    // Extract PIDs and kill them
-    let stopped = 0;
-    for (const line of lines) {
-      const parts = line.trim().split(/\s+/);
-      const pid = parts[1]; // PID is second column in ps aux
-      if (pid && /^\d+$/.test(pid)) {
-        try {
-          execSync(`kill ${pid} 2>/dev/null`, { encoding: "utf-8" });
-          stopped++;
-        } catch {
-          // Process may have already exited
-        }
-      }
-    }
-
-    // Brief wait for processes to terminate
-    if (stopped > 0) {
-      execSync("sleep 1");
-    }
-
-    return { stopped, message: `Stopped ${stopped} existing algorand-mcp process${stopped !== 1 ? "es" : ""}` };
-  } catch {
-    return { stopped: 0, message: "Could not check for existing processes" };
-  }
-}
-
-function configureMcporter(): { success: boolean; message: string } {
-  const mcpCommand = getMcpBinaryPath();
-
-  try {
-    // Check if mcporter is available
-    execSync("which mcporter", { encoding: "utf-8" });
-  } catch {
-    return { success: false, message: "mcporter not installed. Install with: npm install -g mcporter" };
-  }
-
-  try {
-    // Check if algorand server already configured
-    const listOutput = execSync("mcporter config list 2>/dev/null || echo ''", { encoding: "utf-8" });
-    if (listOutput.includes("algorand-mcp")) {
-      return { success: true, message: "algorand-mcp server already configured in mcporter" };
-    }
-  } catch {
-    // Continue to add
-  }
-
-  try {
-    // Add algorand server to mcporter config (home scope for global access)
-    const cmd = `mcporter config add algorand-mcp --command "${mcpCommand}" --scope home --description "Algorand blockchain MCP (GoPlausible)"`;
-    execSync(cmd, { encoding: "utf-8" });
-    return { success: true, message: `algorand server added to mcporter (command: ${mcpCommand})` };
-  } catch (err) {
-    return { success: false, message: `Failed to configure mcporter: ${err}` };
-  }
-}
-
-function writeMemoryFile(workspacePath: string): { success: boolean; message: string } {
-  const sourceFile = join(__dirname, "memory", "algorand-plugin.md");
-  const memoryDir = join(workspacePath, "memory");
-  const targetFile = join(memoryDir, "algorand-plugin.md");
-
-  if (!existsSync(sourceFile)) {
-    return { success: false, message: `Source memory/algorand-plugin.md not found at ${sourceFile}` };
-  }
-
-  if (!existsSync(memoryDir)) {
-    mkdirSync(memoryDir, { recursive: true });
-  }
-
-  const content = readFileSync(sourceFile, "utf-8");
-  writeFileSync(targetFile, content);
-
-  return { success: true, message: `Plugin memory written to ${targetFile}` };
-}
-
-function ensureWorkspaceMemoryIndex(workspacePath: string): { success: boolean; message: string } {
-  const templateFile = join(__dirname, "memory", "MEMORY.md");
-
-  if (!existsSync(templateFile)) {
-    return { success: false, message: "Template MEMORY.md not found in plugin" };
-  }
-
-  const templateContent = readFileSync(templateFile, "utf-8");
-
-  // Extract NEVER FORGET section from template (everything between ## NEVER FORGET and next ## or EOF)
-  const neverForgetMatch = templateContent.match(/## NEVER FORGET\n([\s\S]*?)(?=\n## (?!NEVER)|$)/);
-  if (!neverForgetMatch) {
-    return { success: false, message: "No NEVER FORGET section found in template MEMORY.md" };
-  }
-  const templateNeverForget = neverForgetMatch[1].trimEnd();
-
-  // Check for MEMORY.md or memory.md at workspace root
-  const memoryMdPath = join(workspacePath, "MEMORY.md");
-  const memoryMdLower = join(workspacePath, "memory.md");
-
-  const existingPath = existsSync(memoryMdPath) ? memoryMdPath
-    : existsSync(memoryMdLower) ? memoryMdLower
-    : null;
-
-  if (!existingPath) {
-    // No MEMORY.md exists — create from template
-    writeFileSync(memoryMdPath, templateContent);
-    return { success: true, message: `Created ${memoryMdPath} with NEVER FORGET section` };
-  }
-
-  // MEMORY.md exists — check for NEVER FORGET header
-  let existing = readFileSync(existingPath, "utf-8");
-
-  if (!/## NEVER FORGET/i.test(existing)) {
-    // No NEVER FORGET section — insert after first # heading
-    const firstHeadingEnd = existing.match(/^# .+\n/m);
-    if (firstHeadingEnd) {
-      const insertPos = (firstHeadingEnd.index ?? 0) + firstHeadingEnd[0].length;
-      existing = existing.slice(0, insertPos) + "\n## NEVER FORGET\n" + templateNeverForget + "\n\n" + existing.slice(insertPos);
-    } else {
-      // No heading at all — prepend
-      existing = "# OpenClaw Agent Long-Term Memory\n\n## NEVER FORGET\n" + templateNeverForget + "\n\n" + existing;
-    }
-    writeFileSync(existingPath, existing);
-    return { success: true, message: `Added NEVER FORGET section to ${existingPath}` };
-  }
-
-  // NEVER FORGET exists — update each subsection individually
-  // Parse template into subsections: { header: string, content: string }[]
-  const parseSubsections = (text: string): { header: string; content: string }[] => {
-    const sections: { header: string; content: string }[] = [];
-    const lines = text.split("\n");
-    let currentHeader = "";
-    let currentLines: string[] = [];
-
-    for (const line of lines) {
-      if (line.startsWith("### ")) {
-        if (currentHeader) {
-          sections.push({ header: currentHeader, content: currentLines.join("\n").trimEnd() });
-        }
-        currentHeader = line;
-        currentLines = [];
-      } else if (currentHeader) {
-        currentLines.push(line);
-      }
-    }
-    if (currentHeader) {
-      sections.push({ header: currentHeader, content: currentLines.join("\n").trimEnd() });
-    }
-    return sections;
-  };
-
-  const templateSections = parseSubsections(templateNeverForget);
-
-  // Extract existing NEVER FORGET section boundaries
-  const nfSectionMatch = existing.match(/(## NEVER FORGET\n)([\s\S]*?)(?=\n## (?!#)|$)/);
-  if (!nfSectionMatch) {
-    return { success: true, message: `NEVER FORGET section in ${existingPath} is up to date` };
-  }
-
-  let nfContent = nfSectionMatch[2];
-  let updated = false;
-
-  for (const templateSec of templateSections) {
-    if (templateSec.header === "### Never Do This") {
-      // Special handling: merge individual bullet items
-      const neverDoRegex = new RegExp(
-        "(### Never Do This\\n)([\\s\\S]*?)(?=\\n### |$)"
-      );
-      const existingNeverDoMatch = nfContent.match(neverDoRegex);
-
-      if (!existingNeverDoMatch) {
-        // Section doesn't exist — append it
-        nfContent = nfContent.trimEnd() + "\n\n" + templateSec.header + "\n" + templateSec.content + "\n";
-        updated = true;
-      } else {
-        // Section exists — check each bullet item
-        let existingBullets = existingNeverDoMatch[2];
-        const templateBullets = templateSec.content.split("\n").filter((l: string) => l.startsWith("* "));
-        const existingBulletLines = existingBullets.split("\n").filter((l: string) => l.startsWith("* "));
-
-        for (const bullet of templateBullets) {
-          // Use first 50 chars after "* " as fingerprint for matching
-          const fingerprint = bullet.slice(2, 52).trim();
-          const existingMatch = existingBulletLines.find(l => l.includes(fingerprint));
-
-          if (existingMatch) {
-            // Item exists — overwrite with template version
-            if (existingMatch !== bullet) {
-              nfContent = nfContent.replace(existingMatch, bullet);
-              updated = true;
-            }
-          } else {
-            // Item doesn't exist — append it
-            existingBullets = existingBullets.trimEnd() + "\n" + bullet;
-            nfContent = nfContent.replace(existingNeverDoMatch[2], existingBullets);
-            updated = true;
-          }
-        }
-      }
-    } else {
-      // Non-"Never Do This" subsections: overwrite entire subsection if exists, add if not
-      const sectionRegex = new RegExp(
-        "(" + templateSec.header.replace(/[.*+?^${}()|[\]\\]/g, "\\$&") + "\\n)([\\s\\S]*?)(?=\\n### |$)"
-      );
-      const existingSecMatch = nfContent.match(sectionRegex);
-
-      if (existingSecMatch) {
-        // Section exists — overwrite its content
-        if (existingSecMatch[2].trimEnd() !== templateSec.content) {
-          nfContent = nfContent.replace(
-            existingSecMatch[0],
-            templateSec.header + "\n" + templateSec.content
-          );
-          updated = true;
-        }
-      } else {
-        // Section doesn't exist — insert before "### Never Do This" or append
-        const neverDoPos = nfContent.indexOf("### Never Do This");
-        if (neverDoPos !== -1) {
-          nfContent = nfContent.slice(0, neverDoPos) + templateSec.header + "\n" + templateSec.content + "\n\n" + nfContent.slice(neverDoPos);
-        } else {
-          nfContent = nfContent.trimEnd() + "\n\n" + templateSec.header + "\n" + templateSec.content + "\n";
-        }
-        updated = true;
-      }
-    }
-  }
-
-  if (!updated) {
-    return { success: true, message: `NEVER FORGET section in ${existingPath} is up to date` };
-  }
-
-  // Replace the NEVER FORGET content in the full file
-  existing = existing.replace(nfSectionMatch[2], nfContent);
-  writeFileSync(existingPath, existing);
-
-  return { success: true, message: `Updated NEVER FORGET subsections in ${existingPath}` };
-}
-
-function checkMcpBinary(): { available: boolean; path?: string } {
-  try {
-    const path = execSync("which algorand-mcp", { encoding: "utf-8" }).trim();
-    return { available: true, path };
-  } catch {
-    // Check plugin's node_modules
-    const pluginBin = join(__dirname, "node_modules", ".bin", "algorand-mcp");
-    if (existsSync(pluginBin)) {
-      return { available: true, path: pluginBin };
-    }
-    return { available: false };
-  }
-}
-
-export default function register(api: PluginApi) {
-  const pluginConfig = api.config.plugins?.entries?.[PLUGIN_ID]?.config ?? {};
-
-  // ─────────────────────────────────────────────────────────────
-  // x402 Fetch Tool
-  // ─────────────────────────────────────────────────────────────
   if (pluginConfig.enableX402 !== false) {
     api.registerTool(
       {
@@ -373,10 +49,7 @@ export default function register(api: PluginApi) {
         parameters: {
           type: "object",
           properties: {
-            url: {
-              type: "string",
-              description: "The URL to fetch",
-            },
+            url: { type: "string", description: "The URL to fetch" },
             method: {
               type: "string",
               description: "HTTP method (default: GET)",
@@ -388,25 +61,18 @@ export default function register(api: PluginApi) {
               description: "Additional request headers as key-value pairs",
               additionalProperties: { type: "string" },
             },
-            body: {
-              type: "string",
-              description: "Request body (for POST/PUT/PATCH)",
-            },
+            body: { type: "string", description: "Request body (for POST/PUT/PATCH)" },
             paymentHeader: {
               type: "string",
-              description:
-                "JSON string for X-PAYMENT header — the signed payment payload from the x402 payment flow",
+              description: "JSON string for X-PAYMENT header — the signed payment payload from the x402 payment flow",
             },
           },
           required: ["url"],
         },
-        async execute(_id: string, params: {
-          url: string;
-          method?: string;
-          headers?: Record<string, string>;
-          body?: string;
-          paymentHeader?: string;
-        }) {
+        async execute(
+          _id: string,
+          params: { url: string; method?: string; headers?: Record<string, string>; body?: string; paymentHeader?: string },
+        ) {
           const result = await x402Fetch(params);
           return { content: [{ type: "text", text: JSON.stringify(result, null, 2) }] };
         },
@@ -415,128 +81,62 @@ export default function register(api: PluginApi) {
     );
   }
 
-  // ─────────────────────────────────────────────────────────────
-  // CLI Commands
-  // ─────────────────────────────────────────────────────────────
   api.registerCli(
     ({ program }) => {
       const algorand = program
         .command("algorand-plugin")
         .description("Algorand blockchain integration (GoPlausible)");
 
-      // Setup command - initializes (memory + mcporter) then runs interactive config
       algorand
         .command("setup")
-        .description("Initialize and configure Algorand plugin")
+        .description("Reconfigure Algorand plugin (interactive)")
         .action(async () => {
-          console.log("\n🔷 Setting up Algorand plugin...\n");
+          console.log("\n🔷 Reconfiguring Algorand plugin...\n");
 
-          const workspacePath = getWorkspacePath(api);
+          const mem = writeMemoryFile(PLUGIN_ROOT, workspacePath);
+          console.log(`  ${mem.success ? "✅" : "❌"} ${mem.message}`);
 
-          // Step 1: Write memory file
-          const memResult = writeMemoryFile(workspacePath);
-          if (memResult.success) {
-            console.log(`  ✅ ${memResult.message}`);
-          } else {
-            console.error(`  ❌ ${memResult.message}`);
-          }
+          const memIdx = ensureWorkspaceMemoryIndex(PLUGIN_ROOT, workspacePath);
+          console.log(`  ${memIdx.success ? "✅" : "❌"} ${memIdx.message}`);
 
-          // Step 1b: Ensure MEMORY.md exists at workspace root with NEVER FORGET section
-          const memIndexResult = ensureWorkspaceMemoryIndex(workspacePath);
-          if (memIndexResult.success) {
-            console.log(`  ✅ ${memIndexResult.message}`);
-          } else {
-            console.error(`  ❌ ${memIndexResult.message}`);
-          }
+          const mcp = upsertMcporterConfig(PLUGIN_ROOT);
+          console.log(`  ${mcp.success ? "✅" : "⚠️"} ${mcp.message}`);
 
-          // Step 2: Stop any existing algorand-mcp processes
-          const stopResult = stopExistingMcpProcesses();
-          if (stopResult.stopped > 0) {
-            console.log(`  ✅ ${stopResult.message}`);
-          } else {
-            console.log(`  ℹ️  ${stopResult.message}`);
-          }
-
-          // Step 3: Configure mcporter
-          console.log("");
-          const mcpResult = configureMcporter();
-          if (mcpResult.success) {
-            console.log(`  ✅ ${mcpResult.message}`);
-          } else {
-            console.log(`  ⚠️  ${mcpResult.message}`);
-          }
-
-          // Step 4: Interactive config
           console.log("");
           const newConfig = await runSetup(pluginConfig);
           if (newConfig) {
-            const result = updatePluginConfig(newConfig);
+            const result = writePluginConfig(newConfig as unknown as Record<string, unknown>);
             if (result.success) {
               console.log("\n✅ Config saved to ~/.openclaw/openclaw.json");
-              console.log("   Plugin added to plugins.allow list.");
-              console.log("   Restart gateway to apply changes: openclaw gateway restart\n");
+              console.log("   Restart gateway to apply: openclaw gateway restart\n");
             } else {
               console.error(`\n❌ Failed to save config: ${result.error}`);
-              console.log("   You can manually add to ~/.openclaw/openclaw.json:");
-              console.log(`   "plugins": { "allow": ["${PLUGIN_ID}"], "entries": { "${PLUGIN_ID}": { "config": ${JSON.stringify(newConfig)} } } }\n`);
             }
           }
-
-          console.log("  Run `mcporter list algorand-mcp --schema` to verify MCP tools.\n");
         });
 
-      // Status command
       algorand
         .command("status")
         .description("Show Algorand plugin status")
         .action(() => {
-          const mcp = checkMcpBinary();
-
-          // Check mcporter config
-          let mcporterConfigured = false;
-          try {
-            const list = execSync("mcporter config list 2>/dev/null || echo ''", { encoding: "utf-8" });
-            mcporterConfigured = list.includes("algorand-mcp");
-          } catch { }
+          const mcpBinary = getMcpBinaryPath(PLUGIN_ROOT);
+          const bundled = isMcpBinaryBundled(PLUGIN_ROOT);
+          const mcporterOk = isMcporterConfigured();
 
           console.log("\n🔷 Algorand Plugin Status\n");
           console.log("  Skills:");
-          console.log("    • algorand-development");
-          console.log("    • algorand-typescript");
-          console.log("    • algorand-python");
-          console.log("    • algorand-interaction");
-          console.log("    • algorand-x402-typescript");
-          console.log("    • algorand-x402-python");
+          for (const s of [
+            "algorand-development", "algorand-typescript", "algorand-python",
+            "algorand-interaction", "algorand-x402-typescript", "algorand-x402-python",
+            "haystack-router-development", "haystack-router-interaction", "alpha-arcade-interaction",
+          ]) console.log(`    • ${s}`);
           console.log("");
           console.log("  MCP Server:");
-          console.log(`    Binary:    ${mcp.available ? `✅ ${mcp.path}` : "⚠️  Not found"}`);
-          console.log(`    mcporter:  ${mcporterConfigured ? "✅ Configured" : "⚠️  Not configured (run setup)"}`);
+          console.log(`    Binary:    ${bundled ? `✅ ${mcpBinary}` : "⚠️  Not bundled (reinstall plugin)"}`);
+          console.log(`    mcporter:  ${mcporterOk ? `✅ Configured (${mcporterConfigPath()})` : "⚠️  Not configured (run setup)"}`);
           console.log("");
           console.log("  Config:");
           console.log(`    x402:      ${pluginConfig.enableX402 !== false ? "Enabled" : "Disabled"}`);
-          console.log("");
-
-          // Keyring status
-          try {
-            const scriptPath = join(__dirname, "scripts", "setup-keyring.sh");
-            const keyringOutput = execSync(`bash "${scriptPath}" --detect`, { encoding: "utf-8", timeout: 5000 });
-            const vars = Object.fromEntries(
-              keyringOutput.trim().split("\n").map((line: string) => line.split("=", 2))
-            );
-            console.log("  Keyring:");
-            if (vars.PERSISTENT === "true") {
-              console.log(`    Storage:   ✅ ${vars.BACKEND}`);
-              console.log(`    Wallets:   ${vars.WALLET_DB_COUNT} account(s) in wallet.db`);
-            } else {
-              console.log(`    Storage:   ⚠️  ${vars.BACKEND} — run \`openclaw algorand-plugin setup\``);
-              if (parseInt(vars.WALLET_DB_COUNT) > 0) {
-                console.log(`    Wallets:   ⚠️  ${vars.WALLET_DB_COUNT} account(s) with mnemonics in volatile storage!`);
-              }
-            }
-          } catch {
-            console.log("  Keyring:");
-            console.log("    Storage:   ❓ Could not detect");
-          }
           console.log("");
           console.log("  Links:");
           console.log(`    GoPlausible: ${GOPLAUSIBLE_SERVICES.website}`);
@@ -546,18 +146,16 @@ export default function register(api: PluginApi) {
           console.log("");
         });
 
-      // MCP config helper (for external coding agents)
       algorand
         .command("mcp-config")
-        .description("Show MCP config snippet for coding agents (Claude Code, Cursor, etc.)")
+        .description("Show MCP config snippet for external coding agents (Claude Code, Cursor, etc.)")
         .action(() => {
-          const mcp = checkMcpBinary();
-          const command = mcp.path || "npx algorand-mcp";
+          const command = getMcpBinaryPath(PLUGIN_ROOT);
 
           console.log("\n🔷 Algorand MCP Configuration\n");
           console.log("  For external coding agents, add this to their MCP config:\n");
-          console.log("  Claude Code (.mcp.json):");
-          console.log("  ─────────────────────────");
+          console.log("  Claude Code (.mcp.json) / Cursor (.cursor/mcp.json):");
+          console.log("  ──────────────────────────────────────────────────");
           console.log(`  {`);
           console.log(`    "mcpServers": {`);
           console.log(`      "algorand": {`);
@@ -566,75 +164,22 @@ export default function register(api: PluginApi) {
           console.log(`      }`);
           console.log(`    }`);
           console.log(`  }\n`);
-          console.log("  Cursor (.cursor/mcp.json) — same format\n");
-          console.log("  Note: OpenClaw uses mcporter. Run `openclaw algorand-plugin setup` to configure.\n");
+          console.log(`  OpenClaw uses mcporter (~/.mcporter/mcporter.json); the plugin registers`);
+          console.log(`  algorand-mcp automatically on first load.\n`);
         });
     },
-    { commands: ["algorand-plugin"] }
+    { commands: ["algorand-plugin"] },
   );
 
-  // ─────────────────────────────────────────────────────────────
-  // Post-install hook
-  // ─────────────────────────────────────────────────────────────
-  api.registerHook(
-    "plugin:post-install",
-    async () => {
-      console.log("\n🔷 Algorand plugin installed!\n");
-      console.log("   This plugin provides:");
-      console.log("   • 9 Algorand skills (Algorand development in TS and Python, x402, MCP interaction, alpha arcade interaction, haystack router development and interaction)");
-      console.log("   • algorand-mcp server (~100 blockchain tools via mcporter)\n");
-
-      // Ensure MEMORY.md exists at workspace root
-      const workspacePath = getWorkspacePath(api);
-      const memIndexResult = ensureWorkspaceMemoryIndex(workspacePath);
-      if (memIndexResult.success) {
-        console.log(`   ✅ ${memIndexResult.message}`);
-      }
-
-      // Keyring persistence warning for headless Linux
-      try {
-        const scriptPath = join(__dirname, "scripts", "setup-keyring.sh");
-        const keyringOutput = execSync(`bash "${scriptPath}" --detect`, { encoding: "utf-8", timeout: 5000 });
-        if (keyringOutput.includes("PERSISTENT=false")) {
-          console.log("   ⚠️  Headless Linux detected — wallet keys use in-memory storage.");
-          console.log("   Run `openclaw algorand-plugin setup` for persistent storage.\n");
-        }
-      } catch { /* ignore on install */ }
-
-      console.log("   Next steps:");
-      console.log("   1. Run `openclaw algorand-plugin setup` — initialize + configure plugin");
-      console.log("   2. Restart OpenClaw gateway\n");
-      console.log(`   Docs: ${GOPLAUSIBLE_SERVICES.website}\n`);
-    },
-    { name: "algorand.post-install", description: "Show setup instructions on install" }
-  );
-
-  // ─────────────────────────────────────────────────────────────
-  // Post-update hook
-  // ─────────────────────────────────────────────────────────────
-  api.registerHook(
-    "plugin:post-update",
-    async () => {
-      console.log("\n🔷 Algorand plugin updated!\n");
-
-      // Ensure MEMORY.md and memory files are up to date
-      const workspacePath = getWorkspacePath(api);
-      const memResult = writeMemoryFile(workspacePath);
-      if (memResult.success) {
-        console.log(`   ✅ ${memResult.message}`);
-      }
-      const memIndexResult = ensureWorkspaceMemoryIndex(workspacePath);
-      if (memIndexResult.success) {
-        console.log(`   ✅ ${memIndexResult.message}`);
-      }
-
-      console.log("\n   Restart OpenClaw gateway to apply changes.\n");
-    },
-    { name: "algorand.post-update", description: "Update memory files on plugin update" }
-  );
-
-  api.logger.info(`Algorand plugin registered (skills: 6, MCP: ${ALGORAND_MCP.name})`);
+  api.logger.info(`Algorand plugin registered (skills: 9, MCP: ${ALGORAND_MCP.name})`);
 }
+
+export default definePluginEntry({
+  id: PLUGIN_ID,
+  name: "Algorand Integration",
+  description: "Algorand blockchain integration with MCP and skills — by GoPlausible",
+  register,
+});
 
 export const id = PLUGIN_ID;
 export const name = "Algorand Integration";
