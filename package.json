@@ -43,7 +43,7 @@
   },
   "dependencies": {
     "@clack/prompts": "^0.7.0",
-    "@goplausible/algorand-mcp": "^3.9.6"
+    "@goplausible/algorand-mcp": "^4.2.2"
   },
   "peerDependencies": {
     "openclaw": ">=2026.3.14"
