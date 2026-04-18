@@ -1,0 +1,13 @@
+.notes/
+.claude/
+.git/
+node_modules/
+dist/
+*.patch
+*.diff
+package-lock.json
+.DS_Store
+.env
+.env.*
+tsconfig.json
+AGENTS.md
