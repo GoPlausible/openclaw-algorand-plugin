@@ -33,6 +33,9 @@
   ],
   "openclaw": {
     "extensions": ["./index.ts"],
+    "build": {
+      "openclawVersion": "2026.3.14"
+    },
     "compat": {
       "pluginApi": ">=2026.3.14",
       "minGatewayVersion": "2026.3.14"
