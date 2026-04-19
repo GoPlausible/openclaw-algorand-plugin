@@ -2,7 +2,7 @@
   "id": "openclaw-algorand-plugin",
   "name": "Algorand Integration",
   "description": "Algorand blockchain integration with MCP and skills — by GoPlausible",
-  "version": "2.0.2",
+  "version": "2.0.3",
   "skills": [
     "skills/algorand-development",
     "skills/algorand-typescript",
