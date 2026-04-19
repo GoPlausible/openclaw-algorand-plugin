@@ -23,6 +23,12 @@
   "license": "MIT",
   "type": "module",
   "main": "index.ts",
+  "scripts": {
+    "tag": "git tag -a \"v$npm_package_version\" -m \"v$npm_package_version\" && git push origin \"v$npm_package_version\"",
+    "retag": "git tag -d \"v$npm_package_version\" 2>/dev/null; git push origin \":refs/tags/v$npm_package_version\" 2>/dev/null; git tag -a \"v$npm_package_version\" -m \"v$npm_package_version\" && git push origin \"v$npm_package_version\"",
+    "publish:npm": "npm publish --access public",
+    "publish:clawhub": "clawhub package publish . --family code-plugin --name @goplausible/openclaw-algorand-plugin --display-name 'Algorand Plugin' --version \"$npm_package_version\" --tags latest --source-repo GoPlausible/openclaw-algorand-plugin --source-commit \"$(git rev-parse \"v$npm_package_version\")\" --source-ref \"v$npm_package_version\""
+  },
   "files": [
     "index.ts",
     "setup.ts",
