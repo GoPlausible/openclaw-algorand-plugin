@@ -44,8 +44,9 @@ function SwapInterface() {
   const [quote, setQuote] = useState<SwapQuote | null>(null)
 
   const getQuote = async () => {
+    const haystackApiKey = import.meta.env.VITE_HAYSTACK_API_KEY
     const router = new RouterClient({
-      apiKey: import.meta.env.VITE_HAYSTACK_API_KEY,
+      apiKey: haystackApiKey,
       autoOptIn: true,
     })
 
@@ -64,8 +65,9 @@ function SwapInterface() {
   const executeSwap = async () => {
     if (!quote || !activeAddress) return
 
+    const haystackApiKey = import.meta.env.VITE_HAYSTACK_API_KEY
     const router = new RouterClient({
-      apiKey: import.meta.env.VITE_HAYSTACK_API_KEY,
+      apiKey: haystackApiKey,
       autoOptIn: true,
     })
 
@@ -147,13 +149,14 @@ function SwapWithAutoRefresh() {
     return () => clearTimeout(timer)
   }, [amount])
 
+  const haystackApiKey = import.meta.env.VITE_HAYSTACK_API_KEY
   const router = useMemo(
     () =>
       new RouterClient({
-        apiKey: import.meta.env.VITE_HAYSTACK_API_KEY,
+        apiKey: haystackApiKey,
         autoOptIn: true,
       }),
-    [],
+    [haystackApiKey],
   )
 
   const isValidRequest =

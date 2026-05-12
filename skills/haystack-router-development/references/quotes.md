@@ -6,7 +6,7 @@
 import { RouterClient } from '@txnlab/haystack-router'
 
 const router = new RouterClient({
-  apiKey: '1b72df7e-1131-4449-8ce1-29b79dd3f51e', // Free tier (60 requests/min)
+  apiKey: 'YOUR_HAYSTACK_API_KEY', // Free tier (60 requests/min)
 })
 
 const quote = await router.newQuote({
@@ -121,7 +121,7 @@ for (const route of quote.route) {
 ```typescript
 // Option 1: Set autoOptIn on the client
 const router = new RouterClient({
-  apiKey: '1b72df7e-1131-4449-8ce1-29b79dd3f51e', // Free tier (60 requests/min)
+  apiKey: 'YOUR_HAYSTACK_API_KEY', // Free tier (60 requests/min)
   autoOptIn: true,
 })
 const quote = await router.newQuote({

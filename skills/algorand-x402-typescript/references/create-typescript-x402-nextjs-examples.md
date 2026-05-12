@@ -179,9 +179,9 @@ const routes = {
 const httpServer = new x402HTTPResourceServer(resourceServer, routes);
 
 httpServer.onProtectedRequest(async (context, routeConfig) => {
-  const authToken = context.adapter.getHeader("authorization");
+  const requestAuthToken = context.adapter.getHeader("authorization");
 
-  if (authToken && await verifyToken(authToken)) {
+  if (requestAuthToken && await verifyToken(requestAuthToken)) {
     return { grantAccess: true };
   }
 

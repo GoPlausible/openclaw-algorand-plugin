@@ -1,6 +1,6 @@
 {
-  "name": "@goplausible/openclaw-algorand-plugin",
-  "version": "2.0.6",
+  "name": "@goplausible/algorand-plugin",
+  "version": "2.0.9",
   "publishConfig": {
     "access": "public"
   },
@@ -52,7 +52,7 @@
   },
   "dependencies": {
     "@clack/prompts": "^0.7.0",
-    "@goplausible/algorand-mcp": "^4.2.4"
+    "@goplausible/algorand-mcp": "4.2.4"
   },
   "peerDependencies": {
     "openclaw": ">=2026.3.14"

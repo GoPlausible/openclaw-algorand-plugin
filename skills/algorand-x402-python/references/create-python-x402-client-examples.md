@@ -146,14 +146,14 @@ class AlgorandSigner:
 
 async def main():
     avm_private_key = os.environ["AVM_PRIVATE_KEY"]
-    secret_key = base64.b64decode(avm_private_key)
-    if len(secret_key) != 64:
+    decoded_signing_key = base64.b64decode(avm_private_key)
+    if len(decoded_signing_key) != 64:
         raise ValueError("AVM_PRIVATE_KEY must be a Base64-encoded 64-byte key")
 
-    avm_address = algosdk.encoding.encode_address(secret_key[32:])
+    avm_address = algosdk.encoding.encode_address(decoded_signing_key[32:])
     print(f"Algorand address: {avm_address}")
 
-    signer = AlgorandSigner(secret_key, avm_address)
+    signer = AlgorandSigner(decoded_signing_key, avm_address)
     x402 = x402Client()
     register_exact_avm_client(x402, signer)
 
@@ -371,14 +371,14 @@ class AlgorandSigner:
 
 def main():
     avm_private_key = os.environ["AVM_PRIVATE_KEY"]
-    secret_key = base64.b64decode(avm_private_key)
-    if len(secret_key) != 64:
+    decoded_signing_key = base64.b64decode(avm_private_key)
+    if len(decoded_signing_key) != 64:
         raise ValueError("AVM_PRIVATE_KEY must be a Base64-encoded 64-byte key")
 
-    avm_address = algosdk.encoding.encode_address(secret_key[32:])
+    avm_address = algosdk.encoding.encode_address(decoded_signing_key[32:])
     print(f"Algorand address: {avm_address}")
 
-    signer = AlgorandSigner(secret_key, avm_address)
+    signer = AlgorandSigner(decoded_signing_key, avm_address)
     x402 = x402ClientSync()
     register_exact_avm_client(x402, signer)
 

@@ -96,12 +96,12 @@ import base64
 from algosdk import encoding
 
 avm_private_key = os.environ["AVM_PRIVATE_KEY"]
-secret_key = base64.b64decode(avm_private_key)
-if len(secret_key) != 64:
+decoded_signing_key = base64.b64decode(avm_private_key)
+if len(decoded_signing_key) != 64:
     raise ValueError("AVM_PRIVATE_KEY must be a Base64-encoded 64-byte key")
 
-avm_address = encoding.encode_address(secret_key[32:])
-signer = AlgorandSigner(secret_key, avm_address)
+avm_address = encoding.encode_address(decoded_signing_key[32:])
+signer = AlgorandSigner(decoded_signing_key, avm_address)
 ```
 
 ### Step 4: Register and Make Requests

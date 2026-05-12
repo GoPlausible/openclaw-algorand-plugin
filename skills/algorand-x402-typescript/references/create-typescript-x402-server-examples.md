@@ -134,8 +134,8 @@ const routes = {
 const httpServer = new x402HTTPResourceServer(resourceServer, routes);
 
 httpServer.onProtectedRequest(async (context, routeConfig) => {
-  const apiKey = context.adapter.getHeader("x-api-key");
-  if (apiKey && apiKey === process.env.API_KEY) {
+  const incomingApiKey = context.adapter.getHeader("x-api-key");
+  if (incomingApiKey && incomingApiKey === process.env.API_KEY) {
     return { grantAccess: true };
   }
   return undefined;

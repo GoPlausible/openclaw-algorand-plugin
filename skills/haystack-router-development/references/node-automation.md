@@ -12,7 +12,7 @@ npm install @txnlab/haystack-router algosdk
 
 ```bash
 # .env
-HAYSTACK_API_KEY=1b72df7e-1131-4449-8ce1-29b79dd3f51e  # Free tier (60 requests/min)
+HAYSTACK_API_KEY=YOUR_HAYSTACK_API_KEY  # Free tier (60 requests/min)
 ```
 
 ## Complete Example

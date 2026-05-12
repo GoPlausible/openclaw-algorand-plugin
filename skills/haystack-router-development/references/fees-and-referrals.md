@@ -10,7 +10,7 @@
 
 ```typescript
 const router = new RouterClient({
-  apiKey: '1b72df7e-1131-4449-8ce1-29b79dd3f51e', // Free tier (60 requests/min)
+  apiKey: 'YOUR_HAYSTACK_API_KEY', // Free tier (60 requests/min)
   feeBps: 15, // 0.15%
 })
 ```
@@ -36,7 +36,7 @@ Pass your Algorand address as the `referrerAddress` when creating the RouterClie
 
 ```typescript
 const router = new RouterClient({
-  apiKey: '1b72df7e-1131-4449-8ce1-29b79dd3f51e', // Free tier (60 requests/min)
+  apiKey: 'YOUR_HAYSTACK_API_KEY', // Free tier (60 requests/min)
   referrerAddress: 'YOUR_ALGORAND_ADDRESS',
 })
 ```

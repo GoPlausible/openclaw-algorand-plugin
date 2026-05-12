@@ -17,7 +17,7 @@ npm install @txnlab/haystack-router algosdk
 import { RouterClient } from '@txnlab/haystack-router'
 
 const router = new RouterClient({
-  apiKey: '1b72df7e-1131-4449-8ce1-29b79dd3f51e', // Free tier (60 requests/min)
+  apiKey: 'YOUR_HAYSTACK_API_KEY', // Free tier (60 requests/min)
 })
 ```
 
@@ -25,7 +25,7 @@ const router = new RouterClient({
 
 ```typescript
 const router = new RouterClient({
-  apiKey: '1b72df7e-1131-4449-8ce1-29b79dd3f51e', // Free tier (60 requests/min)
+  apiKey: 'YOUR_HAYSTACK_API_KEY', // Free tier (60 requests/min)
   autoOptIn: true, // Auto-detect asset opt-in needs
   referrerAddress: 'ABC...', // Earn 25% of swap fees
   feeBps: 15, // Fee in basis points (default: 10)
@@ -39,7 +39,7 @@ Override the algod connection and API base URL for TestNet:
 
 ```typescript
 const router = new RouterClient({
-  apiKey: '1b72df7e-1131-4449-8ce1-29b79dd3f51e', // Free tier (60 requests/min)
+  apiKey: 'YOUR_HAYSTACK_API_KEY', // Free tier (60 requests/min)
   algodUri: 'https://testnet-api.4160.nodely.dev/',
   // Set apiBaseUrl if using a TestNet-specific API endpoint
 })
@@ -51,7 +51,7 @@ const router = new RouterClient({
 import { RouterClient } from '@txnlab/haystack-router'
 
 const router = new RouterClient({
-  apiKey: '1b72df7e-1131-4449-8ce1-29b79dd3f51e', // Free tier (60 requests/min)
+  apiKey: 'YOUR_HAYSTACK_API_KEY', // Free tier (60 requests/min)
 })
 
 // Get a quote: swap 1 ALGO → USDC

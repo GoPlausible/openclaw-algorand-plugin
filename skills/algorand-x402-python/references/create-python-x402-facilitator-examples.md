@@ -224,9 +224,9 @@ from algosdk.v2client import algod
 app = FastAPI(title="x402-avm Facilitator Service")
 
 # Build signer
-SECRET_KEY = base64.b64decode(os.environ["AVM_PRIVATE_KEY"])
-ADDRESS = encoding.encode_address(SECRET_KEY[32:])
-SIGNING_KEY = base64.b64encode(SECRET_KEY).decode()
+DECODED_SIGNING_KEY = base64.b64decode(os.environ["AVM_PRIVATE_KEY"])
+ADDRESS = encoding.encode_address(DECODED_SIGNING_KEY[32:])
+SIGNING_KEY = base64.b64encode(DECODED_SIGNING_KEY).decode()
 
 
 class FacilitatorSigner:

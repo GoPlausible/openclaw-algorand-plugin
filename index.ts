@@ -22,7 +22,7 @@ import {
 } from "./lib/workspace.js";
 
 const PLUGIN_ROOT = dirname(fileURLToPath(import.meta.url));
-const PLUGIN_ID = "ßalgorand-plugin";
+const PLUGIN_ID = "algorand-plugin";
 
 type OpenClawPluginApi = WorkspaceApi & {
   id: string;
