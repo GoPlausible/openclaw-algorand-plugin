@@ -482,17 +482,6 @@ Direct algod node queries. All accept optional `network`, `itemsPerPage`, `pageT
 
 Historical blockchain queries. All accept optional `network`, `itemsPerPage`, `pageToken`.
 
-### api_indexer_lookup_account_by_id
-- **Purpose**: Get historical account information
-- **Parameters**: `{ "address": "ALGO_ADDRESS", "network": "testnet" }`
-
-### api_indexer_lookup_account_assets
-- **Purpose**: Get all assets held by an account
-- **Parameters**: `{ "address": "ALGO_ADDRESS", "network": "testnet" }`
-
-### api_indexer_lookup_account_app_local_states
-- **Purpose**: Get all application local states for an account
-- **Parameters**: `{ "address": "ALGO_ADDRESS", "network": "testnet" }`
 
 ### api_indexer_lookup_account_created_applications
 - **Purpose**: Get all applications created by an account
@@ -502,9 +491,6 @@ Historical blockchain queries. All accept optional `network`, `itemsPerPage`, `p
 - **Purpose**: Search for accounts with various filters
 - **Parameters**: `{ "assetId": 31566704, "limit": 10, "network": "testnet" }`
 
-### api_indexer_lookup_applications
-- **Purpose**: Get application information from indexer
-- **Parameters**: `{ "appId": 123456, "network": "testnet" }`
 
 ### api_indexer_lookup_application_logs
 - **Purpose**: Get application log messages
@@ -514,17 +500,6 @@ Historical blockchain queries. All accept optional `network`, `itemsPerPage`, `p
 - **Purpose**: Search for applications with filters
 - **Parameters**: `{ "limit": 10, "network": "testnet" }`
 
-### api_indexer_lookup_application_box
-- **Purpose**: Get a specific application box from indexer
-- **Parameters**: `{ "appId": 123456, "boxName": "box_name", "network": "testnet" }`
-
-### api_indexer_lookup_application_boxes
-- **Purpose**: Get all boxes for an application from indexer
-- **Parameters**: `{ "appId": 123456, "network": "testnet" }`
-
-### api_indexer_lookup_asset_by_id
-- **Purpose**: Get asset information and configuration
-- **Parameters**: `{ "assetId": 31566704, "network": "testnet" }`
 
 ### api_indexer_lookup_asset_balances
 - **Purpose**: Get all accounts holding a specific asset
