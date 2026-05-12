@@ -23,13 +23,13 @@
 From [ClawHub](https://clawhub.ai):
 
 ```bash
-clawhub install @goplausible/openclaw-algorand-plugin
+clawhub install @goplausible/algorand-plugin
 ```
 
 Or from a local path (source code):
 
 ```bash
-openclaw plugins install ./path/to/openclaw-algorand-plugin
+openclaw plugins install ./path/to/algorand-plugin
 ```
 
 ## Configuration
@@ -56,7 +56,7 @@ The plugin performs only **declarative file writes** — no shell scripts, no sy
 | `~/.mcporter/mcporter.json` | First load + `setup` | Idempotently adds an `algorand-mcp` entry pointing at the bundled binary. Existing entries for other servers are preserved. |
 | `<agent-workspace>/memory/algorand-plugin.md` | First load + `setup` | Writes the plugin's Algorand routing guide for the agent. |
 | `<agent-workspace>/MEMORY.md` | First load + `setup` | Adds a `## NEVER FORGET` block (or updates its subsections) if not already present. Existing content is preserved. |
-| `<agent-workspace>/.openclaw/openclaw-algorand-plugin.initialized` | First load | Marker file so first-load init is skipped on subsequent gateway starts. |
+| `<agent-workspace>/.openclaw/algorand-plugin.initialized` | First load | Marker file so first-load init is skipped on subsequent gateway starts. |
 | `~/.openclaw/openclaw.json` | When you run `openclaw algorand-plugin setup` and confirm | Persists the plugin config (`enableX402`). |
 
 The plugin does **not**:
@@ -103,14 +103,14 @@ When `enableX402` is enabled (default), the plugin registers the `x402_fetch` to
 
 ## Plugin Config
 
-Config lives in `~/.openclaw/openclaw.json` under `plugins.entries.openclaw-algorand-plugin.config`:
+Config lives in `~/.openclaw/openclaw.json` under `plugins.entries.algorand-plugin.config`:
 
 ```json
 {
   "plugins": {
-    "allow": ["openclaw-algorand-plugin"],
+    "allow": ["algorand-plugin"],
     "entries": {
-      "openclaw-algorand-plugin": {
+      "algorand-plugin": {
         "config": {
           "enableX402": true
         }

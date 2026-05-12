@@ -4,7 +4,7 @@ import { homedir } from "node:os";
 
 import { upsertMcporterConfig } from "./mcporter.js";
 
-const PLUGIN_ID = "openclaw-algorand-plugin";
+const PLUGIN_ID = "algorand-plugin";
 
 export type WorkspaceApi = {
   logger: { info: (m: string) => void; warn: (m: string) => void; error: (m: string) => void };
