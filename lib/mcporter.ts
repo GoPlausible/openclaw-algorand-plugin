@@ -6,7 +6,12 @@ import { ALGORAND_MCP } from "./mcp-servers.js";
 
 export function getMcpBinaryPath(pluginRoot: string): string {
   const pluginBin = join(pluginRoot, "node_modules", ".bin", "algorand-mcp");
-  return existsSync(pluginBin) ? pluginBin : "algorand-mcp";
+  if (!existsSync(pluginBin)) {
+    throw new Error(
+      `algorand-mcp not found at ${pluginBin}. Reinstall the Algorand plugin to restore the bundled MCP binary; PATH fallback is disabled to prevent running an unintended algorand-mcp implementation.`,
+    );
+  }
+  return pluginBin;
 }
 
 export function isMcpBinaryBundled(pluginRoot: string): boolean {
@@ -59,8 +64,15 @@ export function upsertMcporterConfig(pluginRoot: string): { success: boolean; me
     }
   }
 
+  let binaryPath: string;
+  try {
+    binaryPath = getMcpBinaryPath(pluginRoot);
+  } catch (err) {
+    return { success: false, message: (err as Error).message };
+  }
+
   const entry: McporterServerEntry = {
-    command: getMcpBinaryPath(pluginRoot),
+    command: binaryPath,
     description: "Algorand blockchain MCP (GoPlausible)",
   };
 

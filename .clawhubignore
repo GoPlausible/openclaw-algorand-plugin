@@ -2,7 +2,6 @@
 .claude/
 .git/
 node_modules/
-dist/
 *.patch
 *.diff
 package-lock.json

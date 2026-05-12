@@ -10,8 +10,7 @@ export type WorkspaceApi = {
   logger: { info: (m: string) => void; warn: (m: string) => void; error: (m: string) => void };
   runtime?: {
     agent?: {
-      resolveAgentWorkspaceDir?: () => string;
-      ensureAgentWorkspace?: () => Promise<string> | string;
+      resolveAgentWorkspaceDir?: (...args: any[]) => string;
     };
   };
   config: Record<string, unknown>;
@@ -20,7 +19,7 @@ export type WorkspaceApi = {
 export function resolveWorkspaceDir(api: WorkspaceApi): string {
   const rt = api.runtime?.agent;
   if (rt?.resolveAgentWorkspaceDir) {
-    try { return rt.resolveAgentWorkspaceDir(); } catch { /* fall through */ }
+    try { return (rt.resolveAgentWorkspaceDir as (...args: any[]) => string)(api.config, "default"); } catch { /* fall through */ }
   }
   const cfg = api.config as { agents?: { defaults?: { workspace?: string } } };
   return cfg.agents?.defaults?.workspace ?? join(homedir(), ".openclaw", "workspace");
