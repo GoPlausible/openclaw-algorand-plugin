@@ -4,7 +4,6 @@
 node_modules/
 *.patch
 *.diff
-package-lock.json
 .DS_Store
 .env
 .env.*

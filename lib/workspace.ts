@@ -173,6 +173,10 @@ export function runFirstLoadInit(api: WorkspaceApi, pluginRoot: string, workspac
   const markerDir = dirname(markerPath);
   if (!existsSync(markerDir)) mkdirSync(markerDir, { recursive: true });
 
+  api.logger.info(
+    `[algorand-plugin] First-load setup: writing Algorand routing memory to ${workspacePath}/memory/algorand-plugin.md, adding a "NEVER FORGET" section to ${workspacePath}/MEMORY.md, registering algorand-mcp in ~/.mcporter/mcporter.json, and creating ${markerPath} so this runs only once. Review or remove any of these files at any time to opt out.`,
+  );
+
   const mem = writeMemoryFile(pluginRoot, workspacePath);
   if (mem.success) api.logger.info(`[algorand-plugin] ${mem.message}`);
   else api.logger.warn(`[algorand-plugin] ${mem.message}`);
