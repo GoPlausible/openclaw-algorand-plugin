@@ -4,17 +4,17 @@
 
 All Algorand MCP Haystack Router tools accept a `network` parameter:
 
-- `"mainnet"` — MainNet (default)
-- `"testnet"` — TestNet
+- `"testnet"` — TestNet (**default if omitted**, algorand-mcp 4.2.5+)
+- `"mainnet"` — MainNet — pass only when the user explicitly names mainnet
 
 ```
 → api_haystack_get_swap_quote {
-    fromASAID: 0, toASAID: 31566704, amount: 1000000,
-    network: "testnet"
+    fromASAID: 0, toASAID: 31566704, amount: 1000000
+    // network defaults to "testnet"
   }
 ```
 
-Default to **testnet** during development; confirm with user before using mainnet.
+Mainnet is never implicit. Switch to mainnet only on an explicit user instruction, and confirm the full swap before execution.
 
 ## Slippage
 

@@ -40,21 +40,10 @@ export function writeMemoryFile(pluginRoot: string, workspacePath: string): { su
   return { success: true, message: `Plugin memory written to ${targetFile}` };
 }
 
-export function ensureWorkspaceMemoryIndex(pluginRoot: string, workspacePath: string): { success: boolean; message: string } {
-  const templateFile = join(pluginRoot, "memory", "MEMORY.md");
+const POINTER_MARKER = "<!-- algorand-plugin:index -->";
+const POINTER_LINE = `- [Algorand plugin](memory/algorand-plugin.md) — load when the user mentions Algorand, ALGO, ASA, wallet, x402, AlgoKit, PuyaTs/PuyaPy, Haystack, Alpha Arcade, NFD, or any on-chain Algorand operation. ${POINTER_MARKER}`;
 
-  if (!existsSync(templateFile)) {
-    return { success: false, message: "Template MEMORY.md not found in plugin" };
-  }
-
-  const templateContent = readFileSync(templateFile, "utf-8");
-
-  const neverForgetMatch = templateContent.match(/## NEVER FORGET\n([\s\S]*?)(?=\n## (?!NEVER)|$)/);
-  if (!neverForgetMatch) {
-    return { success: false, message: "No NEVER FORGET section found in template MEMORY.md" };
-  }
-  const templateNeverForget = neverForgetMatch[1].trimEnd();
-
+export function ensureWorkspaceMemoryIndex(_pluginRoot: string, workspacePath: string): { success: boolean; message: string } {
   const memoryMdPath = join(workspacePath, "MEMORY.md");
   const memoryMdLower = join(workspacePath, "memory.md");
 
@@ -64,106 +53,40 @@ export function ensureWorkspaceMemoryIndex(pluginRoot: string, workspacePath: st
 
   if (!existingPath) {
     if (!existsSync(workspacePath)) mkdirSync(workspacePath, { recursive: true });
-    writeFileSync(memoryMdPath, templateContent);
-    return { success: true, message: `Created ${memoryMdPath} with NEVER FORGET section` };
+    const initial = `# OpenClaw Agent Long-Term Memory\n\n## Plugin Routing\n\n${POINTER_LINE}\n`;
+    writeFileSync(memoryMdPath, initial);
+    return { success: true, message: `Created ${memoryMdPath} with Algorand plugin pointer (one line)` };
   }
 
   let existing = readFileSync(existingPath, "utf-8");
 
-  if (!/## NEVER FORGET/i.test(existing)) {
-    const firstHeadingEnd = existing.match(/^# .+\n/m);
-    if (firstHeadingEnd) {
-      const insertPos = (firstHeadingEnd.index ?? 0) + firstHeadingEnd[0].length;
-      existing = existing.slice(0, insertPos) + "\n## NEVER FORGET\n" + templateNeverForget + "\n\n" + existing.slice(insertPos);
+  if (existing.includes(POINTER_MARKER)) {
+    const escapedMarker = POINTER_MARKER.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+    const lineRegex = new RegExp(`^.*${escapedMarker}.*$`, "m");
+    const currentMatch = existing.match(lineRegex);
+    if (currentMatch && currentMatch[0] !== POINTER_LINE) {
+      existing = existing.replace(lineRegex, POINTER_LINE);
+      writeFileSync(existingPath, existing);
+      return { success: true, message: `Refreshed Algorand plugin pointer in ${existingPath}` };
+    }
+    return { success: true, message: `Algorand plugin pointer already present in ${existingPath}` };
+  }
+
+  const routingHeading = existing.match(/^## Plugin Routing\n/m);
+  if (routingHeading) {
+    const insertPos = (routingHeading.index ?? 0) + routingHeading[0].length;
+    existing = existing.slice(0, insertPos) + POINTER_LINE + "\n" + existing.slice(insertPos);
+  } else {
+    const firstHeading = existing.match(/^# .+\n/m);
+    if (firstHeading) {
+      const insertPos = (firstHeading.index ?? 0) + firstHeading[0].length;
+      existing = existing.slice(0, insertPos) + "\n## Plugin Routing\n\n" + POINTER_LINE + "\n\n" + existing.slice(insertPos);
     } else {
-      existing = "# OpenClaw Agent Long-Term Memory\n\n## NEVER FORGET\n" + templateNeverForget + "\n\n" + existing;
-    }
-    writeFileSync(existingPath, existing);
-    return { success: true, message: `Added NEVER FORGET section to ${existingPath}` };
-  }
-
-  const parseSubsections = (text: string): { header: string; content: string }[] => {
-    const sections: { header: string; content: string }[] = [];
-    const lines = text.split("\n");
-    let currentHeader = "";
-    let currentLines: string[] = [];
-    for (const line of lines) {
-      if (line.startsWith("### ")) {
-        if (currentHeader) sections.push({ header: currentHeader, content: currentLines.join("\n").trimEnd() });
-        currentHeader = line;
-        currentLines = [];
-      } else if (currentHeader) {
-        currentLines.push(line);
-      }
-    }
-    if (currentHeader) sections.push({ header: currentHeader, content: currentLines.join("\n").trimEnd() });
-    return sections;
-  };
-
-  const templateSections = parseSubsections(templateNeverForget);
-  const nfSectionMatch = existing.match(/(## NEVER FORGET\n)([\s\S]*?)(?=\n## (?!#)|$)/);
-  if (!nfSectionMatch) {
-    return { success: true, message: `NEVER FORGET section in ${existingPath} is up to date` };
-  }
-
-  let nfContent = nfSectionMatch[2];
-  let updated = false;
-
-  for (const templateSec of templateSections) {
-    if (templateSec.header === "### Never Do This") {
-      const neverDoRegex = /(### Never Do This\n)([\s\S]*?)(?=\n### |$)/;
-      const existingNeverDoMatch = nfContent.match(neverDoRegex);
-
-      if (!existingNeverDoMatch) {
-        nfContent = nfContent.trimEnd() + "\n\n" + templateSec.header + "\n" + templateSec.content + "\n";
-        updated = true;
-      } else {
-        let existingBullets = existingNeverDoMatch[2];
-        const templateBullets = templateSec.content.split("\n").filter((l: string) => l.startsWith("* "));
-        const existingBulletLines = existingBullets.split("\n").filter((l: string) => l.startsWith("* "));
-
-        for (const bullet of templateBullets) {
-          const fingerprint = bullet.slice(2, 52).trim();
-          const existingMatch = existingBulletLines.find((l: string) => l.includes(fingerprint));
-          if (existingMatch) {
-            if (existingMatch !== bullet) {
-              nfContent = nfContent.replace(existingMatch, bullet);
-              updated = true;
-            }
-          } else {
-            existingBullets = existingBullets.trimEnd() + "\n" + bullet;
-            nfContent = nfContent.replace(existingNeverDoMatch[2], existingBullets);
-            updated = true;
-          }
-        }
-      }
-    } else {
-      const escapedHeader = templateSec.header.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
-      const sectionRegex = new RegExp("(" + escapedHeader + "\\n)([\\s\\S]*?)(?=\\n### |$)");
-      const existingSecMatch = nfContent.match(sectionRegex);
-
-      if (existingSecMatch) {
-        if (existingSecMatch[2].trimEnd() !== templateSec.content) {
-          nfContent = nfContent.replace(existingSecMatch[0], templateSec.header + "\n" + templateSec.content);
-          updated = true;
-        }
-      } else {
-        const neverDoPos = nfContent.indexOf("### Never Do This");
-        if (neverDoPos !== -1) {
-          nfContent = nfContent.slice(0, neverDoPos) + templateSec.header + "\n" + templateSec.content + "\n\n" + nfContent.slice(neverDoPos);
-        } else {
-          nfContent = nfContent.trimEnd() + "\n\n" + templateSec.header + "\n" + templateSec.content + "\n";
-        }
-        updated = true;
-      }
+      existing = "## Plugin Routing\n\n" + POINTER_LINE + "\n\n" + existing;
     }
   }
-
-  if (!updated) return { success: true, message: `NEVER FORGET section in ${existingPath} is up to date` };
-
-  existing = existing.replace(nfSectionMatch[2], nfContent);
   writeFileSync(existingPath, existing);
-  return { success: true, message: `Updated NEVER FORGET subsections in ${existingPath}` };
+  return { success: true, message: `Added Algorand plugin pointer to ${existingPath}` };
 }
 
 export function runFirstLoadInit(api: WorkspaceApi, pluginRoot: string, workspacePath: string): void {
@@ -174,7 +97,7 @@ export function runFirstLoadInit(api: WorkspaceApi, pluginRoot: string, workspac
   if (!existsSync(markerDir)) mkdirSync(markerDir, { recursive: true });
 
   api.logger.info(
-    `[algorand-plugin] First-load setup: writing Algorand routing memory to ${workspacePath}/memory/algorand-plugin.md, adding a "NEVER FORGET" section to ${workspacePath}/MEMORY.md, registering algorand-mcp in ~/.mcporter/mcporter.json, and creating ${markerPath} so this runs only once. Review or remove any of these files at any time to opt out.`,
+    `[algorand-plugin] First-load setup: writing Algorand routing reference to ${workspacePath}/memory/algorand-plugin.md, adding a single pointer line under "## Plugin Routing" in ${workspacePath}/MEMORY.md (no always-loaded NEVER FORGET block), registering algorand-mcp in ~/.mcporter/mcporter.json, and creating ${markerPath} so this runs only once. The agent loads the routing reference on demand when Algorand keywords appear; remove the pointer line or the reference file to opt out.`,
   );
 
   const mem = writeMemoryFile(pluginRoot, workspacePath);

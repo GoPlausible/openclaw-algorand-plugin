@@ -28,10 +28,10 @@ Every Haystack Router tool accepts a `network` parameter:
 
 | Value | Description |
 |-------|-------------|
-| `mainnet` | Algorand mainnet (default) — **real value, exercise caution** |
-| `testnet` | Algorand testnet — safe for development |
+| `testnet` | Algorand testnet — **default if omitted** (algorand-mcp 4.2.5+), safe for development |
+| `mainnet` | Algorand mainnet — **real value, exercise caution**. Pass only when the user explicitly names mainnet |
 
-Default to `testnet` during development. Always confirm with the user before mainnet swaps.
+Mainnet is never implicit. If the user does not name a network, use testnet. Switch to mainnet only on an explicit user instruction, and confirm the full swap (input/output asset, amount, quote) before execution.
 
 ## Algorand MCP Haystack Router Tools
 

@@ -101,11 +101,11 @@ Every tool that interacts with the blockchain accepts a `network` parameter:
 
 | Value | Description |
 |-------|-------------|
-| `mainnet` | Algorand mainnet (default if omitted) — **real value, exercise caution** |
-| `testnet` | Algorand testnet — safe for development and testing |
+| `testnet` | Algorand testnet — **default if omitted** (algorand-mcp 4.2.5+), safe for development and testing |
+| `mainnet` | Algorand mainnet — **real value, exercise caution**. Pass only when the user explicitly names mainnet |
 | `localnet` | Local development network (requires `ALGORAND_LOCALNET_URL` env var) |
 
-Always confirm with the user which network to use before transactions. Default to `testnet` during development.
+Always confirm with the user which network to use before any signing/sending operation. Mainnet is never implicit — it must be explicitly named by the user and confirmed per-action.
 
 ### Session Start Checklist
 

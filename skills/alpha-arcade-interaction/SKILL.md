@@ -187,7 +187,7 @@ This applies to all Alpha Arcade trading tools: `create_market_order`, `create_l
 - **Save escrowAppId**: It's the only way to cancel or amend your order later.
 - **USDC opt-in**: The wallet must be opted into USDC (ASA 31566704) before trading.
 - **Wallet required for trading**: Read-only tools work without a wallet, but trading tools require an active wallet account. Check via `wallet_get_info` and if no wallet existed, add one using `wallet_add_account`.
-- **Mainnet by default**: The server defaults to mainnet. Real money is at stake. Pass `network: "testnet"` for testing.
+- **Testnet by default** (algorand-mcp 4.2.5+): the server defaults to testnet. Mainnet trading involves real money — pass `network: "mainnet"` only when the user has explicitly asked to trade on mainnet, and confirm the full order (market, side, price, size, USDC collateral) before submission.
 
 ## Links
 
