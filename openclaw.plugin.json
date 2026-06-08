@@ -2,7 +2,7 @@
   "id": "algorand-plugin",
   "name": "Algorand Integration",
   "description": "Algorand blockchain integration with MCP and skills — by GoPlausible",
-  "version": "2.1.3",
+  "version": "2.1.4",
   "skills": [
     "skills/algorand-development",
     "skills/algorand-typescript",
