@@ -11,7 +11,6 @@ Interact with Algorand blockchain through the Algorand MCP server (104+ tools ac
 
 - **Secure signing** — use `wallet_*` tools to sign; private keys are never available to you
 - **Multi-network** — supports `mainnet`, `testnet`, and `localnet`
-- **Spending limits** — per-transaction (`allowance`) and daily (`dailyAllowance`) limits enforced by wallet
 
 ## mcporter Syntax (Critical)
 
@@ -42,7 +41,7 @@ Key points:
 **At EVERY session start:**
 
 1. **Check wallet**: `wallet_get_info` with target `network` — verify an account exists and is active
-2. **If no accounts**: Guide user to create one with `wallet_add_account` (sets nickname and spending limits)
+2. **If no accounts**: Guide user to create one with `wallet_add_account` (sets nickname)
 3. **If needs funding**: Generate ARC-26 QR with `generate_algorand_qrcode` or direct to testnet faucet: https://lora.algokit.io/testnet/fund
 4. **If needs USDC funding**: Generate ARC-26 QR with `generate_algorand_qrcode` or direct to testnet faucet: https://faucet.circle.com/
 5. **Confirm network**: Always confirm which network (`mainnet`, `testnet`, `localnet`) before transactions
@@ -67,8 +66,7 @@ Before ANY transaction:
 2. **Asset Opt-In**: Verify with `api_algod_get_account_asset_info` before ASA transfers
 3. **Fees**: Every txn costs 0.001 ALGO (1,000 microAlgos) minimum
 4. **Balance Check**: Fetch current balance with `wallet_get_info` or `api_algod_get_account_info`
-5. **Spending Limits**: Wallet enforces per-transaction (`allowance`) and daily (`dailyAllowance`) limits. Setting either to `0` means **unlimited**
-6. **Order**: Fund account with ALGO first, then asset transactions
+5. **Order**: Fund account with ALGO first, then asset transactions
 
 ## Common Mainnet Assets
 
@@ -108,7 +106,7 @@ Always check asset's `decimals` field with `api_algod_get_asset_by_id` before co
 | 1 | `wallet_get_info` | Verify active account, check balance |
 | 2 | Query tools | Get blockchain data (account info, asset info, etc.) |
 | 3 | `make_*_txn` | Build the transaction |
-| 4 | `wallet_sign_transaction` | Sign with active wallet account (enforces limits) |
+| 4 | `wallet_sign_transaction` | Sign with active wallet account |
 | 5 | `send_raw_transaction` | Submit signed transaction to network |
 | 6 | **Present txID** | Show transaction ID with explorer link (see below) |
 
@@ -290,7 +288,6 @@ When using NFD (`.algo` names), always use the `depositAccount` field from the N
 - Never log, display, or store mnemonics or secret keys — use `wallet_*` tools for signing
 - Verify recipient addresses with `validate_address` — transactions are irreversible
 - Verify asset IDs on-chain and check verification tier with `api_pera_asset_verification_status` — scam tokens use similar names
-- Respect wallet spending limits — if rejected, inform user rather than bypassing
 
 ## Links
 

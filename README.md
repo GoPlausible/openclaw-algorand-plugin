@@ -89,7 +89,7 @@ The plugin bundles [`@goplausible/algorand-mcp`](https://www.npmjs.com/package/@
 
 - **107 tools** across 13 categories (wallet, transactions, algod, indexer, NFD, Tinyman, Haystack Router, Pera verification, Alpha Arcade, TEAL, knowledge base, and more)
 - **Multi-network**: `mainnet`, `testnet`, `localnet`
-- **Secure wallet**: Per-transaction and daily spending limits, private keys never exposed to agents
+- **Secure wallet**: private keys not exposed to agents
 
 Wallet persistence is handled by `algorand-mcp` itself. The plugin does not install, configure, or manage any keyring software — it simply registers the MCP server with mcporter and lets the MCP server own wallet storage.
 
