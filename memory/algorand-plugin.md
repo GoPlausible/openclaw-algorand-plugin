@@ -2,8 +2,8 @@
 
 This plugin enables four core capabilities:
 
-1. **Algorand Development** — Smart contracts, typed clients, React frontends via AlgoKit CLI and skills
-2. **Blockchain Interaction** — Algorand MCP server (107 tools) via mcporter (includes Pera asset verification)
+1. **Blockchain Interaction** — Algorand MCP server (107 tools) via mcporter (includes Pera asset verification)
+2. **Algorand Development** — Smart contracts, typed clients, React frontends via AlgoKit CLI and skills
 3. **x402 Payment Protocol** — HTTP-native payments with Algorand as first-class chain
 4. **Haystack Router** — DEX aggregator/smart order routing on Algorand (Tinyman V2, Pact, Folks)
 5. **Alpha Arcade** — On-chain prediction markets on Algorand (USDC-denominated, binary/multi-choice)
