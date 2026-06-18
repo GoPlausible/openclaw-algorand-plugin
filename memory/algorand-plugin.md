@@ -23,7 +23,6 @@ The plugin can prepare and sign **real blockchain transactions** that move value
 * `algorand-development` — Load for AlgoKit CLI, project setup, example search, and general development workflows.
 * `algorand-typescript` — Load for TypeScript/PuyaTs smart contract development, testing with Vitest, typed clients, React frontends.
 * `algorand-python` — Load for Python/PuyaPy smart contract development, algopy decorators, Python AlgoKit Utils.
-* `algorand-x402-payment` — Load for runtime x402 payments (OpenClaw as client) — ALWAYS load on HTTP 402 responses to follow the atomic group payment pattern.
 * `algorand-x402-typescript` — Load for building x402 payment apps in TypeScript (clients, servers, facilitators, paywalls, Next.js).
 * `algorand-x402-python` — Load for building x402 payment apps in Python (clients, servers, facilitators, Bazaar discovery).
 * `algorand-interaction` also covers x402 payment workflows — ALWAYS load it on HTTP 402 responses to follow the atomic group payment pattern.
@@ -38,7 +37,6 @@ The plugin can prepare and sign **real blockchain transactions** that move value
 | Development | TypeScript contracts & tools | `algorand-typescript` |
 | Development | Python contracts & tools | `algorand-python` |
 | Interaction | Blockchain interaction via MCP | `algorand-interaction` |
-| x402 |  x402 payments interactions and Runtime x402 payments | `algorand-x402-payment` |
 | x402 | TypeScript x402 development | `algorand-x402-typescript` |
 | x402 | Python x402 development | `algorand-x402-python` |
 | Haystack | Build swap apps with SDK | `haystack-router-development` |
