@@ -12,8 +12,9 @@
   - `algorand-typescript` — TypeScript smart contracts (PuyaTs)
   - `algorand-python` — Python smart contracts (PuyaPy)
   - `algorand-interaction` — Blockchain interaction via MCP (wallet, transactions, swaps, NFD)
-  - `algorand-x402-typescript` — x402 payments in TypeScript
-  - `algorand-x402-python` — x402 payments in Python
+  - `algorand-x402-payment` — x402 payments for Algorand.
+  - `algorand-x402-typescript` — x402 payments development in TypeScript
+  - `algorand-x402-python` — x402 payments development in Python
   - `haystack-router-development` — DEX aggregator SDK integration
   - `haystack-router-interaction` — Best-price swaps via MCP tools
   - `alpha-arcade-interaction` — Prediction markets interaction
