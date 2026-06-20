@@ -1,5 +1,6 @@
 import { definePluginEntry } from "openclaw/plugin-sdk/plugin-entry";
-import { dirname } from "node:path";
+import { existsSync, readFileSync } from "node:fs";
+import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
 
 import { ALGORAND_MCP, GOPLAUSIBLE_SERVICES } from "./lib/mcp-servers.js";
@@ -21,8 +22,34 @@ import {
   type WorkspaceApi,
 } from "./lib/workspace.js";
 
-const PLUGIN_ROOT = dirname(fileURLToPath(import.meta.url));
 const PLUGIN_ID = "algorand-plugin";
+const PKG_NAME = "@goplausible/algorand-plugin";
+
+// Resolve the package root by walking up from this module's directory until we
+// find our own package.json. OpenClaw loads the compiled entry (dist/index.js)
+// at runtime, so dirname(import.meta.url) lands inside dist/ — every relative
+// asset (memory templates, bundled node_modules/.bin/algorand-mcp) sits one
+// level above. Walking up by package.json identity is robust against future
+// build-output restructures.
+function resolvePluginRoot(): string {
+  const start = dirname(fileURLToPath(import.meta.url));
+  let cur = start;
+  for (let i = 0; i < 6; i++) {
+    const pkgPath = join(cur, "package.json");
+    if (existsSync(pkgPath)) {
+      try {
+        const pkg = JSON.parse(readFileSync(pkgPath, "utf-8"));
+        if (pkg.name === PKG_NAME) return cur;
+      } catch { /* keep walking */ }
+    }
+    const parent = dirname(cur);
+    if (parent === cur) break;
+    cur = parent;
+  }
+  return start;
+}
+
+const PLUGIN_ROOT = resolvePluginRoot();
 
 type OpenClawPluginApi = WorkspaceApi & {
   id: string;
@@ -94,14 +121,20 @@ function register(api: OpenClawPluginApi) {
         .action(async () => {
           console.log("\n🔷 Reconfiguring Algorand plugin...\n");
 
+          const failures: Array<{ step: string; message: string }> = [];
+          const warnings: Array<{ step: string; message: string }> = [];
+
           const mem = writeMemoryFile(PLUGIN_ROOT, workspacePath);
           console.log(`  ${mem.success ? "✅" : "❌"} ${mem.message}`);
+          if (!mem.success) failures.push({ step: "memory file", message: mem.message });
 
           const memIdx = ensureWorkspaceMemoryIndex(PLUGIN_ROOT, workspacePath);
           console.log(`  ${memIdx.success ? "✅" : "❌"} ${memIdx.message}`);
+          if (!memIdx.success) failures.push({ step: "memory index", message: memIdx.message });
 
           const mcp = upsertMcporterConfig(PLUGIN_ROOT);
           console.log(`  ${mcp.success ? "✅" : "⚠️"} ${mcp.message}`);
+          if (!mcp.success) warnings.push({ step: "mcporter config", message: mcp.message });
 
           console.log("");
           const newConfig = await runSetup(pluginConfig);
@@ -121,9 +154,23 @@ function register(api: OpenClawPluginApi) {
             } else {
               console.log("   • already in place — no changes");
             }
+          } else {
+            console.error(`\n❌ Failed to save OpenClaw config: ${result.error}`);
+            failures.push({ step: "openclaw config", message: result.error ?? "unknown error" });
+          }
+
+          // Final summary — surfaces partial failures that earlier steps
+          // would otherwise hide behind a green "config synced" at the end.
+          console.log("");
+          if (failures.length === 0 && warnings.length === 0) {
+            console.log(`✅ Setup completed successfully (plugin root: ${PLUGIN_ROOT}).`);
             console.log("   Restart gateway to apply: openclaw gateway restart\n");
           } else {
-            console.error(`\n❌ Failed to save config: ${result.error}`);
+            const verdict = failures.length > 0 ? "❌ Setup completed with errors" : "⚠️  Setup completed with warnings";
+            console.log(`${verdict} (plugin root: ${PLUGIN_ROOT}):`);
+            for (const f of failures) console.log(`   ❌ ${f.step}: ${f.message}`);
+            for (const w of warnings) console.log(`   ⚠️  ${w.step}: ${w.message}`);
+            console.log("   Restart gateway to apply what succeeded: openclaw gateway restart\n");
           }
         });
 
