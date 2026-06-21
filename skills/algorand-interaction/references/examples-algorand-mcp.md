@@ -673,133 +673,102 @@ This lets you verify a transaction will succeed before actually submitting it.
 
 ## x402 Payment Workflow
 
-When `x402_fetch` returns a 402 response, follow these steps to pay for the resource.
+Use the two algorand-mcp x402 tools to access x402-protected HTTP resources. The MCP tools handle transaction construction, signing, base64 encoding, and PAYMENT-SIGNATURE assembly internally — you do not build the payment payload manually.
 
-### Understanding the 402 Response
+### Step 1 — Discover (probe; no payment)
 
-The 402 response contains an `accepts` array. Each entry has:
+```
+x402_discover_payment_requirements {
+  baseURL: "https://example.x402.goplausible.xyz",
+  path: "/avm/weather",
+  method: "GET"
+}
+```
+
+Returns the server's `accepts[]` array. Each entry has:
 - `scheme` — payment scheme (e.g., `"exact"`)
-- `network` — CAIP-2 network identifier
-- `maxAmountRequired` — amount to pay (in base units)
-- `asset` — `"0"` for native ALGO, or ASA ID as string
+- `network` — CAIP-2 network identifier (`algorand:SGO1GKSzyE7IEPItTxCByw9x8FmnrCDexi9/cOUJOiI=` for testnet, `algorand:wGHE2Pwdvd7S12BL5FaOP20EGYesN73ktiC1qzkkit8=` for mainnet)
+- `amount` (V2) or `maxAmountRequired` (V1) — amount to pay in atomic units
+- `asset` — `"0"` for native ALGO, or ASA ID as string (USDC: `"10458941"` testnet / `"31566704"` mainnet)
 - `payTo` — recipient address
-- `extra.feePayer` — facilitator address that pays transaction fees
+- `extra.feePayer` — facilitator address that sponsors transaction fees
 
-### CAIP-2 Network Mapping
+May also include `extensions` (e.g., Bazaar resource metadata).
 
-| CAIP-2 Identifier | Network |
-|--------------------|---------|
-| `algorand:SGO1GKSzyE7IEPItTxCByw9x8FmnrCDexi9/cOUJOiI=` | `testnet` |
-| `algorand:wGHE2Pwdvd7S12BL5FaOP20EGYesN73ktiC1qzkkit8=` | `mainnet` |
+### Step 2 — Select and confirm
 
-### Step 1: Check wallet
-```
-wallet_get_info { "network": "<network>" }
-```
+Read the response. Pick the `accepts[]` entry you'll pay with:
+- Filter to Algorand-satisfiable entries (CAIP-2 network starts with `algorand:`)
+- Prefer the network the user expects (`testnet` for development, `mainnet` for production)
+- Pick the cheapest affordable entry — compare against your budget cap
+- **On mainnet: confirm the cost with the user** before proceeding
 
-### Step 2: Build fee payer transaction
+USDC amounts are in atomic units. 1,000,000 atomic units = $1.00 (USDC has 6 decimals).
 
-The facilitator sponsors fees for the entire group. The fee payer's `fee` must equal **N × 1000 µAlgo** (N = total transactions in group). For a 2-txn group: fee = 2 × 1000 = **2000**. NEVER set fee=0 on the fee payer.
+### Step 3 — Pay and fetch
 
 ```
-make_payment_txn {
-  "from": "<feePayer>",
-  "to": "<feePayer>",
-  "amount": 0,
-  "fee": 2000,
-  "flatFee": true,
-  "network": "<network>"
+make_http_request_with_x402 {
+  baseURL: "https://example.x402.goplausible.xyz",
+  path: "/avm/weather",
+  method: "GET",
+  paymentRequirements: <accepts[] from step 1>,
+  preferredNetwork: "testnet",
+  maxAmountPerRequest: 10000,
+  extensions: <extensions from step 1>
 }
 ```
 
-### Step 3: Build payment transaction
+| Argument | Purpose |
+|---|---|
+| `baseURL`, `path`, `method` | Same as step 1 — the request to retry with payment |
+| `paymentRequirements` | Pre-fetched `accepts[]` from step 1; skips re-discovery |
+| `preferredNetwork` | `"mainnet"` / `"testnet"` / `"localnet"` — narrows requirement selection to this network. If omitted, the tool picks the cheapest affordable Algorand requirement across all networks in `accepts[]`. |
+| `maxAmountPerRequest` | Hard budget cap in atomic units; tool refuses if cheapest requirement exceeds |
+| `extensions` | Pass through from step 1 for traceability (e.g., Bazaar metadata) |
+| `correlationId` | Optional — forwarded as `X-Correlation-ID` header |
+| `headers`, `body`, `queryParams` | Optional — extra HTTP request bits |
 
-The payment transaction fee is 0 since the facilitator covers it.
+The tool runs internally:
+1. Selects the requirement (by `preferredNetwork` if given, otherwise cheapest Algorand entry within `maxAmountPerRequest`)
+2. Looks up the active wallet account + secret key
+3. Builds a 2-txn atomic group: facilitator fee-payer (fee = N × 1000) + wallet payment (fee = 0)
+4. Signs the payment leg with the active wallet — leaves fee-payer unsigned (facilitator signs server-side)
+5. Encodes the unsigned fee-payer + signed payment as base64, assembles the PAYMENT-SIGNATURE JSON, base64-encodes it for the header
+6. Resends the request with `PAYMENT-SIGNATURE` set
+7. On 200: parses the settlement readback from `payment-response` header
+8. On 402-rejection: throws `InvalidRequest` with a snippet of the server's rejection body
 
-**For native ALGO (asset = "0"):**
-```
-make_payment_txn {
-  "from": "<your_address>",
-  "to": "<payTo>",
-  "amount": <maxAmountRequired>,
-  "fee": 0,
-  "flatFee": true,
-  "network": "<network>"
-}
-```
+### Response shape
 
-**For ASA (asset is an ASA ID):**
-```
-make_asset_transfer_txn {
-  "from": "<your_address>",
-  "to": "<payTo>",
-  "assetIndex": <asset>,
-  "amount": <maxAmountRequired>,
-  "fee": 0,
-  "flatFee": true,
-  "network": "<network>"
-}
-```
-
-### Step 4: Group the transactions
-```
-assign_group_id {
-  "transactions": [fee_payer_txn, payment_txn]
-}
-```
-
-### Step 5: Sign ONLY the payment transaction (index 1)
-```
-wallet_sign_transaction {
-  "transaction": <grouped_payment_txn>,
-  "network": "<network>"
-}
-```
-> Leave the fee payer transaction (index 0) unsigned — the facilitator signs it server-side.
-
-### Step 6: Encode the unsigned fee payer transaction
-
-Convert the grouped fee payer transaction (index 0) to base64 bytes:
-```
-encode_unsigned_transaction {
-  "transaction": <grouped_fee_payer_txn>
-}
-```
-> This produces the canonical `algosdk.encodeUnsignedTransaction()` base64 encoding needed for the PAYMENT-SIGNATURE payload.
-
-### Step 7: Construct the PAYMENT-SIGNATURE payload
-
-Build this JSON string:
 ```json
 {
-  "x402Version": 2,
-  "scheme": "exact",
-  "network": "<CAIP-2 network identifier from accepts>",
-  "payload": {
-    "paymentGroup": ["<base64 from encode_unsigned_transaction>", "<base64 from wallet_sign_transaction>"],
-    "paymentIndex": 1
+  "result": <parsed JSON body from the protected resource>,
+  "status": 200,
+  "paymentResponse": { "tx": "TXID...", ... },
+  "paid": {
+    "network": "testnet",
+    "asset": "10458941",
+    "amount": "1000",
+    "payTo": "ABC..."
   },
-  "accepted": <the exact accepts[] entry you chose to pay with — copy it verbatim as an object>
+  "extensions": <whatever was passed in>
 }
 ```
 
-> **Critical**: The `accepted` field is REQUIRED. It must be an exact copy of the `accepts[]` entry you chose (including all fields: scheme, network, price, payTo, asset, maxAmountRequired, extra, etc.). Without it, the server cannot match your payment to a requirement and will reject with 402.
+### Faster unsupervised pattern
 
-> **CRITICAL — Base64 blob handling**: When building the `paymentGroup` array, you MUST use the EXACT `bytes` value from `encode_unsigned_transaction` and the EXACT `blob` value from `wallet_sign_transaction`. NEVER manually re-type, truncate, or partially copy these base64 strings. Even a single character corruption (e.g., `5` → `4`) causes "signature does not match sender" errors. Copy each complete blob verbatim — do not attempt to reconstruct or abbreviate them.
-
-### Step 8: Retry with payment
-
-Call `x402_fetch` again with `paymentHeader` set to the JSON string from Step 7.
-The `x402_fetch` tool will base64-encode it and send it as the `PAYMENT-SIGNATURE` header.
-The server verifies the payment, submits the transaction group, and returns the resource.
-
-> **Important**: The `paymentGroup` array order must match: index 0 = unsigned fee payer txn, index 1 = signed payment txn. The `paymentIndex` indicates which transaction carries the actual payment.
+Skip step 1. Call `make_http_request_with_x402 { baseURL, path, method }` directly and let it discover internally. The tool picks the cheapest affordable Algorand requirement automatically. **Always pass `maxAmountPerRequest`** as a budget guardrail; pass `preferredNetwork` to pin testnet/mainnet.
 
 ### Common x402 Errors
 
 | Error | Cause | Solution |
 |-------|-------|---------|
-| `Payment transaction signature does not match sender` | Base64 blob was corrupted when constructing `paymentHeader` JSON | Use EXACT `bytes`/`blob` values from tool responses — never re-type or partially copy base64 strings |
-| `402` returned despite payment header | Missing `accepted` field in payload, or `accepted` doesn't match an `accepts[]` entry exactly | Copy the chosen `accepts[]` entry verbatim into the `accepted` field |
-| `402` with expired transactions | Too much time between building transactions and sending payment | Rebuild transactions immediately before sending — `firstValid`/`lastValid` window is ~1000 rounds |
-| `Simulation failed` | Insufficient balance, asset not opted in, or group structure wrong | Check USDC/ALGO balance, verify opt-in, ensure group order is [feePayer, payment] |
+| `paymentRequirements[N] must be an OBJECT (got ...)` | A non-object value (string, array, null) was placed inside the `paymentRequirements` array — usually because a sibling argument like `preferredNetwork` was mistakenly inserted into the array | Pass the `accepts[]` entries verbatim from step 1. Keep `preferredNetwork`, `maxAmountPerRequest`, etc. as top-level siblings of `paymentRequirements`, not array members |
+| `paymentRequirements[N] is missing required string field(s): ...` | An object inside `paymentRequirements` doesn't have one of the required fields (`network`, `payTo`, `asset`, and `amount` or `maxAmountRequired`) | Make sure each array entry is an unmodified `accepts[]` object from `x402_discover_payment_requirements`. Don't synthesize or hand-edit these entries |
+| `Endpoint did not return an x402 payment requirement` | The URL isn't x402-protected, or the server's 402 response was malformed | Verify the endpoint with `x402_discover_payment_requirements` first; if it returns `x402: false`, use a non-x402 HTTP tool |
+| `No payment requirement is satisfiable on Algorand` | The endpoint only accepts non-Algorand networks (e.g., Base/Solana) | Use a different endpoint, or check whether the user expected this to be Algorand-payable |
+| `All Algorand payment requirements exceed maxAmountPerRequest=N` | The cheapest cost exceeds your budget cap | Either raise `maxAmountPerRequest` (after confirming with the user on mainnet), or skip the resource |
+| `Payment requirement is missing extra.feePayer` | Server's `accepts[]` entry is missing the facilitator address | Server-side misconfiguration; contact the resource provider |
+| `Payment rejected by server: <snippet>` | Facilitator rejected the signed payment — usually expired transaction window or stale `suggestedParams` | Retry once with a fresh call; if still failing, inspect the snippet for the specific reason |
+| `Active wallet not found` / `Could not load active account` | No active account in `wallet.db` or no mnemonic in the keychain | Run `wallet_get_info`; if no account, `add_account` or `import_account` |

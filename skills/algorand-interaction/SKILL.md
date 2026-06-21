@@ -5,7 +5,7 @@ description: Interact with Algorand blockchain via the Algorand MCP server — w
 
 # Algorand MCP Interaction
 
-Interact with Algorand blockchain through the Algorand MCP server (104+ tools across 13 categories).
+Interact with Algorand blockchain through the Algorand MCP server (123 tools across 14 categories, including x402 payments).
 
 ## Key Characteristics
 
@@ -167,13 +167,13 @@ For atomic (all-or-nothing) multi-transaction groups:
 
 **Utility** (13): `ping`, `validate_address`, `encode_address`, `decode_address`, `get_application_address`, `bytes_to_bigint`, `bigint_to_bytes`, `encode_uint64`, `decode_uint64`, `verify_bytes`, `sign_bytes`, `encode_obj`, `decode_obj`
 
-**Transaction Building** (16): `make_payment_txn`, `make_keyreg_txn`, `make_asset_create_txn`, `make_asset_config_txn`, `make_asset_destroy_txn`, `make_asset_freeze_txn`, `make_asset_transfer_txn`, `make_app_create_txn`, `make_app_update_txn`, `make_app_delete_txn`, `make_app_optin_txn`, `make_app_closeout_txn`, `make_app_clear_txn`, `make_app_call_txn`, `assign_group_id`, `sign_transaction`
+**Transaction Building** (18): `make_payment_txn`, `make_keyreg_txn`, `make_asset_create_txn`, `make_asset_config_txn`, `make_asset_destroy_txn`, `make_asset_freeze_txn`, `make_asset_transfer_txn`, `make_app_create_txn`, `make_app_update_txn`, `make_app_delete_txn`, `make_app_optin_txn`, `make_app_closeout_txn`, `make_app_clear_txn`, `make_app_call_txn`, `assign_group_id`, `sign_transaction`, `encode_unsigned_transaction`, `decode_signed_transaction`
 
 **Algod** (5): `compile_teal`, `disassemble_teal`, `send_raw_transaction`, `simulate_raw_transactions`, `simulate_transactions`
 
 **Algod API** (13): `api_algod_get_account_info`, `api_algod_get_account_application_info`, `api_algod_get_account_asset_info`, `api_algod_get_application_by_id`, `api_algod_get_application_box`, `api_algod_get_application_boxes`, `api_algod_get_asset_by_id`, `api_algod_get_pending_transaction`, `api_algod_get_pending_transactions_by_address`, `api_algod_get_pending_transactions`, `api_algod_get_transaction_params`, `api_algod_get_node_status`, `api_algod_get_node_status_after_block`
 
-**Indexer API** (10):   `api_indexer_lookup_account_created_applications`, `api_indexer_search_for_accounts`, `api_indexer_lookup_applications`, `api_indexer_lookup_application_logs`,  `api_indexer_lookup_asset_balances`, `api_indexer_lookup_asset_transactions`, `api_indexer_search_for_assets`, `api_indexer_lookup_transaction_by_id`, `api_indexer_lookup_account_transactions`, `api_indexer_search_for_transactions`
+**Indexer API** (17): `api_indexer_lookup_account_by_id`, `api_indexer_lookup_account_assets`, `api_indexer_lookup_account_app_local_states`, `api_indexer_lookup_account_created_applications`, `api_indexer_lookup_account_transactions`, `api_indexer_search_for_accounts`, `api_indexer_lookup_applications`, `api_indexer_lookup_application_logs`, `api_indexer_lookup_application_box`, `api_indexer_lookup_application_boxes`, `api_indexer_search_for_applications`, `api_indexer_lookup_asset_by_id`, `api_indexer_lookup_asset_balances`, `api_indexer_lookup_asset_transactions`, `api_indexer_search_for_assets`, `api_indexer_lookup_transaction_by_id`, `api_indexer_search_for_transactions`
 
 **NFDomains** (6): `api_nfd_get_nfd`, `api_nfd_get_nfds_for_addresses`, `api_nfd_get_nfd_activity`, `api_nfd_get_nfd_analytics`, `api_nfd_browse_nfds`, `api_nfd_search_nfds`
 
@@ -187,30 +187,57 @@ For atomic (all-or-nothing) multi-transaction groups:
 
 **Knowledge Base** (1): `get_knowledge_doc`
 
+**x402 Payments** (2): `x402_discover_payment_requirements`, `make_http_request_with_x402` — probe an x402-protected endpoint for payment requirements, then pay-and-fetch in one call. See the **x402 Payment Workflow** section below for the supervised pattern.
+
 ## Pagination
 
 API responses are paginated. All API tools accept optional `itemsPerPage` (default 10) and `pageToken` parameters. Pass `pageToken` from a previous response to fetch the next page.
 
 ## x402 Payment Workflow for OpenClaw agents
 
-When `x402_fetch` returns HTTP 402 with `PaymentRequirements`, use the atomic group transaction pattern to build the payment:
+Use the two algorand-mcp x402 tools to access x402-protected HTTP resources. The MCP tools handle transaction construction, signing, base64 encoding, and PAYMENT-SIGNATURE assembly internally — you only orchestrate the discovery → selection → paid-request flow.
 
-1. Build fee payer transaction: `make_payment_txn` with from=feePayer, to=feePayer, amount=0, **fee=N×1000** (N=group size, e.g. 2000 for 2 txns), **flatFee=true**
-2. Build payment transaction: `make_payment_txn` or `make_asset_transfer_txn` to `payTo`, **fee=0**, **flatFee=true**
-3. Group both transactions with `assign_group_id`
-4. Sign only the payment transaction (index 1) with `wallet_sign_transaction` — leave fee payer unsigned
-5. Encode the unsigned fee payer transaction (index 0) with `encode_unsigned_transaction`
-6. Construct PAYMENT-SIGNATURE JSON payload — **must include `accepted` field** (the exact `accepts[]` entry chosen) — and retry with `x402_fetch`
+### Recommended supervised pattern
 
-> **IMPORTANT: Fee Abstraction** — Pass `fee` and `flatFee` directly as input parameters to `make_*_txn` tools. Fee payer: `fee=N×1000`, `flatFee=true`. Payment: `fee=0`, `flatFee=true`. NEVER set fee=0 on the fee payer — this causes "txgroup had 0 in fees" errors.
+1. **Probe** the endpoint to read what it costs:
+   ```
+   x402_discover_payment_requirements {
+     baseURL: "https://example.x402.goplausible.xyz",
+     path: "/avm/weather",
+     method: "GET"
+   }
+   ```
 
-**Critical**: The `accepted` field is REQUIRED. It must be an exact copy of the `accepts[]` entry you chose to pay with (including all fields: scheme, network, price, payTo, asset, maxAmountRequired, extra, etc.). Without it, the server cannot match your payment and will reject with 402.
+2. **Inspect** the returned `accepts[]` array. Pick the entry you'll pay with — usually the cheapest Algorand entry on the network you want, within budget. On mainnet, confirm the cost with the user before continuing.
 
-**Critical — Base64 blob handling**: When constructing the `paymentHeader` JSON string for `x402_fetch`, NEVER manually re-type or partially copy base64 blob strings. Use the EXACT `bytes` value from `encode_unsigned_transaction` and the EXACT `blob` value from `wallet_sign_transaction` — copy each complete value verbatim into the `paymentGroup` array. Even a single character corruption (e.g., `5` → `4`) causes "signature does not match sender" errors and the payment will be rejected.
+3. **Pay and fetch** in one call, passing the pre-fetched requirements back so the tool doesn't re-probe:
+   ```
+   make_http_request_with_x402 {
+     baseURL: "https://example.x402.goplausible.xyz",
+     path: "/avm/weather",
+     method: "GET",
+     paymentRequirements: <accepts[] from step 1>,
+     preferredNetwork: "testnet",
+     maxAmountPerRequest: 10000,
+     extensions: <extensions from step 1>
+   }
+   ```
 
-Map CAIP-2 network identifiers from `accepts[].network` to `testnet` or `mainnet`.
+### Faster unsupervised pattern (testnet, known endpoints)
 
-See [references/examples-algorand-mcp.md](references/examples-algorand-mcp.md) for the full step-by-step workflow.
+Skip step 1. Call `make_http_request_with_x402 { baseURL, path, method }` — it discovers, selects the cheapest affordable Algorand requirement, builds the atomic group, signs the payment leg with the active wallet, retries, and returns the resource. Always pass `maxAmountPerRequest` as a guardrail; pass `preferredNetwork` to pin testnet/mainnet.
+
+### Always
+
+- **Mainnet = real money** — confirm cost with the user before mainnet payments. Use `maxAmountPerRequest` as a budget cap.
+- Amounts are in **atomic units**. USDC has 6 decimals: 1,000,000 atomic units = $1.00.
+- `preferredNetwork` narrows requirement selection to a specific network (`"mainnet"` / `"testnet"` / `"localnet"`). If omitted, the tool picks the cheapest affordable Algorand requirement across all networks in `accepts[]`.
+
+### Common pitfall
+
+**Do not put `preferredNetwork` or `maxAmountPerRequest` inside the `paymentRequirements` array.** They are top-level sibling arguments. The MCP tool's 4.3.3+ schema validation rejects malformed arrays with `paymentRequirements[N] must be an OBJECT` or `paymentRequirements[N] is missing required string field(s)` — if you see those, your selected `accepts[]` entry got mixed with sibling args. Pass the `accepts[]` entries verbatim; keep the other knobs at the top level.
+
+See [references/examples-algorand-mcp.md](references/examples-algorand-mcp.md) for the full workflow, response shape, and common errors.
 
 ## Alpha Arcade Prediction Markets
 

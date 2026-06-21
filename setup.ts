@@ -6,30 +6,35 @@ export interface AlgorandPluginConfig {
 }
 
 export async function runSetup(
-  existingConfig?: Partial<AlgorandPluginConfig>,
+  _existingConfig?: Partial<AlgorandPluginConfig>,
 ): Promise<AlgorandPluginConfig | null> {
   p.intro("🔷 Algorand Plugin Setup — powered by GoPlausible");
 
-  const enableX402 = await p.confirm({
-    message: "Enable x402 micropayments integration?",
-    initialValue: existingConfig?.enableX402 ?? true,
-  });
-
-  if (p.isCancel(enableX402)) {
-    p.cancel("Setup cancelled.");
-    return null;
-  }
+  // DISABLED FOR TESTING — see comment in /index.ts. The native x402_fetch
+  // tool is currently disabled; the agent uses algorand-mcp's x402 tools
+  // (`x402_discover_payment_requirements`, `make_http_request_with_x402`)
+  // surfaced via mcporter. The `enableX402` toggle has no runtime effect in
+  // this build, so we don't prompt for it. Restore by uncommenting the
+  // p.confirm block below and removing the hardcoded `enableX402: true`.
+  //
+  // const enableX402 = await p.confirm({
+  //   message: "Enable x402 micropayments integration?",
+  //   initialValue: _existingConfig?.enableX402 ?? true,
+  // });
+  // if (p.isCancel(enableX402)) {
+  //   p.cancel("Setup cancelled.");
+  //   return null;
+  // }
 
   const config: AlgorandPluginConfig = {
-    enableX402: enableX402 as boolean,
+    enableX402: true,
   };
 
   p.note(
-    `x402 Micropayments: ${config.enableX402 ? "Enabled" : "Disabled"}\n\n` +
-      `MCP Server:\n` +
+    `MCP Server:\n` +
       `  ${ALGORAND_MCP.name} (${ALGORAND_MCP.command}) — 107 blockchain tools.\n` +
       `  Registered in ~/.mcporter/mcporter.json on first load.\n` +
-      `  x402 micropayment and AP2 mandate flows are fully supported.\n`,
+      `  x402 micropayment and AP2 mandate flows are handled by algorand-mcp tools.\n`,
   );
 
   p.outro(

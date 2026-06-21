@@ -115,7 +115,10 @@ export function runFirstLoadInit(api: WorkspaceApi, pluginRoot: string, workspac
   writeFileSync(markerPath, new Date().toISOString());
 }
 
-const PLUGIN_TOOL_NAMES = ["x402_fetch"] as const;
+// DISABLED FOR TESTING — see comment in /index.ts. While x402_fetch is not
+// registered, we don't want to keep adding its name to tools.alsoAllow.
+// Restore to: const PLUGIN_TOOL_NAMES = ["x402_fetch"] as const;
+const PLUGIN_TOOL_NAMES: readonly string[] = [];
 
 export function writePluginConfig(pluginConfig: Record<string, unknown>): { success: boolean; error?: string; changes?: string[] } {
   try {

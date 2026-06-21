@@ -2,7 +2,7 @@
   "id": "algorand-plugin",
   "name": "Algorand Integration",
   "description": "Algorand blockchain integration with MCP and skills — by GoPlausible",
-  "version": "2.2.4",
+  "version": "2.2.6",
   "skills": [
     "skills/algorand-development",
     "skills/algorand-typescript",
@@ -17,12 +17,6 @@
   "activation": {
     "commands": ["algorand-plugin"]
   },
-  "contracts": {
-    "tools": ["x402_fetch"]
-  },
-  "toolMetadata": {
-    "x402_fetch": {}
-  },
   "commandAliases": [
     {
       "name": "algorand-plugin",
@@ -31,32 +25,13 @@
   ],
   "configSchema": {
     "type": "object",
-    "additionalProperties": false,
-    "properties": {
-      "enableX402": {
-        "type": "boolean",
-        "default": true,
-        "description": "Enable x402 micropayments skills and x402_fetch tool"
-      }
-    }
-  },
-  "uiHints": {
-    "enableX402": {
-      "label": "Enable x402 Micropayments"
-    }
+    "additionalProperties": true,
+    "properties": {}
   },
   "setup": {
-    "summary": "Configure Algorand blockchain integration",
-    "steps": [
-      {
-        "id": "x402",
-        "label": "x402 Micropayments",
-        "description": "Enable the x402 HTTP-native payment protocol support (x402_fetch tool + skills).",
-        "configKey": "enableX402"
-      }
-    ],
+    "summary": "Sync workspace memory, register algorand-mcp with mcporter, and add the plugin to OpenClaw's allow list.",
     "postSetup": {
-      "message": "Restart the OpenClaw gateway to apply changes. algorand-mcp is auto-registered in ~/.mcporter/mcporter.json on first load."
+      "message": "Restart the OpenClaw gateway to apply changes. algorand-mcp is auto-registered in ~/.mcporter/mcporter.json on first load. x402 payments are handled by algorand-mcp's `x402_discover_payment_requirements` and `make_http_request_with_x402` tools."
     }
   }
 }

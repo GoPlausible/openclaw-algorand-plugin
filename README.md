@@ -4,8 +4,8 @@
 
 ## Features
 
-- **Bundled Algorand MCP Server**: `@goplausible/algorand-mcp` (pinned to `4.2.5`, 107 tools, **defaults to testnet**) — wallet, transactions, smart contracts, TEAL, indexer, DEX, NFD, Haystack Router, Alpha Arcade, knowledge base
-- **x402 Payment Protocol**: Built-in `x402_fetch` tool for HTTP-native payments on Algorand
+- **Bundled Algorand MCP Server**: `@goplausible/algorand-mcp` (pinned to `4.3.3`, 123 tools, **defaults to testnet**) — wallet, transactions, smart contracts, TEAL, indexer, DEX, NFD, Haystack Router, Alpha Arcade, x402 payments, knowledge base
+- **x402 Payment Protocol**: HTTP-native payments on Algorand via `@goplausible/algorand-mcp`'s `x402_discover_payment_requirements` and `make_http_request_with_x402` tools (surfaced through mcporter)
 - **Zero-privilege installation**: First-load init only writes a declarative entry into `~/.mcporter/mcporter.json` and a memory file into the agent workspace — no shell scripts, no system packages, no keyring installation, no `sudo`, no post-install hooks
 - **9 Skills** covering development, interaction, x402, DEX aggregation, and prediction markets:
   - `algorand-development` — AlgoKit CLI, project creation, general workflows
@@ -57,7 +57,7 @@ The plugin performs only **declarative file writes** — no shell scripts, no sy
 | `<agent-workspace>/memory/algorand-plugin.md` | First load + `setup` | Writes the plugin's Algorand routing guide for the agent. |
 | `<agent-workspace>/MEMORY.md` | First load + `setup` | Adds a `## NEVER FORGET` block (or updates its subsections) if not already present. Existing content is preserved. |
 | `<agent-workspace>/.openclaw/algorand-plugin.initialized` | First load | Marker file so first-load init is skipped on subsequent gateway starts. |
-| `~/.openclaw/openclaw.json` | When you run `openclaw algorand-plugin setup` and confirm | Persists the plugin config (`enableX402`). |
+| `~/.openclaw/openclaw.json` | When you run `openclaw algorand-plugin setup` | Adds `algorand-plugin` to `plugins.allow`, sets `plugins.entries.algorand-plugin.enabled = true`, and persists the plugin config. |
 
 The plugin does **not**:
 
@@ -69,11 +69,10 @@ The plugin does **not**:
 
 The source is small and self-contained:
 
-- [`index.ts`](./index.ts) — plugin entry, tool + CLI registration
+- [`index.ts`](./index.ts) — plugin entry, CLI registration (`setup`, `status`, `mcp-config`)
 - [`lib/mcporter.ts`](./lib/mcporter.ts) — mcporter JSON merge
-- [`lib/workspace.ts`](./lib/workspace.ts) — memory file + MEMORY.md merge + plugin config writer
-- [`lib/x402-fetch.ts`](./lib/x402-fetch.ts) — x402 fetch implementation
-- [`setup.ts`](./setup.ts) — interactive config prompt (x402 toggle only)
+- [`lib/workspace.ts`](./lib/workspace.ts) — memory file + MEMORY.md merge + OpenClaw config writer (`plugins.allow`, `plugins.entries.algorand-plugin.enabled`)
+- [`setup.ts`](./setup.ts) — setup wizard (memory + mcporter + allow-list sync; no questions asked)
 
 ## Commands
 
@@ -87,7 +86,7 @@ openclaw algorand-plugin mcp-config  # Show MCP config snippet for external codi
 
 The plugin bundles [`@goplausible/algorand-mcp`](https://www.npmjs.com/package/@goplausible/algorand-mcp) as an npm dependency. It runs locally via stdio through [mcporter](https://www.npmjs.com/package/mcporter).
 
-- **107 tools** across 13 categories (wallet, transactions, algod, indexer, NFD, Tinyman, Haystack Router, Pera verification, Alpha Arcade, TEAL, knowledge base, and more)
+- **123 tools** across 14 categories (wallet, transactions, algod, indexer, NFD, Tinyman, Haystack Router, Pera verification, Alpha Arcade, x402 payments, TEAL, knowledge base, and more)
 - **Multi-network**: `mainnet`, `testnet`, `localnet`
 - **Secure wallet**: private keys not exposed to agents
 
@@ -95,15 +94,16 @@ Wallet persistence is handled by `algorand-mcp` itself. The plugin does not inst
 
 ## x402 Payment Protocol
 
-When `enableX402` is enabled (default), the plugin registers the `x402_fetch` tool — an HTTP fetch with [x402](https://github.com/coinbase/x402) payment protocol support.
+x402 HTTP-native payments on Algorand are handled by `@goplausible/algorand-mcp`'s two x402 tools (surfaced through mcporter):
 
-- Fetches URLs normally; on HTTP 402, returns structured `PaymentRequirements` with step-by-step instructions
-- Agent builds payment using algorand-mcp wallet tools (atomic group with facilitator-sponsored fees)
-- Agent retries with signed `PAYMENT-SIGNATURE` header to complete the payment and access the resource
+- **`x402_discover_payment_requirements`** — probes an x402-protected endpoint and returns the server's `accepts[]` array (cost, networks, assets, facilitator) without paying. Use for supervised flows where the user should approve the cost first.
+- **`make_http_request_with_x402`** — runs discovery → selects the cheapest affordable Algorand requirement (or one matching `preferredNetwork`) → builds an atomic 2-transaction group (facilitator fee-payer + wallet payment) → signs the payment leg with the active wallet → resends with `PAYMENT-SIGNATURE` header → returns the resource plus the settlement readback. Pass `paymentRequirements` (from discovery), `preferredNetwork`, and `maxAmountPerRequest` as guardrails.
+
+See the `algorand-interaction` skill ([`references/examples-algorand-mcp.md`](./skills/algorand-interaction/references/examples-algorand-mcp.md)) for the full workflow, response shapes, and common errors.
 
 ## Plugin Config
 
-Config lives in `~/.openclaw/openclaw.json` under `plugins.entries.algorand-plugin.config`:
+Config lives in `~/.openclaw/openclaw.json` under `plugins.entries.algorand-plugin`:
 
 ```json
 {
@@ -111,18 +111,15 @@ Config lives in `~/.openclaw/openclaw.json` under `plugins.entries.algorand-plug
     "allow": ["algorand-plugin"],
     "entries": {
       "algorand-plugin": {
-        "config": {
-          "enableX402": true
-        }
+        "enabled": true,
+        "config": {}
       }
     }
   }
 }
 ```
 
-| Key | Default | Description |
-|-----|---------|-------------|
-| `enableX402` | `true` | Enable `x402_fetch` tool and x402 skills |
+The plugin has no required config keys. Setup writes the `enabled` flag and adds the plugin to `plugins.allow`; the `config` object is reserved for future options.
 
 ## Skills Overview
 

@@ -2,7 +2,7 @@
 
 This plugin enables four core capabilities:
 
-1. **Blockchain Interaction** — Algorand MCP server (107 tools) via mcporter (includes Pera asset verification)
+1. **Blockchain Interaction** — Algorand MCP server (123 tools) via mcporter (includes Pera asset verification + x402 payments)
 2. **Algorand Development** — Smart contracts, typed clients, React frontends via AlgoKit CLI and skills
 3. **x402 Payment Protocol** — HTTP-native payments with Algorand as first-class chain
 4. **Haystack Router** — DEX aggregator/smart order routing on Algorand (Tinyman V2, Pact, Folks)
@@ -57,7 +57,7 @@ mcporter call algorand-mcp.generate_algorand_qrcode address=XXXXX network=testne
 mcporter call algorand-mcp.search_assets name=USDC network=mainnet
 ```
 
-## MCP Tool Categories (107 tools)
+## MCP Tool Categories (123 tools)
 
 - **Wallet** (10) — `wallet_add_account`, `wallet_remove_account`, `wallet_list_accounts`, `wallet_switch_account`, `wallet_get_info`, `wallet_get_assets`, `wallet_sign_transaction`, `wallet_sign_transaction_group`, `wallet_sign_data`, `wallet_optin_asset`
 - **Account Management** (8) — `create_account`, `rekey_account`, `mnemonic_to_mdk`, `mdk_to_mnemonic`, `secret_key_to_mnemonic`, `mnemonic_to_secret_key`, `seed_from_mnemonic`, `mnemonic_from_seed`
@@ -65,14 +65,15 @@ mcporter call algorand-mcp.search_assets name=USDC network=mainnet
 - **Transaction** (18) — `make_payment_txn`, `make_keyreg_txn`, `make_asset_create_txn`, `make_asset_config_txn`, `make_asset_destroy_txn`, `make_asset_freeze_txn`, `make_asset_transfer_txn`, `make_app_create_txn`, `make_app_update_txn`, `make_app_delete_txn`, `make_app_optin_txn`, `make_app_closeout_txn`, `make_app_clear_txn`, `make_app_call_txn`, `assign_group_id`, `sign_transaction`, `encode_unsigned_transaction`, `decode_signed_transaction`
 - **Algod** (5) — `compile_teal`, `disassemble_teal`, `send_raw_transaction`, `simulate_raw_transactions`, `simulate_transactions`
 - **Algod API** (13) — `api_algod_get_account_info`, `api_algod_get_account_application_info`, `api_algod_get_account_asset_info`, `api_algod_get_application_by_id`, `api_algod_get_application_box`, `api_algod_get_application_boxes`, `api_algod_get_asset_by_id`, `api_algod_get_pending_transaction`, `api_algod_get_pending_transactions_by_address`, `api_algod_get_pending_transactions`, `api_algod_get_transaction_params`, `api_algod_get_node_status`, `api_algod_get_node_status_after_block`
-- **Indexer API** (10) — `api_indexer_lookup_account_created_applications`, `api_indexer_search_for_accounts`, `api_indexer_lookup_application_logs`, `api_indexer_search_for_applications`, `api_indexer_lookup_asset_balances`, `api_indexer_lookup_asset_transactions`, `api_indexer_search_for_assets`, `api_indexer_lookup_transaction_by_id`, `api_indexer_lookup_account_transactions`, `api_indexer_search_for_transactions`
+- **Indexer API** (17) — `api_indexer_lookup_account_by_id`, `api_indexer_lookup_account_assets`, `api_indexer_lookup_account_app_local_states`, `api_indexer_lookup_account_created_applications`, `api_indexer_lookup_account_transactions`, `api_indexer_search_for_accounts`, `api_indexer_lookup_applications`, `api_indexer_lookup_application_logs`, `api_indexer_lookup_application_box`, `api_indexer_lookup_application_boxes`, `api_indexer_search_for_applications`, `api_indexer_lookup_asset_by_id`, `api_indexer_lookup_asset_balances`, `api_indexer_lookup_asset_transactions`, `api_indexer_search_for_assets`, `api_indexer_lookup_transaction_by_id`, `api_indexer_search_for_transactions`
 - **NFDomains** (6) — `api_nfd_get_nfd`, `api_nfd_get_nfds_for_addresses`, `api_nfd_get_nfd_activity`, `api_nfd_get_nfd_analytics`, `api_nfd_browse_nfds`, `api_nfd_search_nfds`
 - **Tinyman AMM** (9) — `api_tinyman_get_pool`, `api_tinyman_get_pool_analytics`, `api_tinyman_get_pool_creation_quote`, `api_tinyman_get_liquidity_quote`, `api_tinyman_get_remove_liquidity_quote`, `api_tinyman_get_swap_quote`, `api_tinyman_get_asset_optin_quote`, `api_tinyman_get_validator_optin_quote`, `api_tinyman_get_validator_optout_quote`
 - **Haystack Router** (3) — `api_haystack_get_swap_quote`, `api_haystack_execute_swap`, `api_haystack_needs_optin`
 - **Pera Asset Verification** (3) — `api_pera_asset_verification_status`, `api_pera_verified_asset_details`, `api_pera_verified_asset_search`
-- **Alpha Arcade** (15) — Read: `alpha_get_live_markets`, `alpha_get_reward_markets`, `alpha_get_market`, `alpha_get_orderbook`, `alpha_get_open_orders`, `alpha_get_positions`. Trade: `alpha_create_limit_order`, `alpha_create_market_order`, `alpha_cancel_order`, `alpha_amend_order`, `alpha_propose_match`, `alpha_split_shares`, `alpha_merge_shares`, `alpha_claim`
+- **Alpha Arcade** (14) — Read: `alpha_get_live_markets`, `alpha_get_reward_markets`, `alpha_get_market`, `alpha_get_orderbook`, `alpha_get_open_orders`, `alpha_get_positions`. Trade: `alpha_create_limit_order`, `alpha_create_market_order`, `alpha_cancel_order`, `alpha_amend_order`, `alpha_propose_match`, `alpha_split_shares`, `alpha_merge_shares`, `alpha_claim`
 - **ARC-26 URI** (1) — `generate_algorand_qrcode`
 - **Knowledge** (1) — `get_knowledge_doc` (categories: `arcs`, `sdks`, `algokit`, `algokit-utils`, `tealscript`, `puya`, `liquid-auth`, `python`, `developers`, `clis`, `nodes`, `details`)
+- **x402 Payments** (2) — `x402_discover_payment_requirements`, `make_http_request_with_x402` — probe an x402-protected endpoint for payment requirements, then pay-and-fetch in one call. Used for accessing paid HTTP resources on Algorand.
 
 ## QR Code Display (ARC-26 URI)
 
@@ -123,7 +124,7 @@ This applies to ALL operations that yield a transaction ID: payments, asset tran
 - Default to testnet during development
 - Every transaction costs 0.001 ALGO minimum
 - Account needs 0.1 ALGO base + 0.1 per asset/app opt-in (MBR)
-- **CRITICAL — x402 Base64 blob handling**: When constructing the `paymentHeader` JSON for `x402_fetch`, NEVER manually re-type or partially copy base64 blob strings. Use the EXACT `bytes` value from `encode_unsigned_transaction` and the EXACT `blob` value from `wallet_sign_transaction` — copy each value in full. Even a single character corruption (e.g., `5` → `4`) causes "signature does not match sender" errors and the payment will be rejected.
+- **x402 payments**: probe with `x402_discover_payment_requirements`, then pay+fetch in one call with `make_http_request_with_x402` (pass `paymentRequirements` from the probe to skip re-discovery, plus `preferredNetwork` and `maxAmountPerRequest` for supervised flows). The MCP tool handles atomic-group construction, signing, base64 encoding, and PAYMENT-SIGNATURE assembly internally — do not build the payment payload manually. Amounts are in atomic units (1,000,000 USDC atomic units = $1.00). Confirm mainnet costs with the user before paying.
 
 ## Common Mainnet Assets
 
