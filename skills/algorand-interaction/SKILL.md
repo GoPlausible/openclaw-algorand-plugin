@@ -5,7 +5,7 @@ description: Interact with Algorand blockchain via the Algorand MCP server — w
 
 # Algorand MCP Interaction
 
-Interact with Algorand blockchain through the Algorand MCP server (123 tools across 14 categories, including x402 payments).
+Interact with Algorand blockchain through the Algorand MCP server (126 tools across 16 categories, including x402 payments and Bazaar discovery).
 
 ## Key Characteristics
 
@@ -189,6 +189,8 @@ For atomic (all-or-nothing) multi-transaction groups:
 
 **x402 Payments** (2): `x402_discover_payment_requirements`, `make_http_request_with_x402` — probe an x402-protected endpoint for payment requirements, then pay-and-fetch in one call. See the **x402 Payment Workflow** section below for the supervised pattern.
 
+**x402 Bazaar Discovery** (3): `bazaar_list`, `bazaar_search`, `bazaar_get_resource_details` — browse and search the Bazaar discovery directory hosted by the configured facilitator (`facilitator.goplausible.xyz` by default) to find paid resources cataloged across the x402 ecosystem before calling `make_http_request_with_x402`. See the **x402 Bazaar Discovery** section below for the recommended pattern.
+
 ## Pagination
 
 API responses are paginated. All API tools accept optional `itemsPerPage` (default 10) and `pageToken` parameters. Pass `pageToken` from a previous response to fetch the next page.
@@ -218,8 +220,7 @@ Use the two algorand-mcp x402 tools to access x402-protected HTTP resources. The
      method: "GET",
      paymentRequirements: <accepts[] from step 1>,
      preferredNetwork: "testnet",
-     maxAmountPerRequest: 10000,
-     extensions: <extensions from step 1>
+     maxAmountPerRequest: 10000
    }
    ```
 
@@ -238,6 +239,75 @@ Skip step 1. Call `make_http_request_with_x402 { baseURL, path, method }` — it
 **Do not put `preferredNetwork` or `maxAmountPerRequest` inside the `paymentRequirements` array.** They are top-level sibling arguments. The MCP tool's 4.3.3+ schema validation rejects malformed arrays with `paymentRequirements[N] must be an OBJECT` or `paymentRequirements[N] is missing required string field(s)` — if you see those, your selected `accepts[]` entry got mixed with sibling args. Pass the `accepts[]` entries verbatim; keep the other knobs at the top level.
 
 See [references/examples-algorand-mcp.md](references/examples-algorand-mcp.md) for the full workflow, response shape, and common errors.
+
+## x402 Bazaar Discovery
+
+Bazaar is the discovery directory hosted by the configured x402 facilitator (`facilitator.goplausible.xyz` by default, overridable via the `BAZAAR_BASE_URL` env var on the MCP server). It catalogs paid API resources across the x402 ecosystem. Use these three tools to find resources before calling `make_http_request_with_x402`.
+
+### When to reach for Bazaar
+
+- The user asks for paid data ("get me a weather report", "fetch a market price proof") and you don't know which endpoint serves it.
+- You want to compare multiple paid providers by price, network, or asset before committing to one.
+- You want to inspect a known resource's metadata (description, payment requirements, popularity) before deciding to call it.
+
+### bazaar_list — browse cataloged resources
+
+Browse all cataloged paid resources, with optional filters. Returns a compact summary per item by default (URL, description, Algorand-payable accepts only, popularity counters); pass `full: true` for the verbatim facilitator response including full `accepts[]` and `discoveryInfo`.
+
+```
+bazaar_list {
+  network: "algorand-mainnet",    // optional; friendly name OR raw CAIP-2
+  method: "GET",                  // optional; filter by HTTP method
+  merchantId: "...",              // optional
+  limit: 20,                      // optional, default 50, max 100
+  offset: 0,                      // optional
+  full: false                     // default false (summary); true for verbatim
+}
+```
+
+**Network values:** accepts friendly names (`"algorand-mainnet"`, `"algorand-testnet"`, `"algorand-localnet"`, or bare `"mainnet"`/`"testnet"`/`"localnet"`) and translates them to CAIP-2 before the request. Raw CAIP-2 strings (`"algorand:wGHE2Pw…"`, `"eip155:84532"`, `"solana:EtWT…"`) pass through unchanged.
+
+### bazaar_search — keyword search
+
+Search resources by keyword in URL and description, with optional client-side filters.
+
+```
+bazaar_search {
+  query: "weather",               // required; min 1 char
+  limit: 10,                      // 1..20, default 10
+  network: "algorand-mainnet",    // optional; friendly or CAIP-2
+  includeTestnets: false,         // default false (mainnet-only)
+  scheme: "exact",                // optional; "exact" or "upto"
+  maxUsdPrice: 0.10,              // optional; USD cap (computed from amount + decimals)
+  asset: "31566704",              // optional; ASA id or token contract
+  payTo: "ALGO_ADDRESS_OR_0x…",   // optional; recipient filter
+  extensions: "bazaar"            // optional; require discoveryInfo / bazaar metadata
+}
+```
+
+The server only supports `query` + `network` natively; the other filters are applied client-side after the response. `maxUsdPrice` is computed from `amount` and `extra.decimals` (assumes USDC-like pricing).
+
+### bazaar_get_resource_details — fetch one by URL
+
+```
+bazaar_get_resource_details {
+  resource: "https://api.iomarkets.ai/v1/proof/price"
+}
+```
+
+Returns the verbatim resource record (full `accepts[]`, `discoveryInfo`, popularity counters). Throws a clear `-32600` if no exact match is found, with the number of partial matches for context.
+
+### Recommended discover → pay flow
+
+1. `bazaar_search { query: "<what user asked for>", maxUsdPrice: <budget>, network: "algorand-mainnet" }` — get a shortlist.
+2. Show the user the top result(s): URL, description, cost in USD, payTo.
+3. On user confirmation: call `make_http_request_with_x402` against the chosen resource's URL. You can pass the `accepts[]` from the Bazaar response directly as `paymentRequirements` to skip the per-endpoint discovery probe.
+
+### Always
+
+- `bazaar_*` tools never sign or pay — they're pure discovery. The user is in no risk from these calls alone.
+- Default mode is mainnet-only. Pass `includeTestnets: true` to see testnet/devnet entries.
+- Items with `algorandPayable: false` (in the summary view) cannot be paid via this MCP — they only accept non-Algorand networks. Skip them or tell the user the endpoint isn't reachable from the Algorand wallet.
 
 ## Alpha Arcade Prediction Markets
 

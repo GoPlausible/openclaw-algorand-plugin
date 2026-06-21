@@ -714,8 +714,7 @@ make_http_request_with_x402 {
   method: "GET",
   paymentRequirements: <accepts[] from step 1>,
   preferredNetwork: "testnet",
-  maxAmountPerRequest: 10000,
-  extensions: <extensions from step 1>
+  maxAmountPerRequest: 10000
 }
 ```
 
@@ -725,9 +724,9 @@ make_http_request_with_x402 {
 | `paymentRequirements` | Pre-fetched `accepts[]` from step 1; skips re-discovery |
 | `preferredNetwork` | `"mainnet"` / `"testnet"` / `"localnet"` — narrows requirement selection to this network. If omitted, the tool picks the cheapest affordable Algorand requirement across all networks in `accepts[]`. |
 | `maxAmountPerRequest` | Hard budget cap in atomic units; tool refuses if cheapest requirement exceeds |
-| `extensions` | Pass through from step 1 for traceability (e.g., Bazaar metadata) |
 | `correlationId` | Optional — forwarded as `X-Correlation-ID` header |
 | `headers`, `body`, `queryParams` | Optional — extra HTTP request bits |
+| `extensions` | Optional — passed through verbatim into the response's `extensions` field for traceability. Useful when the agent already fetched Bazaar metadata via `bazaar_get_resource_details` and wants to attach it to the payment record. |
 
 The tool runs internally:
 1. Selects the requirement (by `preferredNetwork` if given, otherwise cheapest Algorand entry within `maxAmountPerRequest`)
@@ -772,3 +771,139 @@ Skip step 1. Call `make_http_request_with_x402 { baseURL, path, method }` direct
 | `Payment requirement is missing extra.feePayer` | Server's `accepts[]` entry is missing the facilitator address | Server-side misconfiguration; contact the resource provider |
 | `Payment rejected by server: <snippet>` | Facilitator rejected the signed payment — usually expired transaction window or stale `suggestedParams` | Retry once with a fresh call; if still failing, inspect the snippet for the specific reason |
 | `Active wallet not found` / `Could not load active account` | No active account in `wallet.db` or no mnemonic in the keychain | Run `wallet_get_info`; if no account, `add_account` or `import_account` |
+
+---
+
+## x402 Bazaar Discovery Workflow
+
+Three read-only tools that query the discovery directory hosted by the configured facilitator (`facilitator.goplausible.xyz` by default; override on the MCP server with the `BAZAAR_BASE_URL` env var). Use them to find paid resources cataloged across the x402 ecosystem before calling `make_http_request_with_x402`.
+
+### Step 1 — Browse or search
+
+**Browse the whole catalog filtered by network:**
+```
+bazaar_list {
+  network: "algorand-mainnet",
+  limit: 20
+}
+```
+
+**Keyword search with a budget cap:**
+```
+bazaar_search {
+  query: "weather",
+  network: "algorand-mainnet",
+  maxUsdPrice: 0.10,
+  limit: 10
+}
+```
+
+**Both** return a `count` plus an `items[]` array. Each item is a summary by default:
+```json
+{
+  "resourceUrl": "https://api.iomarkets.ai/v1/proof/price",
+  "method": "GET",
+  "description": "Signed point-in-time price attestation",
+  "merchantId": "RFpVTDdKQVBRVVZUMllEWEc0S1RPQ09T",
+  "algorandPayable": true,
+  "algorandAccepts": [
+    {
+      "network": "algorand:wGHE2Pwdvd7S12BL5FaOP20EGYesN73ktiC1qzkkit8=",
+      "mcpNetwork": "mainnet",
+      "scheme": "exact",
+      "amount": "10000",
+      "asset": "31566704",
+      "payTo": "DZUL...",
+      "usdPrice": 0.01
+    }
+  ],
+  "totalAcceptedNetworks": 1,
+  "otherNetworks": [],
+  "hasDiscoveryInfo": true,
+  "popularity": { "verifyCount": 1, "settleCount": 2 },
+  "firstSeen": "2026-06-20T22:04:55.570Z",
+  "lastSeen": "2026-06-20T22:12:00.420Z",
+  "id": "R0VUOmh0dHBzOi8v..."
+}
+```
+
+Pass `full: true` to `bazaar_list` to get the verbatim facilitator response (full `accepts[]` plus `discoveryInfo` with input/output JSON schema). Larger, useful when you need the schema to construct a correct request.
+
+### Step 2 — Confirm with the user (mainnet)
+
+Show the user: the resource URL, description, USD price, payTo, and network. Wait for explicit confirmation before paying.
+
+### Step 3 — Pay using the chosen resource
+
+Two options:
+
+**A. Pay using the URL only** (`make_http_request_with_x402` re-probes the endpoint):
+```
+make_http_request_with_x402 {
+  baseURL: "https://api.iomarkets.ai",
+  path: "/v1/proof/price",
+  method: "GET",
+  preferredNetwork: "mainnet",
+  maxAmountPerRequest: 10000
+}
+```
+
+**B. Pay using the Bazaar-fetched accepts[]** (skips the per-endpoint discovery probe):
+```
+make_http_request_with_x402 {
+  baseURL: "https://api.iomarkets.ai",
+  path: "/v1/proof/price",
+  method: "GET",
+  paymentRequirements: <accepts[] from bazaar_get_resource_details>,
+  preferredNetwork: "mainnet",
+  maxAmountPerRequest: 10000
+}
+```
+
+Option B is faster (one HTTP round-trip instead of two) when you already have the `accepts[]` from a Bazaar call. Get the full `accepts[]` from `bazaar_get_resource_details` (the summary returned by `bazaar_list` / `bazaar_search` strips non-Algorand entries — use the get-details tool when you need the full shape).
+
+### bazaar_get_resource_details — fetch one by URL
+
+```
+bazaar_get_resource_details {
+  resource: "https://api.iomarkets.ai/v1/proof/price"
+}
+```
+
+Returns the verbatim resource record (full `accepts[]`, `discoveryInfo`, popularity counters). Throws `-32600 No Bazaar resource found with resourceUrl=…` if no exact match (with partial-match count for context).
+
+### bazaar_list filters
+
+| Argument | Purpose |
+|---|---|
+| `network` | Friendly name (`"algorand-mainnet"`, `"algorand-testnet"`, `"algorand-localnet"`, or bare `"mainnet"`/`"testnet"`/`"localnet"`) OR raw CAIP-2 (`"algorand:wGHE2Pw…"`, `"eip155:84532"`, `"solana:EtWT…"`). Friendly names are translated; raw CAIP-2 passes through. |
+| `method` | Filter by HTTP method (`GET`, `POST`, `PUT`, `PATCH`, `DELETE`). |
+| `merchantId` | Filter by merchant id. |
+| `limit` | Results per page (default 50, max 100). |
+| `offset` | Pagination offset. |
+| `full` | `true` to return the verbatim facilitator response per item (large); `false` (default) for the compact summary. |
+
+### bazaar_search filters
+
+All bazaar_list params apply, plus:
+
+| Argument | Server-side or client-side | Purpose |
+|---|---|---|
+| `query` (required) | server | Keyword (min 1 char) — matched against URL and description. |
+| `limit` | server (forwarded), client (final cap) | 1..20, default 10. Tool over-fetches server-side to allow client-side filtering. |
+| `includeTestnets` | client | Default `false` (mainnet-only). Set `true` to include testnet/devnet entries. |
+| `scheme` | client | `"exact"` or `"upto"` — only return resources whose `accepts[]` includes this payment scheme. |
+| `maxUsdPrice` | client | USD cap (computed from `amount` + `extra.decimals`, assumes USDC-like pricing). Excludes resources whose cheapest entry exceeds. |
+| `asset` | client | Only return resources whose `accepts[]` includes this asset id. |
+| `payTo` | client | Only return resources whose `accepts[]` includes this recipient. |
+| `extensions` | client | Only return resources whose `discoveryInfo` / extensions object contains this key (e.g. `"bazaar"`, `"outputSchema"`). |
+
+### Common Bazaar Errors
+
+| Error | Cause | Solution |
+|-------|-------|---------|
+| `\`query\` is required and must be a non-empty string` | `bazaar_search` called without `query` or with empty string | Provide at least 1 char in `query` |
+| `\`limit\` must be between 1 and 20` | `bazaar_search` `limit` out of range | Clamp the value or omit it (default is 10) |
+| `\`resource\` is not a valid URL: …` | `bazaar_get_resource_details` got a non-URL string | Pass the exact resourceUrl as displayed in `bazaar_list` / `bazaar_search` results |
+| `No Bazaar resource found with resourceUrl=…` | `bazaar_get_resource_details` couldn't find an exact match — the resource may not be cataloged in the Bazaar (e.g., test fixtures aren't always registered) | Use `bazaar_search` with a substring of the URL to find what IS cataloged, or call `make_http_request_with_x402` directly (it can pay endpoints that aren't in the Bazaar) |
+| `Bazaar request failed (5xx) for /discovery/resources?...` | Facilitator is down or degraded | Retry; if persistent, the facilitator is having an outage — fall back to direct calls via `make_http_request_with_x402` if the agent already knows the endpoint URL |
