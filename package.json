@@ -1,6 +1,6 @@
 {
   "name": "@goplausible/algorand-plugin",
-  "version": "2.2.8",
+  "version": "2.3.2",
   "publishConfig": {
     "access": "public"
   },

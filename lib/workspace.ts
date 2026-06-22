@@ -2,7 +2,7 @@ import { readFileSync, writeFileSync, existsSync, mkdirSync } from "node:fs";
 import { dirname, join } from "node:path";
 import { homedir } from "node:os";
 
-import { upsertMcporterConfig } from "./mcporter.js";
+import { upsertMcporterConfig, upsertTravelMcpConfig } from "./mcporter.js";
 
 const PLUGIN_ID = "algorand-plugin";
 
@@ -97,7 +97,7 @@ export function runFirstLoadInit(api: WorkspaceApi, pluginRoot: string, workspac
   if (!existsSync(markerDir)) mkdirSync(markerDir, { recursive: true });
 
   api.logger.info(
-    `[algorand-plugin] First-load setup: writing Algorand routing reference to ${workspacePath}/memory/algorand-plugin.md, adding a single pointer line under "## Plugin Routing" in ${workspacePath}/MEMORY.md (no always-loaded NEVER FORGET block), registering algorand-mcp in ~/.mcporter/mcporter.json, and creating ${markerPath} so this runs only once. The agent loads the routing reference on demand when Algorand keywords appear; remove the pointer line or the reference file to opt out.`,
+    `[algorand-plugin] First-load setup: writing Algorand routing reference to ${workspacePath}/memory/algorand-plugin.md, adding a single pointer line under "## Plugin Routing" in ${workspacePath}/MEMORY.md (no always-loaded NEVER FORGET block), registering algorand-mcp (local, stdio) and travala-mcp (remote, http) in ~/.mcporter/mcporter.json, and creating ${markerPath} so this runs only once. The agent loads the routing reference on demand when Algorand keywords appear; remove the pointer line or the reference file to opt out.`,
   );
 
   const mem = writeMemoryFile(pluginRoot, workspacePath);
@@ -111,6 +111,10 @@ export function runFirstLoadInit(api: WorkspaceApi, pluginRoot: string, workspac
   const mcp = upsertMcporterConfig(pluginRoot);
   if (mcp.success) api.logger.info(`[algorand-plugin] ${mcp.message}`);
   else api.logger.warn(`[algorand-plugin] ${mcp.message}`);
+
+  const travel = upsertTravelMcpConfig();
+  if (travel.success) api.logger.info(`[algorand-plugin] ${travel.message}`);
+  else api.logger.warn(`[algorand-plugin] ${travel.message}`);
 
   writeFileSync(markerPath, new Date().toISOString());
 }

@@ -17,6 +17,7 @@
   - `haystack-router-development` — DEX aggregator SDK integration
   - `haystack-router-interaction` — Best-price swaps via MCP tools
   - `alpha-arcade-interaction` — Prediction markets interaction
+  - `travala-interaction` — Travel booking interaction
 
 ## Installation
 
