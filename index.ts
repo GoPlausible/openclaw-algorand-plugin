@@ -202,7 +202,7 @@ function register(api: OpenClawPluginApi) {
           for (const s of [
             "algorand-development", "algorand-typescript", "algorand-python",
             "algorand-interaction", "algorand-x402-typescript", "algorand-x402-python",
-            "haystack-router-development", "haystack-router-interaction", "alpha-arcade-interaction", "travala-interaction"
+            "haystack-router-development", "haystack-router-interaction", "alpha-arcade-interaction", "travala-booking-expert"
           ]) console.log(`    • ${s}`);
           console.log("");
           console.log("  MCP Servers:");

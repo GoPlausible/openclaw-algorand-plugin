@@ -26,7 +26,7 @@ The plugin can prepare and sign **real blockchain transactions** that move value
 * `algorand-x402-typescript` — Load for building x402 payment apps in TypeScript (clients, servers, facilitators, paywalls, Next.js).
 * `algorand-x402-python` — Load for building x402 payment apps in Python (clients, servers, facilitators, Bazaar discovery).
 * `algorand-interaction` also covers x402 payment workflows — ALWAYS load it on HTTP 402 responses to follow the atomic group payment pattern.
-* `travala-interaction` — Load for travel booking interaction via MCP tools (search, book, pay, confirm).
+* `travala-booking-expert` — Load for travel booking interaction via Travala MCP server and tools (search, book, pay, confirm).
 * `haystack-router-interaction` — Load for best-price token swaps via MCP tools (DEX aggregation across Tinyman, Pact, Folks).
 * `haystack-router-development` — Load for building swap UIs with `@txnlab/haystack-router` SDK (React, Node.js).
 * `alpha-arcade-interaction` — Load for prediction market trading via MCP tools (browse markets, place orders, manage positions).
