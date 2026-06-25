@@ -270,13 +270,11 @@ Two skills cover Haystack Router — one for building applications with the SDK,
 
 | Task | Skill |
 |------|-------|
-| Build swap apps with `@txnlab/haystack-router` SDK | `haystack-router-development` |
 | Execute swaps via Algorand MCP tools | `haystack-router-interaction` |
 
 ### When to Use Which Skill
 
 - **haystack-router-interaction** — Use when the user wants to get quotes or execute swaps directly through the Algorand MCP wallet. No SDK or API key needed. Three tools: `api_haystack_get_swap_quote`, `api_haystack_execute_swap`, `api_haystack_needs_optin`.
-- **haystack-router-development** — Use when the user wants to build an application integrating the `@txnlab/haystack-router` SDK — React swap UIs, Node.js automation, RouterClient, middleware, fees/referrals.
 
 ### MCP Swap Workflow
 
@@ -311,8 +309,6 @@ The `type` parameter determines which side of the swap is exact. **Getting this 
 - **When ambiguous, ask the user** — "Do you want to spend exactly X or receive exactly X?"
 
 ### Development Skill Topics
-
-**haystack-router-development:** `getting-started`, `quotes`, `swaps`, `react-integration`, `node-automation`, `configuration`, `fees-and-referrals`, `api-reference`, `migration`
 
 **haystack-router-interaction:** `getting-started`, `quotes`, `swaps`, `node-automation`, `configuration`
 

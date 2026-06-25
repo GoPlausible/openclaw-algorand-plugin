@@ -40,7 +40,6 @@ The plugin can prepare and sign **real blockchain transactions** that move value
 | x402 | Runtime x402 payments + Bazaar discovery via MCP | `algorand-x402-payment` |
 | x402 | TypeScript x402 development | `algorand-x402-typescript` |
 | x402 | Python x402 development | `algorand-x402-python` |
-| Haystack | Build swap apps with SDK | `haystack-router-development` |
 | Haystack | Execute swaps via MCP tools | `haystack-router-interaction` |
 | Alpha Arcade | Prediction markets via MCP tools | `alpha-arcade-interaction` |
 

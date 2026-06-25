@@ -668,7 +668,7 @@ Decentralized exchange operations on Tinyman AMM.
 
 ## Haystack Router Tools
 
-DEX-aggregated swaps across Tinyman V2, Pact, and Folks with smart order routing. For detailed workflows and the full SDK guide, see the **haystack-router-interaction** and **haystack-router-development** skills.
+DEX-aggregated swaps across Tinyman V2, Pact, and Folks with smart order routing. For detailed workflows and the full SDK guide, see the **haystack-router-interaction** skill.
 
 ### api_haystack_get_swap_quote
 - **Purpose**: Get an optimized swap quote across multiple DEXes without executing
