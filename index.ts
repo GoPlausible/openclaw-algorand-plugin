@@ -3,7 +3,7 @@ import { existsSync, readFileSync } from "node:fs";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
 
-import { ALGORAND_MCP, GOPLAUSIBLE_SERVICES, TRAVALA_MCP } from "./lib/mcp-servers.js";
+import { ALGORAND_MCP, GOPLAUSIBLE_SERVICES } from "./lib/mcp-servers.js";
 import { runSetup, type AlgorandPluginConfig } from "./setup.js";
 // DISABLED FOR TESTING — measuring agent behavior with only algorand-mcp's
 // x402 tools (`x402_discover_payment_requirements`, `make_http_request_with_x402`).
@@ -15,10 +15,8 @@ import {
   getMcpBinaryPath,
   isMcpBinaryBundled,
   isMcporterConfigured,
-  isTravelMcpConfigured,
   mcporterConfigPath,
   upsertMcporterConfig,
-  upsertTravelMcpConfig,
 } from "./lib/mcporter.js";
 import {
   ensureWorkspaceMemoryIndex,
@@ -146,10 +144,6 @@ function register(api: OpenClawPluginApi) {
           console.log(`  ${mcp.success ? "✅" : "⚠️"} ${mcp.message}`);
           if (!mcp.success) warnings.push({ step: "mcporter config (algorand-mcp)", message: mcp.message });
 
-          const travel = upsertTravelMcpConfig();
-          console.log(`  ${travel.success ? "✅" : "⚠️"} ${travel.message}`);
-          if (!travel.success) warnings.push({ step: "mcporter config (travala-mcp)", message: travel.message });
-
           console.log("");
           const newConfig = await runSetup(pluginConfig);
 
@@ -195,18 +189,16 @@ function register(api: OpenClawPluginApi) {
           const bundled = isMcpBinaryBundled(PLUGIN_ROOT);
           const mcpBinary = bundled ? getMcpBinaryPath(PLUGIN_ROOT) : null;
           const mcporterOk = isMcporterConfigured();
-          const travelOk = isTravelMcpConfigured();
 
           console.log("\n🔷 Algorand Plugin Status\n");
           console.log("  Skills:");
           for (const s of [
             "algorand-development", "algorand-typescript", "algorand-python",
-            "algorand-interaction", "algorand-x402-payment", "algorand-x402-typescript", "algorand-x402-python", "haystack-router-interaction", "alpha-arcade-interaction", "travala-booking-expert"
+            "algorand-interaction", "algorand-x402-payment", "algorand-x402-typescript", "algorand-x402-python", "haystack-router-interaction", "alpha-arcade-interaction"
           ]) console.log(`    • ${s}`);
           console.log("");
           console.log("  MCP Servers:");
           console.log(`    algorand-mcp (stdio):  ${mcporterOk ? "✅" : "⚠️ "} ${mcpBinary ?? "binary not bundled — reinstall plugin"}`);
-          console.log(`    ${TRAVALA_MCP.id} (http):     ${travelOk ? "✅" : "⚠️ "} ${TRAVALA_MCP.baseUrl}`);
           console.log(`    mcporter.json:         ${mcporterConfigPath()}`);
           console.log("");
           console.log("  Config:");
@@ -231,8 +223,8 @@ function register(api: OpenClawPluginApi) {
           }
           const command = getMcpBinaryPath(PLUGIN_ROOT);
 
-          console.log("\n🔷 MCP Configuration (Algorand + Travala)\n");
-          console.log("  For external coding agents, add these to their MCP config:\n");
+          console.log("\n🔷 MCP Configuration (Algorand)\n");
+          console.log("  For external coding agents, add this to their MCP config:\n");
           console.log("  Claude Code (.mcp.json) / Cursor (.cursor/mcp.json):");
           console.log("  ──────────────────────────────────────────────────");
           console.log(`  {`);
@@ -240,15 +232,11 @@ function register(api: OpenClawPluginApi) {
           console.log(`      "${ALGORAND_MCP.id}": {`);
           console.log(`        "command": "${command}",`);
           console.log(`        "args": []`);
-          console.log(`      },`);
-          console.log(`      "${TRAVALA_MCP.id}": {`);
-          console.log(`        "url": "${TRAVALA_MCP.baseUrl}",`);
-          console.log(`        "transport": "http"`);
           console.log(`      }`);
           console.log(`    }`);
           console.log(`  }\n`);
           console.log(`  OpenClaw uses mcporter (~/.mcporter/mcporter.json); the plugin registers`);
-          console.log(`  both servers automatically on first load.\n`);
+          console.log(`  the server automatically on first load.\n`);
         });
     },
     { commands: ["algorand-plugin"] },

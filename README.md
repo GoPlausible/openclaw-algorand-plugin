@@ -17,7 +17,6 @@
   - `algorand-x402-python` — x402 payments development in Python
   - `haystack-router-interaction` — Best-price swaps via MCP tools
   - `alpha-arcade-interaction` — Prediction markets interaction
-  - `travala-booking-expert` — Travel booking interaction expert (via Travala MCP)
 
 ## Installation
 

@@ -2,7 +2,7 @@ import { readFileSync, writeFileSync, existsSync, mkdirSync } from "node:fs";
 import { basename, dirname, join } from "node:path";
 import { homedir } from "node:os";
 
-import { ALGORAND_MCP, TRAVALA_MCP } from "./mcp-servers.js";
+import { ALGORAND_MCP } from "./mcp-servers.js";
 
 const NM = "node_modules";
 const BIN_NAME = "algorand-mcp";
@@ -121,20 +121,10 @@ function isStdioEntry(entry: McporterServerEntry | undefined): entry is Mcporter
   return !!entry && "command" in entry && typeof (entry as McporterStdioEntry).command === "string";
 }
 
-function isHttpEntry(entry: McporterServerEntry | undefined): entry is McporterHttpEntry {
-  return !!entry && "baseUrl" in entry && typeof (entry as McporterHttpEntry).baseUrl === "string";
-}
-
 export function isMcporterConfigured(): boolean {
   const loaded = loadMcporterConfig();
   if (!loaded.ok) return false;
   return Boolean(loaded.cfg.mcpServers?.[ALGORAND_MCP.id]);
-}
-
-export function isTravelMcpConfigured(): boolean {
-  const loaded = loadMcporterConfig();
-  if (!loaded.ok) return false;
-  return Boolean(loaded.cfg.mcpServers?.[TRAVALA_MCP.id]);
 }
 
 export function upsertMcporterConfig(pluginRoot: string): { success: boolean; message: string } {
@@ -161,26 +151,4 @@ export function upsertMcporterConfig(pluginRoot: string): { success: boolean; me
   loaded.cfg.mcpServers[ALGORAND_MCP.id] = entry;
   writeFileSync(loaded.path, JSON.stringify(loaded.cfg, null, 2));
   return { success: true, message: `algorand-mcp registered in ${loaded.path}` };
-}
-
-/**
- * Register the remote Travala travel MCP under mcpServers["travala-mcp"].
- * mcporter's HTTP transport stores only `{ baseUrl }` in the JSON — no
- * `transport`, `type`, or `description` fields. mcporter infers the HTTP
- * transport from the presence of `baseUrl` (vs `command` for stdio).
- */
-export function upsertTravelMcpConfig(): { success: boolean; message: string } {
-  const loaded = loadMcporterConfig();
-  if (!loaded.ok) return { success: false, message: loaded.message };
-
-  const entry: McporterHttpEntry = { baseUrl: TRAVALA_MCP.baseUrl };
-
-  const existing = loaded.cfg.mcpServers[TRAVALA_MCP.id];
-  if (isHttpEntry(existing) && existing.baseUrl === entry.baseUrl) {
-    return { success: true, message: `${TRAVALA_MCP.id} already registered in ${loaded.path}` };
-  }
-
-  loaded.cfg.mcpServers[TRAVALA_MCP.id] = entry;
-  writeFileSync(loaded.path, JSON.stringify(loaded.cfg, null, 2));
-  return { success: true, message: `${TRAVALA_MCP.id} registered in ${loaded.path}` };
 }
