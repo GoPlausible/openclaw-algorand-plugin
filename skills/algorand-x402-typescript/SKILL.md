@@ -1,6 +1,6 @@
 ---
 name: algorand-x402-typescript
-description: Comprehensive guide for building x402 HTTP-native payment applications on Algorand using TypeScript. This is the parent skill that aggregates all TypeScript x402 sub-skills. Use when working with x402 payments in TypeScript/JavaScript, building clients, servers, facilitators, paywalls, or Next.js apps with Algorand x402, or when explaining x402 concepts to TypeScript developers. Strong triggers include "x402 TypeScript", "x402 Algorand TypeScript", "@x402-avm", "payment protocol TypeScript", "402 payment TypeScript", "x402 client fetch axios", "x402 server express hono", "x402 facilitator TypeScript", "x402 paywall", "x402 Next.js", "x402 core avm TypeScript", "explain x402 TypeScript", "teach x402".
+description: Comprehensive guide for building x402 HTTP-native payment applications on Algorand using TypeScript. This is the parent skill that aggregates all TypeScript x402 sub-skills. Use when working with x402 payments in TypeScript/JavaScript, building clients, servers, facilitators, paywalls, or Next.js apps with Algorand x402, or when explaining x402 concepts to TypeScript developers. Strong triggers include "x402 TypeScript", "x402 Algorand TypeScript", "@x402", "payment protocol TypeScript", "402 payment TypeScript", "x402 client fetch axios", "x402 server express hono", "x402 facilitator TypeScript", "x402 paywall", "x402 Next.js", "x402 core avm TypeScript", "explain x402 TypeScript", "teach x402".
 ---
 
 # x402 on Algorand - TypeScript
@@ -11,16 +11,16 @@ This is the aggregated parent skill for all x402 HTTP-native payment protocol sk
 
 ```bash
 # Core + AVM mechanism
-npm install @x402-avm/core @x402-avm/avm algosdk
+npm install @x402/core @x402/avm algosdk
 
 # Server middleware (pick one)
-npm install @x402-avm/express    # Express.js
-npm install @x402-avm/hono       # Hono
-npm install @x402-avm/next       # Next.js
+npm install @x402/express    # Express.js
+npm install @x402/hono       # Hono
+npm install @x402/next       # Next.js
 
 # Client (pick one)
-npm install @x402-avm/fetch      # Fetch API
-npm install @x402-avm/axios      # Axios
+npm install @x402/fetch      # Fetch API
+npm install @x402/axios      # Axios
 ```
 
 ### Register AVM Scheme
@@ -29,15 +29,15 @@ Every component registers the AVM exact scheme unconditionally — no environmen
 
 ```typescript
 // Client
-import { registerExactAvmScheme } from "@x402-avm/avm/exact/client";
+import { registerExactAvmScheme } from "@x402/avm/exact/client";
 registerExactAvmScheme(client, { signer });
 
 // Server
-import { registerExactAvmScheme } from "@x402-avm/avm/exact/server";
+import { registerExactAvmScheme } from "@x402/avm/exact/server";
 registerExactAvmScheme(server);
 
 // Facilitator
-import { registerExactAvmScheme } from "@x402-avm/avm/exact/facilitator";
+import { registerExactAvmScheme } from "@x402/avm/exact/facilitator";
 registerExactAvmScheme(facilitator, { signer, networks: ALGORAND_TESTNET_CAIP2 });
 ```
 
@@ -54,10 +54,10 @@ Navigate to the appropriate reference based on your task. Each topic has three f
 
 ### Explaining x402 for TypeScript
 
-Understand @x402-avm/* TypeScript package structure, signer interfaces (ClientAvmSigner, FacilitatorAvmSigner), registration patterns, builder patterns, constants, and utilities.
+Understand @x402/* TypeScript package structure, signer interfaces (ClientAvmSigner, FacilitatorAvmSigner), registration patterns, builder patterns, constants, and utilities.
 
 - [explain-algorand-x402-typescript.md](./references/explain-algorand-x402-typescript.md) — Package ecosystem explanation
-- [explain-algorand-x402-typescript-reference.md](./references/explain-algorand-x402-typescript-reference.md) — API reference for @x402-avm/* packages
+- [explain-algorand-x402-typescript-reference.md](./references/explain-algorand-x402-typescript-reference.md) — API reference for @x402/* packages
 - [explain-algorand-x402-typescript-examples.md](./references/explain-algorand-x402-typescript-examples.md) — TypeScript pattern examples
 
 ### Building Clients
@@ -102,7 +102,7 @@ Build browser paywall UIs with server-side middleware and client-side wallet int
 
 ### Low-Level SDK Usage
 
-Use @x402-avm/core and @x402-avm/avm packages directly for custom integrations. Covers payment policies, AVM signer interfaces, transaction groups, fee abstraction, and low-level primitives.
+Use @x402/core and @x402/avm packages directly for custom integrations. Covers payment policies, AVM signer interfaces, transaction groups, fee abstraction, and low-level primitives.
 
 - [use-typescript-x402-core-avm.md](./references/use-typescript-x402-core-avm.md) — Core SDK usage guide
 - [use-typescript-x402-core-avm-reference.md](./references/use-typescript-x402-core-avm-reference.md) — Core/AVM API reference
@@ -112,14 +112,14 @@ Use @x402-avm/core and @x402-avm/avm packages directly for custom integrations. 
 
 | Package | Purpose |
 | ------- | ------- |
-| `@x402-avm/fetch` | Wrap fetch with automatic 402 payment handling |
-| `@x402-avm/axios` | Wrap axios with automatic 402 payment handling |
-| `@x402-avm/express` | Express.js payment middleware |
-| `@x402-avm/hono` | Hono payment middleware |
-| `@x402-avm/next` | Next.js payment middleware and route wrappers |
-| `@x402-avm/paywall` | Browser paywall UI components |
-| `@x402-avm/core` | Core protocol primitives (client, server, facilitator) |
-| `@x402-avm/avm` | AVM mechanism (signers, transaction builders, constants) |
+| `@x402/fetch` | Wrap fetch with automatic 402 payment handling |
+| `@x402/axios` | Wrap axios with automatic 402 payment handling |
+| `@x402/express` | Express.js payment middleware |
+| `@x402/hono` | Hono payment middleware |
+| `@x402/next` | Next.js payment middleware and route wrappers |
+| `@x402/paywall` | Browser paywall UI components |
+| `@x402/core` | Core protocol primitives (client, server, facilitator) |
+| `@x402/avm` | AVM mechanism (signers, transaction builders, constants) |
 
 ## How to Use This Skill
 

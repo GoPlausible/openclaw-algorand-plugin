@@ -23,25 +23,28 @@
 
 ## Wallet Management Tools
 
-Secure wallet management. Private keys are never available to you — use these tools to sign.
+Agent wallet — the MCP server holds mnemonics in a local SQLite DB at `~/.algorand-mcp/wallet.db` (file mode `0600`) and signs on your behalf via these tools. Mnemonics are never returned in tool responses.
+
+> **Threat model**: the `wallet.db` file IS the secret. Anyone with read access to the data directory can recover every mnemonic. Mitigations are filesystem permissions (already `0600`), keeping the dir off shared/world-readable volumes, and treating it like any other secret store (snapshot it carefully, restrict backups, encrypt the host disk for at-rest protection). For Docker: mount `~/.algorand-mcp` as a persistent named volume and restrict access to it like any secret.
 
 ### wallet_add_account
-- **Purpose**: Create a new Algorand account with nickname
+- **Purpose**: Create a new Algorand account, store it in the agent-wallet DB with a nickname, and auto-switch to it if it's the first account
 - **Parameters**:
 ```json
 {
   "nickname": "my-account"
 }
 ```
-- **Returns**: `{ address, publicKey, nickname }` — mnemonic is NEVER returned
+- **Returns**: `{ address, publicKey, nickname, index }` — mnemonic is held internally by the MCP server and never returned to the agent
 
 ### wallet_remove_account
-- **Purpose**: Remove an account from the wallet by nickname or index
+- **Purpose**: Remove an account from the wallet by nickname or index. Deletes the row from `wallet.db` and best-effort cleans up any stale OS-keychain entry left over from pre-v4 installs.
 - **Parameters**: `{ "nickname": "my-account" }` or `{ "index": 0 }`
 
 ### wallet_list_accounts
-- **Purpose**: List all wallet accounts with nicknames and addresses
-- **Parameters**: `{}`
+- **Purpose**: List wallet accounts. By default returns ACTIVE (signable) accounts only. Pass `{ "archived": true }` to return archived accounts instead — these are accounts whose mnemonic could not be recovered at startup (e.g., `wallet.db` was moved to a new machine without the OS-keychain entries from a pre-v4 install, or fresh Docker install over an existing DB). Archived rows stay in the DB for forensics but cannot sign; their nicknames are freed for reuse by new active accounts.
+- **Parameters**: `{}` (default — active accounts) or `{ "archived": true }` (returns archived accounts)
+- **Returns**: `{ archived: false|true, activeIndex, count, accounts: [{ index, active, archived, nickname, address, publicKey, createdAt }] }`
 
 ### wallet_switch_account
 - **Purpose**: Switch the active wallet account by nickname or index
@@ -815,92 +818,20 @@ Shareable QR: [link URL]
   - `nodes`: Node Management
   - `details`: Developer Details
 
+
 ---
 
-## x402 Payment Tools
+## x402 Payment Tools — see the dedicated skill
 
-Two tools for paying x402-protected HTTP resources from the active wallet, plus three Bazaar discovery tools for finding paid resources cataloged across the x402 ecosystem.
+For per-tool documentation on `x402_discover_payment_requirements`, `make_http_request_with_x402`, `bazaar_list`, `bazaar_search`, and `bazaar_get_resource_details` (Purpose / Parameters / Returns / Notes for each, plus the complete x402-specific error table), **load the `algorand-x402-payment` skill**.
 
-### x402_discover_payment_requirements
-- **Purpose**: Probe an x402-protected endpoint and return its payment requirements (the `accepts[]` array from the 402 response) without paying. Read-only — no signing, no transaction.
-- **Parameters**:
-```json
-{
-  "baseURL": "https://example.x402.goplausible.xyz",
-  "path": "/avm/weather",
-  "method": "GET",
-  "queryParams": { },
-  "body": null
-}
-```
-- **Returns**: `{ result: { status, x402: true, x402Version, accepts: [{ scheme, network, amount, asset, payTo, maxTimeoutSeconds, extra: { name, decimals, feePayer } }] }, _atomicUnitsNote }`
-- **Notes**: Reads payment requirements from the `payment-required` HTTP header (Algorand x402 V2 canonical) and falls back to the response body (legacy x402 servers). Returns `x402: false` if the endpoint isn't x402-protected.
-
-### make_http_request_with_x402
-- **Purpose**: Call an x402-protected endpoint with automatic payment from the active wallet. Pay → fetch in one tool call.
-- **Parameters**:
-```json
-{
-  "baseURL": "https://example.x402.goplausible.xyz",
-  "path": "/avm/weather",
-  "method": "GET",
-  "paymentRequirements": [
-    { "scheme": "exact", "network": "algorand:SGO1…", "amount": "1000",
-      "asset": "10458941", "payTo": "MPY5…",
-      "extra": { "decimals": 6, "feePayer": "ZMFK…" } }
-  ],
-  "preferredNetwork": "testnet",
-  "maxAmountPerRequest": 10000,
-  "queryParams": { },
-  "body": null,
-  "headers": { },
-  "correlationId": "optional-trace-id",
-  "extensions": { }
-}
-```
-- **Returns**: `{ result, status: 200, paymentResponse?, paid: { network, asset, amount, payTo }, extensions?, _atomicUnitsNote }`
-- **Notes**:
-  - If `paymentRequirements` is omitted, the tool runs discovery internally (one extra HTTP round-trip).
-  - Builds an atomic 2-transaction group: facilitator fee-payer (sponsors fees) + wallet payment (signed locally). Sends with `PAYMENT-SIGNATURE` header.
-  - `preferredNetwork` accepts `"mainnet" | "testnet" | "localnet"`. If omitted, the selector picks the cheapest affordable Algorand entry across all networks in `accepts[]`.
-  - `maxAmountPerRequest` is a hard budget cap in atomic units. Tool refuses if the cheapest requirement exceeds it.
-  - Mainnet = real money — confirm cost with the user first.
-
-### bazaar_list
-- **Purpose**: Browse paid resources cataloged in the Bazaar discovery directory (hosted by the configured facilitator at `facilitator.goplausible.xyz` by default).
-- **Parameters**: `{ "network": "algorand-mainnet", "method": "GET", "merchantId": "...", "limit": 50, "offset": 0, "full": false }`
-- **Network values**: friendly names (`"algorand-mainnet"`, `"algorand-testnet"`, `"algorand-localnet"`, or bare `"mainnet"`/`"testnet"`/`"localnet"`) are translated to CAIP-2; raw CAIP-2 strings pass through.
-- **Returns**: `{ source, pagination, count, items: [<summary or verbatim>] }`. Compact summary by default (URL, description, Algorand-payable accepts only, popularity); `full: true` returns the verbatim facilitator record per item.
-
-### bazaar_search
-- **Purpose**: Keyword search over Bazaar resources with optional budget and metadata filters.
-- **Parameters**:
-```json
-{
-  "query": "weather",
-  "limit": 10,
-  "network": "algorand-mainnet",
-  "includeTestnets": false,
-  "scheme": "exact",
-  "maxUsdPrice": 0.10,
-  "asset": "31566704",
-  "payTo": "ALGO_ADDRESS",
-  "extensions": "bazaar"
-}
-```
-- **Server-side**: `query`, `network`. **Client-side post-filters**: `includeTestnets`, `scheme`, `maxUsdPrice`, `asset`, `payTo`, `extensions`.
-- **Returns**: `{ source, query, filtersApplied, count, items: [<summary>] }`.
-- **Notes**: `maxUsdPrice` is computed from `amount` + `extra.decimals` (assumes USDC-like pricing). Default `includeTestnets: false` (mainnet-only).
-
-### bazaar_get_resource_details
-- **Purpose**: Fetch full details for a single Bazaar resource by exact URL.
-- **Parameters**: `{ "resource": "https://api.iomarkets.ai/v1/proof/price" }`
-- **Returns**: `{ source, resource: <verbatim record with full accepts[] + discoveryInfo + popularity> }`
-- **Errors**: `-32600 No Bazaar resource found with resourceUrl=…` if no exact match (with partial-match count for context).
+The dedicated skill is the source of truth for the five x402/Bazaar tools.
 
 ---
 
 ## Error Reference
+
+Common errors for the algorand-mcp tool surface (excluding x402-specific errors, which live in the dedicated `algorand-x402-payment` skill).
 
 | Error | Cause | Solution |
 |-------|-------|----------|
@@ -909,12 +840,5 @@ Two tools for paying x402-protected HTTP resources from the active wallet, plus 
 | `Asset hasn't been opted in` | Recipient not opted in to ASA | Opt-in first with `wallet_optin_asset` or `make_asset_transfer_txn` |
 | `Overspend` / negative balance | Insufficient funds for amount + fee + MBR | Add funds or reduce amount |
 | `Do not know how to serialize a BigInt` | BigInt in JSON response | Should not occur (patched globally) |
-| `paymentRequirements[N] must be an OBJECT (got ...)` | Non-object value (string, null, array) inside `paymentRequirements` — usually a sibling argument like `preferredNetwork` placed inside the array | Pass `accepts[]` entries verbatim; keep `preferredNetwork`/`maxAmountPerRequest` as top-level siblings |
-| `paymentRequirements[N] is missing required string field(s): ...` | Object entry missing `network`/`payTo`/`asset`/`amount` (or `maxAmountRequired`) | Use unmodified `accepts[]` entries from `x402_discover_payment_requirements` or `bazaar_get_resource_details` |
-| `Endpoint did not return an x402 payment requirement` | URL isn't x402-protected, or 402 body/header malformed | Verify with `x402_discover_payment_requirements`; if `x402: false`, use a normal HTTP tool |
-| `No payment requirement is satisfiable on Algorand` | Endpoint only accepts non-Algorand networks (Base/Solana) | Use a different endpoint, or tell user it's not Algorand-payable |
-| `All Algorand payment requirements exceed maxAmountPerRequest=N` | Cheapest cost exceeds budget cap | Raise `maxAmountPerRequest` (mainnet: confirm with user) or skip |
-| `Payment requirement is missing extra.feePayer` | Server's `accepts[]` entry missing facilitator address | Server misconfiguration — contact resource provider |
-| `Payment rejected by server: <snippet>` | Facilitator rejected the signed payment (stale params, expired window, insufficient balance, not opted in) | Inspect the snippet; do NOT retry blindly |
-| `No Bazaar resource found with resourceUrl=…` | `bazaar_get_resource_details` couldn't find the exact URL in the catalog | Use `bazaar_search` with a URL substring, or call `make_http_request_with_x402` directly |
-| `Bazaar request failed (5xx) for /discovery/...` | Facilitator down or degraded | Retry; if persistent, fall back to direct `make_http_request_with_x402` calls |
+
+For x402-specific errors (`paymentRequirements[N] must be an OBJECT`, `No payment requirement is satisfiable on Algorand`, `All Algorand payment requirements exceed maxAmountPerRequest`, `Payment rejected by server`, `No Bazaar resource found`, etc.), see the error tables in `algorand-x402-payment/references/x402-payment-flow.md`.

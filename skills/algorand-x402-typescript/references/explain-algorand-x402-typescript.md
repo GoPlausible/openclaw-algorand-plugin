@@ -1,10 +1,10 @@
-# x402-avm for TypeScript Developers
+# x402 for TypeScript Developers
 
-Understand the @x402-avm/* TypeScript package ecosystem, signer interfaces, registration patterns, and how to integrate Algorand payments into TypeScript applications.
+Understand the @x402/* TypeScript package ecosystem, signer interfaces, registration patterns, and how to integrate Algorand payments into TypeScript applications.
 
 ## Prerequisites
 
-Before using x402-avm in TypeScript:
+Before using x402 in TypeScript:
 
 1. **Node.js 18+** or a modern browser runtime
 2. **TypeScript 5+** recommended (JavaScript also works)
@@ -13,7 +13,7 @@ Before using x402-avm in TypeScript:
 
 ## Core Workflow: Register, Configure, Use
 
-Every x402-avm TypeScript application follows the same pattern:
+Every x402 TypeScript application follows the same pattern:
 
 ```
 1. Create component instance (client/server/facilitator)
@@ -31,38 +31,38 @@ The package ecosystem is modular. Install only what you need:
 
 ```bash
 # Core + AVM mechanism (always needed)
-npm install @x402-avm/core @x402-avm/avm algosdk
+npm install @x402/core @x402/avm algosdk
 
 # For a client application (pick one)
-npm install @x402-avm/fetch      # Fetch API wrapper
-npm install @x402-avm/axios      # Axios interceptor
+npm install @x402/fetch      # Fetch API wrapper
+npm install @x402/axios      # Axios interceptor
 
 # For a server application (pick one)
-npm install @x402-avm/express    # Express.js middleware
-npm install @x402-avm/hono       # Hono middleware
-npm install @x402-avm/next       # Next.js middleware
+npm install @x402/express    # Express.js middleware
+npm install @x402/hono       # Hono middleware
+npm install @x402/next       # Next.js middleware
 
 # For browser wallet integration
 npm install @txnlab/use-wallet
 
 # Optional
-npm install @x402-avm/paywall    # Browser paywall UI
-npm install @x402-avm/extensions # Protocol extensions
+npm install @x402/paywall    # Browser paywall UI
+npm install @x402/extensions # Protocol extensions
 ```
 
 ### Step 2: Understand the Package Structure
 
 | Package | Role | Key Exports |
 |---------|------|-------------|
-| `@x402-avm/core` | Base protocol | `x402Client`, `x402ResourceServer`, `x402Facilitator`, `HTTPFacilitatorClient` |
-| `@x402-avm/avm` | AVM mechanism | `ClientAvmSigner`, `FacilitatorAvmSigner`, constants, utilities |
-| `@x402-avm/express` | Express middleware | `paymentMiddleware`, `paymentMiddlewareFromConfig` |
-| `@x402-avm/hono` | Hono middleware | `paymentMiddleware`, `paymentMiddlewareFromConfig` |
-| `@x402-avm/next` | Next.js middleware | `paymentMiddleware` |
-| `@x402-avm/fetch` | Fetch client | `wrapFetch` |
-| `@x402-avm/axios` | Axios client | `wrapAxios` |
-| `@x402-avm/paywall` | Paywall UI | `PaywallProvider` |
-| `@x402-avm/extensions` | Extensions | Bazaar, custom schemes |
+| `@x402/core` | Base protocol | `x402Client`, `x402ResourceServer`, `x402Facilitator`, `HTTPFacilitatorClient` |
+| `@x402/avm` | AVM mechanism | `ClientAvmSigner`, `FacilitatorAvmSigner`, constants, utilities |
+| `@x402/express` | Express middleware | `paymentMiddleware`, `paymentMiddlewareFromConfig` |
+| `@x402/hono` | Hono middleware | `paymentMiddleware`, `paymentMiddlewareFromConfig` |
+| `@x402/next` | Next.js middleware | `paymentMiddleware` |
+| `@x402/fetch` | Fetch client | `wrapFetch` |
+| `@x402/axios` | Axios client | `wrapAxios` |
+| `@x402/paywall` | Paywall UI | `PaywallProvider` |
+| `@x402/extensions` | Extensions | Bazaar, custom schemes |
 
 ### Step 3: Implement a Signer
 
@@ -70,7 +70,7 @@ The signer is the only component that touches `algosdk` directly. The SDK define
 
 **For clients (browser with wallet):**
 ```typescript
-import type { ClientAvmSigner } from "@x402-avm/avm";
+import type { ClientAvmSigner } from "@x402/avm";
 import { useWallet } from "@txnlab/use-wallet";
 
 const { activeAccount, signTransactions } = useWallet();
@@ -85,7 +85,7 @@ const signer: ClientAvmSigner = {
 
 **For clients (server-side with private key):**
 ```typescript
-import type { ClientAvmSigner } from "@x402-avm/avm";
+import type { ClientAvmSigner } from "@x402/avm";
 import algosdk from "algosdk";
 
 const secretKey = Buffer.from(process.env.AVM_PRIVATE_KEY!, "base64");
@@ -105,7 +105,7 @@ const signer: ClientAvmSigner = {
 
 **For facilitators:**
 ```typescript
-import type { FacilitatorAvmSigner } from "@x402-avm/avm";
+import type { FacilitatorAvmSigner } from "@x402/avm";
 import algosdk from "algosdk";
 
 const secretKey = Buffer.from(process.env.AVM_PRIVATE_KEY!, "base64");
@@ -131,15 +131,15 @@ Registration connects the AVM mechanism to the core component. Each role has its
 
 ```typescript
 // Client
-import { registerExactAvmScheme } from "@x402-avm/avm/exact/client";
+import { registerExactAvmScheme } from "@x402/avm/exact/client";
 registerExactAvmScheme(client, { signer });
 
 // Server
-import { registerExactAvmScheme } from "@x402-avm/avm/exact/server";
+import { registerExactAvmScheme } from "@x402/avm/exact/server";
 registerExactAvmScheme(server);
 
 // Facilitator
-import { registerExactAvmScheme } from "@x402-avm/avm/exact/facilitator";
+import { registerExactAvmScheme } from "@x402/avm/exact/facilitator";
 registerExactAvmScheme(facilitator, { signer, networks: ALGORAND_TESTNET_CAIP2 });
 ```
 
@@ -155,7 +155,7 @@ import {
   isValidAlgorandAddress,
   convertToTokenAmount,
   createAlgodClient,
-} from "@x402-avm/avm";
+} from "@x402/avm";
 ```
 
 ## Signer Interfaces
@@ -206,13 +206,13 @@ interface FacilitatorAvmSigner {
 3. **Raw bytes everywhere** -- the SDK passes `Uint8Array` msgpack bytes. No base64 conversion needed within the SDK (unlike Python)
 4. **Registration is unconditional** -- never wrap `registerExactAvmScheme()` in `if (env.AVM_*)` checks
 5. **Type imports** -- use `import type { ... }` for interfaces to avoid bundling issues
-6. **Network constants** -- always import `ALGORAND_TESTNET_CAIP2` / `ALGORAND_MAINNET_CAIP2` from `@x402-avm/avm` in SDK code
+6. **Network constants** -- always import `ALGORAND_TESTNET_CAIP2` / `ALGORAND_MAINNET_CAIP2` from `@x402/avm` in SDK code
 
 ## Common Errors / Troubleshooting
 
 | Error | Cause | Solution |
 |-------|-------|----------|
-| `Cannot find module '@x402-avm/avm/exact/client'` | Package not installed or wrong version | Run `npm install @x402-avm/avm` |
+| `Cannot find module '@x402/avm/exact/client'` | Package not installed or wrong version | Run `npm install @x402/avm` |
 | `signTransactions is not a function` | Signer object missing method | Ensure signer implements `ClientAvmSigner` interface |
 | `Invalid key length: expected 64` | Wrong private key format | Key must be 64 bytes Base64-encoded |
 | `No scheme registered for network` | AVM scheme not registered | Call `registerExactAvmScheme()` before use |
@@ -225,8 +225,8 @@ interface FacilitatorAvmSigner {
 
 - [explain-algorand-x402-typescript-reference.md](./explain-algorand-x402-typescript-reference.md) - Detailed package API reference
 - [explain-algorand-x402-typescript-examples.md](./explain-algorand-x402-typescript-examples.md) - Complete TypeScript code examples
-- [@x402-avm/core on npm](https://www.npmjs.com/package/@x402-avm/core)
-- [@x402-avm/avm on npm](https://www.npmjs.com/package/@x402-avm/avm)
-- [GoPlausible x402-avm Examples](https://github.com/GoPlausible/x402-avm/tree/branch-v2-algorand-publish/examples/)
-- [GoPlausible x402-avm Documentation](https://github.com/GoPlausible/.github/blob/main/profile/algorand-x402-documentation/)
+- [@x402/core on npm](https://www.npmjs.com/package/@x402/core)
+- [@x402/avm on npm](https://www.npmjs.com/package/@x402/avm)
+- [GoPlausible x402 Examples](https://github.com/GoPlausible/x402/tree/main/examples/)
+- [GoPlausible x402 Documentation](https://github.com/GoPlausible/.github/blob/main/profile/algorand-x402-documentation/)
 - [@txnlab/use-wallet Documentation](https://txnlab.gitbook.io/use-wallet)

@@ -1,14 +1,14 @@
-# x402-avm Server Examples
+# x402 Server Examples
 
 ## Express Quick Start (paymentMiddlewareFromConfig)
 
 ```typescript
 import express from "express";
-import { paymentMiddlewareFromConfig } from "@x402-avm/express";
-import { registerExactAvmScheme } from "@x402-avm/avm/exact/server";
-import { x402ResourceServer } from "@x402-avm/core/server";
-import { HTTPFacilitatorClient } from "@x402-avm/core/server";
-import { ALGORAND_TESTNET_CAIP2 } from "@x402-avm/avm";
+import { paymentMiddlewareFromConfig } from "@x402/express";
+import { registerExactAvmScheme } from "@x402/avm/exact/server";
+import { x402ResourceServer } from "@x402/core/server";
+import { HTTPFacilitatorClient } from "@x402/core/server";
+import { ALGORAND_TESTNET_CAIP2 } from "@x402/avm";
 
 const app = express();
 
@@ -53,10 +53,10 @@ app.listen(4021, () => {
 
 ```typescript
 import express from "express";
-import { paymentMiddleware, x402ResourceServer } from "@x402-avm/express";
-import { registerExactAvmScheme } from "@x402-avm/avm/exact/server";
-import { HTTPFacilitatorClient } from "@x402-avm/core/server";
-import { ALGORAND_TESTNET_CAIP2 } from "@x402-avm";
+import { paymentMiddleware, x402ResourceServer } from "@x402/express";
+import { registerExactAvmScheme } from "@x402/avm/exact/server";
+import { HTTPFacilitatorClient } from "@x402/core/server";
+import { ALGORAND_TESTNET_CAIP2 } from "@x402";
 
 const app = express();
 
@@ -108,10 +108,10 @@ import {
   paymentMiddlewareFromHTTPServer,
   x402ResourceServer,
   x402HTTPResourceServer,
-} from "@x402-avm/express";
-import { registerExactAvmScheme } from "@x402-avm/avm/exact/server";
-import { HTTPFacilitatorClient } from "@x402-avm/core/server";
-import { ALGORAND_TESTNET_CAIP2 } from "@x402-avm";
+} from "@x402/express";
+import { registerExactAvmScheme } from "@x402/avm/exact/server";
+import { HTTPFacilitatorClient } from "@x402/core/server";
+import { ALGORAND_TESTNET_CAIP2 } from "@x402";
 
 const app = express();
 
@@ -153,7 +153,7 @@ app.listen(4021);
 ## Algorand ALGO Native Token Route
 
 ```typescript
-import { ALGORAND_TESTNET_CAIP2 } from "@x402-avm/avm";
+import { ALGORAND_TESTNET_CAIP2 } from "@x402/avm";
 
 const routes = {
   "GET /api/data": {
@@ -171,7 +171,7 @@ const routes = {
 ## Algorand USDC (ASA) Route
 
 ```typescript
-import { ALGORAND_TESTNET_CAIP2, USDC_TESTNET_ASA_ID } from "@x402-avm/avm";
+import { ALGORAND_TESTNET_CAIP2, USDC_TESTNET_ASA_ID } from "@x402/avm";
 
 const routes = {
   "GET /api/premium": {
@@ -192,7 +192,7 @@ const routes = {
 ## Multi-Network Route (Testnet + Mainnet)
 
 ```typescript
-import { ALGORAND_TESTNET_CAIP2, ALGORAND_MAINNET_CAIP2 } from "@x402-avm/avm";
+import { ALGORAND_TESTNET_CAIP2, ALGORAND_MAINNET_CAIP2 } from "@x402/avm";
 
 const routes = {
   "GET /api/data": {
@@ -218,7 +218,7 @@ const routes = {
 ## Cross-Chain Route (Algorand + EVM)
 
 ```typescript
-import { ALGORAND_TESTNET_CAIP2 } from "@x402-avm/avm";
+import { ALGORAND_TESTNET_CAIP2 } from "@x402/avm";
 
 const routes = {
   "GET /api/data": {
@@ -245,10 +245,10 @@ const routes = {
 
 ```typescript
 import express from "express";
-import { paymentMiddleware, x402ResourceServer } from "@x402-avm/express";
-import { registerExactAvmScheme } from "@x402-avm/avm/exact/server";
-import { HTTPFacilitatorClient } from "@x402-avm/core/server";
-import { ALGORAND_TESTNET_CAIP2 } from "@x402-avm/avm";
+import { paymentMiddleware, x402ResourceServer } from "@x402/express";
+import { registerExactAvmScheme } from "@x402/avm/exact/server";
+import { HTTPFacilitatorClient } from "@x402/core/server";
+import { ALGORAND_TESTNET_CAIP2 } from "@x402/avm";
 
 const app = express();
 const facilitatorClient = new HTTPFacilitatorClient();
@@ -306,9 +306,9 @@ app.listen(4021);
 
 ```typescript
 import express from "express";
-import { paymentMiddlewareFromConfig } from "@x402-avm/express";
-import { HTTPFacilitatorClient } from "@x402-avm/core/server";
-import { ALGORAND_TESTNET_CAIP2, USDC_TESTNET_ASA_ID } from "@x402-avm/avm";
+import { paymentMiddlewareFromConfig } from "@x402/express";
+import { HTTPFacilitatorClient } from "@x402/core/server";
+import { ALGORAND_TESTNET_CAIP2, USDC_TESTNET_ASA_ID } from "@x402/avm";
 
 const app = express();
 const PAY_TO = "YOUR_ALGORAND_ADDRESS";
@@ -383,9 +383,9 @@ app.listen(4021);
 
 ```typescript
 import express from "express";
-import { paymentMiddlewareFromConfig } from "@x402-avm/express";
-import { HTTPFacilitatorClient } from "@x402-avm/core/server";
-import { ALGORAND_TESTNET_CAIP2 } from "@x402-avm/avm";
+import { paymentMiddlewareFromConfig } from "@x402/express";
+import { HTTPFacilitatorClient } from "@x402/core/server";
+import { ALGORAND_TESTNET_CAIP2 } from "@x402/avm";
 
 const app = express();
 
@@ -421,9 +421,9 @@ app.listen(4021);
 
 ```typescript
 import express from "express";
-import { x402Facilitator } from "@x402-avm/core/facilitator";
-import { registerExactAvmScheme } from "@x402-avm/avm/exact/facilitator";
-import type { FacilitatorAvmSigner } from "@x402-avm/avm";
+import { x402Facilitator } from "@x402/core/facilitator";
+import { registerExactAvmScheme } from "@x402/avm/exact/facilitator";
+import type { FacilitatorAvmSigner } from "@x402/avm";
 import algosdk from "algosdk";
 
 const app = express();
@@ -517,9 +517,9 @@ app.listen(4020);
 
 ```typescript
 import { Hono } from "hono";
-import { paymentMiddlewareFromConfig } from "@x402-avm/hono";
-import { HTTPFacilitatorClient } from "@x402-avm/core/server";
-import { ALGORAND_TESTNET_CAIP2 } from "@x402-avm/avm";
+import { paymentMiddlewareFromConfig } from "@x402/hono";
+import { HTTPFacilitatorClient } from "@x402/core/server";
+import { ALGORAND_TESTNET_CAIP2 } from "@x402/avm";
 
 const app = new Hono();
 
@@ -581,9 +581,9 @@ Deno.serve({ port: 4021 }, app.fetch);
 
 ```typescript
 import { Hono } from "hono";
-import { paymentMiddlewareFromConfig } from "@x402-avm/hono";
-import { HTTPFacilitatorClient } from "@x402-avm/core/server";
-import { ALGORAND_TESTNET_CAIP2, USDC_TESTNET_ASA_ID } from "@x402-avm/avm";
+import { paymentMiddlewareFromConfig } from "@x402/hono";
+import { HTTPFacilitatorClient } from "@x402/core/server";
+import { ALGORAND_TESTNET_CAIP2, USDC_TESTNET_ASA_ID } from "@x402/avm";
 
 const app = new Hono();
 const PAY_TO = "YOUR_ALGORAND_ADDRESS";
@@ -650,7 +650,7 @@ app.get("/api/report/full", (c) => {
 
 app.get("/", (c) => {
   return c.json({
-    name: "x402-avm Hono API",
+    name: "x402 Hono API",
     endpoints: {
       lookup: "GET /api/lookup/:id ($0.001)",
       analytics: "GET /api/analytics/* ($0.05)",
@@ -668,7 +668,7 @@ export default app;
 ### wrangler.toml
 
 ```toml
-name = "x402-avm-api"
+name = "x402-api"
 main = "src/index.ts"
 compatibility_date = "2025-01-01"
 
@@ -682,9 +682,9 @@ FACILITATOR_URL = "https://x402.org/facilitator"
 ```typescript
 import { Hono } from "hono";
 import { cors } from "hono/cors";
-import { paymentMiddlewareFromConfig } from "@x402-avm/hono";
-import { HTTPFacilitatorClient } from "@x402-avm/core/server";
-import { ALGORAND_TESTNET_CAIP2 } from "@x402-avm/avm";
+import { paymentMiddlewareFromConfig } from "@x402/hono";
+import { HTTPFacilitatorClient } from "@x402/core/server";
+import { ALGORAND_TESTNET_CAIP2 } from "@x402/avm";
 
 type Bindings = {
   PAY_TO: string;
@@ -731,7 +731,7 @@ app.get("/api/data", (c) => {
 });
 
 app.get("/", (c) => {
-  return c.json({ name: "x402-avm Edge API", runtime: "Cloudflare Workers" });
+  return c.json({ name: "x402 Edge API", runtime: "Cloudflare Workers" });
 });
 
 export default app;
@@ -744,10 +744,10 @@ import { Hono } from "hono";
 import { cors } from "hono/cors";
 import { serve } from "@hono/node-server";
 import algosdk from "algosdk";
-import { x402Facilitator } from "@x402-avm/core/facilitator";
-import { registerExactAvmScheme } from "@x402-avm/avm/exact/facilitator";
-import type { FacilitatorAvmSigner } from "@x402-avm/avm";
-import { ALGORAND_TESTNET_CAIP2 } from "@x402-avm/avm";
+import { x402Facilitator } from "@x402/core/facilitator";
+import { registerExactAvmScheme } from "@x402/avm/exact/facilitator";
+import type { FacilitatorAvmSigner } from "@x402/avm";
+import { ALGORAND_TESTNET_CAIP2 } from "@x402/avm";
 
 const app = new Hono();
 app.use("*", cors());
@@ -832,7 +832,7 @@ app.get("/supported", (c) => {
 
 app.get("/", (c) => {
   return c.json({
-    name: "x402-avm Facilitator",
+    name: "x402 Facilitator",
     address: facilitatorAddress,
     networks: [ALGORAND_TESTNET_CAIP2],
   });
@@ -848,10 +848,10 @@ serve({ fetch: app.fetch, port: 4020 }, (info) => {
 
 ```typescript
 import express from "express";
-import { paymentMiddleware, x402ResourceServer } from "@x402-avm/express";
-import { registerExactAvmScheme } from "@x402-avm/avm/exact/server";
-import { HTTPFacilitatorClient } from "@x402-avm/core/server";
-import { ALGORAND_TESTNET_CAIP2 } from "@x402-avm";
+import { paymentMiddleware, x402ResourceServer } from "@x402/express";
+import { registerExactAvmScheme } from "@x402/avm/exact/server";
+import { HTTPFacilitatorClient } from "@x402/core/server";
+import { ALGORAND_TESTNET_CAIP2 } from "@x402";
 
 const app = express();
 const facilitatorClient = new HTTPFacilitatorClient();
@@ -944,10 +944,10 @@ const routes = {
 ```typescript
 import express from "express";
 import dotenv from "dotenv";
-import { paymentMiddleware, x402ResourceServer } from "@x402-avm/express";
-import { registerExactAvmScheme } from "@x402-avm/avm/exact/server";
-import { HTTPFacilitatorClient } from "@x402-avm/core/server";
-import { ALGORAND_TESTNET_CAIP2, USDC_TESTNET_ASA_ID } from "@x402-avm/avm";
+import { paymentMiddleware, x402ResourceServer } from "@x402/express";
+import { registerExactAvmScheme } from "@x402/avm/exact/server";
+import { HTTPFacilitatorClient } from "@x402/core/server";
+import { ALGORAND_TESTNET_CAIP2, USDC_TESTNET_ASA_ID } from "@x402/avm";
 
 dotenv.config();
 
@@ -1019,7 +1019,7 @@ app.post("/api/ai/generate", (req, res) => {
 
 app.get("/", (req, res) => {
   res.json({
-    name: "x402-avm Demo API",
+    name: "x402 Demo API",
     endpoints: {
       weather: "GET /api/weather/:city ($0.01 ALGO)",
       analytics: "GET /api/analytics/* ($0.50 USDC)",
@@ -1047,10 +1047,10 @@ import { Hono } from "hono";
 import { cors } from "hono/cors";
 import { logger } from "hono/logger";
 import { serve } from "@hono/node-server";
-import { paymentMiddleware, x402ResourceServer } from "@x402-avm/hono";
-import { registerExactAvmScheme } from "@x402-avm/avm/exact/server";
-import { HTTPFacilitatorClient } from "@x402-avm/core/server";
-import { ALGORAND_TESTNET_CAIP2, USDC_TESTNET_ASA_ID } from "@x402-avm/avm";
+import { paymentMiddleware, x402ResourceServer } from "@x402/hono";
+import { registerExactAvmScheme } from "@x402/avm/exact/server";
+import { HTTPFacilitatorClient } from "@x402/core/server";
+import { ALGORAND_TESTNET_CAIP2, USDC_TESTNET_ASA_ID } from "@x402/avm";
 
 const app = new Hono();
 app.use("*", cors());
@@ -1116,7 +1116,7 @@ app.post("/api/ai/generate", async (c) => {
 
 app.get("/", (c) => {
   return c.json({
-    name: "x402-avm Hono Demo",
+    name: "x402 Hono Demo",
     version: "2.0.0",
     endpoints: {
       weather: "GET /api/weather/:city ($0.01 ALGO)",
@@ -1130,6 +1130,6 @@ app.get("/api/health", (c) => c.json({ status: "healthy" }));
 
 const port = parseInt(process.env.PORT || "4021");
 serve({ fetch: app.fetch, port }, (info) => {
-  console.log(`x402-avm Hono server: http://localhost:${info.port}`);
+  console.log(`x402 Hono server: http://localhost:${info.port}`);
 });
 ```

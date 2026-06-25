@@ -12,9 +12,9 @@
   - `algorand-typescript` — TypeScript smart contracts (PuyaTs)
   - `algorand-python` — Python smart contracts (PuyaPy)
   - `algorand-interaction` — Blockchain interaction via MCP (wallet, transactions, swaps, NFD)
+  - `algorand-x402-payment` — Interact with x402 protected APIs and URLs and fulfill x402 payment flows
   - `algorand-x402-typescript` — x402 payments development in TypeScript
   - `algorand-x402-python` — x402 payments development in Python
-  - `haystack-router-development` — DEX aggregator SDK integration
   - `haystack-router-interaction` — Best-price swaps via MCP tools
   - `alpha-arcade-interaction` — Prediction markets interaction
   - `travala-booking-expert` — Travel booking interaction expert (via Travala MCP)
@@ -130,9 +130,9 @@ The plugin has no required config keys. Setup writes the `enabled` flag and adds
 | `algorand-typescript` | TypeScript smart contracts (PuyaTs) |
 | `algorand-python` | Python smart contracts (PuyaPy) |
 | `algorand-interaction` | MCP-based blockchain interaction (wallet, txns, DEX, NFD, x402) |
+| `algorand-x402-payment` | Interact with x402 protected APIs and URLs and fulfill x402 payment flows |
 | `algorand-x402-typescript` | x402 payments in TypeScript |
 | `algorand-x402-python` | x402 payments in Python |
-| `haystack-router-development` | Haystack router SDK integration |
 | `haystack-router-interaction` | Haystack router interaction via MCP |
 | `alpha-arcade-interaction` | Alpha Arcade prediction markets interaction |
 

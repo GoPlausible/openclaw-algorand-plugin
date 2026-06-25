@@ -1,13 +1,13 @@
 # x402 HTTP Client Reference
 
-Detailed API reference for `@x402-avm/fetch`, `@x402-avm/axios`, and `@x402-avm/avm` client packages.
+Detailed API reference for `@x402/fetch`, `@x402/axios`, and `@x402/avm` client packages.
 
-## Package: @x402-avm/fetch
+## Package: @x402/fetch
 
 ### Installation
 
 ```bash
-npm install @x402-avm/fetch @x402-avm/avm algosdk
+npm install @x402/fetch @x402/avm algosdk
 ```
 
 ### Exports
@@ -91,12 +91,12 @@ Decodes the `PAYMENT-RESPONSE` header returned by the server after settlement.
 
 ---
 
-## Package: @x402-avm/axios
+## Package: @x402/axios
 
 ### Installation
 
 ```bash
-npm install @x402-avm/axios @x402-avm/avm algosdk axios
+npm install @x402/axios @x402/avm algosdk axios
 ```
 
 ### Exports
@@ -166,12 +166,12 @@ Key details:
 
 ---
 
-## Package: @x402-avm/avm
+## Package: @x402/avm
 
 ### Installation
 
 ```bash
-npm install @x402-avm/avm algosdk
+npm install @x402/avm algosdk
 ```
 
 ### Exports
@@ -209,7 +209,7 @@ interface ClientAvmSigner {
 }
 ```
 
-### Subpath: @x402-avm/avm/exact/client
+### Subpath: @x402/avm/exact/client
 
 | Export | Type | Description |
 |--------|------|-------------|
@@ -323,8 +323,8 @@ client.onPaymentCreationFailure(async (context) => {
 ### Unit Testing a Client
 
 ```typescript
-import { x402Client } from "@x402-avm/fetch";
-import { registerExactAvmScheme } from "@x402-avm/avm/exact/client";
+import { x402Client } from "@x402/fetch";
+import { registerExactAvmScheme } from "@x402/avm/exact/client";
 
 // Create a mock signer for testing
 const mockSigner = {
@@ -365,7 +365,7 @@ npx tsx client-test.ts https://api.example.com/paid-endpoint
 
 ## External Resources
 
-- [x402-avm Examples Repository](https://github.com/GoPlausible/x402-avm/tree/branch-v2-algorand-publish/examples/)
-- [x402-avm Documentation](https://github.com/GoPlausible/.github/blob/main/profile/algorand-x402-documentation/)
+- [x402 Examples Repository](https://github.com/GoPlausible/x402/tree/main/examples/)
+- [x402 Documentation](https://github.com/GoPlausible/.github/blob/main/profile/algorand-x402-documentation/)
 - [@txnlab/use-wallet Documentation](https://txnlab.gitbook.io/use-wallet)
 - [algosdk TypeScript Reference](https://algorand.github.io/js-algorand-sdk/)

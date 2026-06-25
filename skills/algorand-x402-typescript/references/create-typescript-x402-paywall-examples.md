@@ -3,7 +3,7 @@
 ## AVM-Only Paywall
 
 ```typescript
-import { createPaywall, avmPaywall } from "@x402-avm/paywall";
+import { createPaywall, avmPaywall } from "@x402/paywall";
 
 const paywall = createPaywall()
   .withNetwork(avmPaywall)
@@ -20,7 +20,7 @@ const paywall = createPaywall()
 ## EVM-Only Paywall
 
 ```typescript
-import { createPaywall, evmPaywall } from "@x402-avm/paywall";
+import { createPaywall, evmPaywall } from "@x402/paywall";
 
 const paywall = createPaywall()
   .withNetwork(evmPaywall)
@@ -36,7 +36,7 @@ const paywall = createPaywall()
 ## Multi-Network Paywall (AVM + EVM)
 
 ```typescript
-import { createPaywall, avmPaywall, evmPaywall } from "@x402-avm/paywall";
+import { createPaywall, avmPaywall, evmPaywall } from "@x402/paywall";
 
 const paywall = createPaywall()
   .withNetwork(avmPaywall)
@@ -53,7 +53,7 @@ const paywall = createPaywall()
 ## Universal Paywall (AVM + EVM + SVM)
 
 ```typescript
-import { createPaywall, avmPaywall, evmPaywall, svmPaywall } from "@x402-avm/paywall";
+import { createPaywall, avmPaywall, evmPaywall, svmPaywall } from "@x402/paywall";
 
 const paywall = createPaywall()
   .withNetwork(avmPaywall)
@@ -75,8 +75,8 @@ import express from "express";
 import {
   paymentMiddleware,
   x402ResourceServer,
-} from "@x402-avm/express";
-import { createPaywall, avmPaywall } from "@x402-avm/paywall";
+} from "@x402/express";
+import { createPaywall, avmPaywall } from "@x402/paywall";
 
 const app = express();
 
@@ -135,8 +135,8 @@ import {
   paymentMiddlewareFromHTTPServer,
   x402ResourceServer,
   x402HTTPResourceServer,
-} from "@x402-avm/express";
-import { createPaywall, avmPaywall } from "@x402-avm/paywall";
+} from "@x402/express";
+import { createPaywall, avmPaywall } from "@x402/paywall";
 
 const resourceServer = new x402ResourceServer({ url: facilitatorUrl });
 
@@ -204,8 +204,8 @@ const routes = {
 
 ```typescript
 import { Hono } from "hono";
-import { paymentMiddleware, x402ResourceServer } from "@x402-avm/hono";
-import { createPaywall, avmPaywall } from "@x402-avm/paywall";
+import { paymentMiddleware, x402ResourceServer } from "@x402/hono";
+import { createPaywall, avmPaywall } from "@x402/paywall";
 
 const app = new Hono();
 
@@ -250,8 +250,8 @@ export default app;
 
 ```typescript
 import { Hono } from "hono";
-import { paymentMiddlewareFromConfig, x402ResourceServer } from "@x402-avm/hono";
-import { createPaywall, avmPaywall } from "@x402-avm/paywall";
+import { paymentMiddlewareFromConfig, x402ResourceServer } from "@x402/hono";
+import { createPaywall, avmPaywall } from "@x402/paywall";
 
 type Env = {
   FACILITATOR_URL: string;
@@ -300,8 +300,8 @@ export default app;
 
 ```typescript
 // middleware.ts
-import { paymentProxy, x402ResourceServer } from "@x402-avm/next";
-import { createPaywall, avmPaywall } from "@x402-avm/paywall";
+import { paymentProxy, x402ResourceServer } from "@x402/next";
+import { createPaywall, avmPaywall } from "@x402/paywall";
 import { NextRequest, NextResponse } from "next/server";
 
 const routes = {
@@ -351,8 +351,8 @@ export const config = {
 ```typescript
 // app/api/premium/route.ts
 import { NextRequest, NextResponse } from "next/server";
-import { withX402, x402ResourceServer } from "@x402-avm/next";
-import { createPaywall, avmPaywall } from "@x402-avm/paywall";
+import { withX402, x402ResourceServer } from "@x402/next";
+import { createPaywall, avmPaywall } from "@x402/paywall";
 
 const server = new x402ResourceServer({
   url: process.env.FACILITATOR_URL!,
@@ -422,7 +422,7 @@ const routes = {
 ## Custom Paywall Handler
 
 ```typescript
-import type { PaywallNetworkHandler, PaymentRequirements, PaymentRequired, PaywallConfig } from "@x402-avm/paywall";
+import type { PaywallNetworkHandler, PaymentRequirements, PaymentRequired, PaywallConfig } from "@x402/paywall";
 
 const customAvmPaywall: PaywallNetworkHandler = {
   supports(requirement: PaymentRequirements): boolean {
@@ -515,9 +515,9 @@ const algorandWallets = walletsApi.get().filter((wallet) => {
 
 ```typescript
 import { useWallet } from "@txnlab/use-wallet-react";
-import { wrapFetchWithPayment, x402Client } from "@x402-avm/fetch";
-import { registerExactAvmScheme } from "@x402-avm/avm/exact/client";
-import type { ClientAvmSigner } from "@x402-avm/avm";
+import { wrapFetchWithPayment, x402Client } from "@x402/fetch";
+import { registerExactAvmScheme } from "@x402/avm/exact/client";
+import type { ClientAvmSigner } from "@x402/avm";
 
 function CustomPaymentUI() {
   const { activeAccount, signTransactions } = useWallet();
@@ -566,8 +566,8 @@ import cors from "cors";
 import {
   paymentMiddleware,
   x402ResourceServer,
-} from "@x402-avm/express";
-import { createPaywall, avmPaywall } from "@x402-avm/paywall";
+} from "@x402/express";
+import { createPaywall, avmPaywall } from "@x402/paywall";
 
 const app = express();
 app.use(cors());
@@ -666,7 +666,7 @@ app.get("/api/article/:id", (req, res) => {
     id: req.params.id,
     title: "Premium Article: Advanced Algorand Development",
     content: "This is the full premium article content...",
-    author: "x402-avm Team",
+    author: "x402 Team",
     publishedAt: new Date().toISOString(),
   });
 });
@@ -698,8 +698,8 @@ app.listen(PORT, () => {
 ```typescript
 import { Hono } from "hono";
 import { cors } from "hono/cors";
-import { paymentMiddleware, x402ResourceServer } from "@x402-avm/hono";
-import { createPaywall, avmPaywall, evmPaywall } from "@x402-avm/paywall";
+import { paymentMiddleware, x402ResourceServer } from "@x402/hono";
+import { createPaywall, avmPaywall, evmPaywall } from "@x402/paywall";
 
 const app = new Hono();
 app.use("*", cors());
@@ -770,8 +770,8 @@ export default {
 
 ```typescript
 import { NextRequest, NextResponse } from "next/server";
-import { withX402, x402ResourceServer } from "@x402-avm/next";
-import { createPaywall, avmPaywall } from "@x402-avm/paywall";
+import { withX402, x402ResourceServer } from "@x402/next";
+import { createPaywall, avmPaywall } from "@x402/paywall";
 
 const server = new x402ResourceServer({
   url: process.env.FACILITATOR_URL!,
@@ -850,7 +850,7 @@ export default function Home() {
 
   return (
     <main style={{ padding: "40px", maxWidth: "600px", margin: "auto" }}>
-      <h1>x402-avm Next.js Demo</h1>
+      <h1>x402 Next.js Demo</h1>
       <p>
         Visit{" "}
         <a href="/api/premium?topic=Algorand">/api/premium</a>{" "}

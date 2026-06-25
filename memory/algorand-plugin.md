@@ -2,7 +2,7 @@
 
 This plugin enables four core capabilities:
 
-1. **Blockchain Interaction** — Algorand MCP server (123 tools) via mcporter (includes Pera asset verification + x402 payments)
+1. **Blockchain Interaction** — Algorand MCP server (126 tools) via mcporter (includes Pera asset verification + x402 payments + Bazaar discovery)
 2. **Algorand Development** — Smart contracts, typed clients, React frontends via AlgoKit CLI and skills
 3. **x402 Payment Protocol** — HTTP-native payments with Algorand as first-class chain
 4. **Haystack Router** — DEX aggregator/smart order routing on Algorand (Tinyman V2, Pact, Folks)
@@ -19,16 +19,15 @@ The plugin can prepare and sign **real blockchain transactions** that move value
 5. If the user configures only one wallet account, assume it may hold real funds; apply the same rules even on testnet by habit.
 
 ## Skill Routing — Load the Right Skill
-* `algorand-interaction` — ALWAYS load when using Algorand MCP tools for blockchain queries, transactions, swaps, x402 payments, or wallet operations.
+* `algorand-interaction` — ALWAYS load when using Algorand MCP tools for blockchain queries, transactions, swaps, or wallet operations. (For x402 payments and Bazaar discovery, load the dedicated `algorand-x402-payment` skill instead — see below.)
 * `algorand-development` — Load for AlgoKit CLI, project setup, example search, and general development workflows.
 * `algorand-typescript` — Load for TypeScript/PuyaTs smart contract development, testing with Vitest, typed clients, React frontends.
 * `algorand-python` — Load for Python/PuyaPy smart contract development, algopy decorators, Python AlgoKit Utils.
 * `algorand-x402-typescript` — Load for building x402 payment apps in TypeScript (clients, servers, facilitators, paywalls, Next.js).
+* `algorand-x402-payment` — **ALWAYS load on HTTP 402 responses**, when the user mentions x402 / paid APIs / paid resources / Bazaar discovery, or when calling any of the five algorand-mcp x402 tools (`x402_discover_payment_requirements`, `make_http_request_with_x402`, `bazaar_list`, `bazaar_search`, `bazaar_get_resource_details`). Provides the three payment patterns, tool argument cheatsheet, common pitfalls, wallet prerequisites, and the full protocol reference (PaymentRequired V2 schema, fee-payer abstraction, CAIP-2 mapping).
 * `algorand-x402-python` — Load for building x402 payment apps in Python (clients, servers, facilitators, Bazaar discovery).
-* `algorand-interaction` also covers x402 payment workflows — ALWAYS load it on HTTP 402 responses to follow the atomic group payment pattern.
 * `travala-booking-expert` — Load for travel booking interaction via Travala MCP server and tools (search, book, pay, confirm).
 * `haystack-router-interaction` — Load for best-price token swaps via MCP tools (DEX aggregation across Tinyman, Pact, Folks).
-* `haystack-router-development` — Load for building swap UIs with `@txnlab/haystack-router` SDK (React, Node.js).
 * `alpha-arcade-interaction` — Load for prediction market trading via MCP tools (browse markets, place orders, manage positions).
 
 
@@ -38,6 +37,7 @@ The plugin can prepare and sign **real blockchain transactions** that move value
 | Development | TypeScript contracts & tools | `algorand-typescript` |
 | Development | Python contracts & tools | `algorand-python` |
 | Interaction | Blockchain interaction via MCP | `algorand-interaction` |
+| x402 | Runtime x402 payments + Bazaar discovery via MCP | `algorand-x402-payment` |
 | x402 | TypeScript x402 development | `algorand-x402-typescript` |
 | x402 | Python x402 development | `algorand-x402-python` |
 | Haystack | Build swap apps with SDK | `haystack-router-development` |
@@ -58,7 +58,7 @@ mcporter call algorand-mcp.generate_algorand_qrcode address=XXXXX network=testne
 mcporter call algorand-mcp.search_assets name=USDC network=mainnet
 ```
 
-## MCP Tool Categories (123 tools)
+## MCP Tool Categories (126 tools)
 
 - **Wallet** (10) — `wallet_add_account`, `wallet_remove_account`, `wallet_list_accounts`, `wallet_switch_account`, `wallet_get_info`, `wallet_get_assets`, `wallet_sign_transaction`, `wallet_sign_transaction_group`, `wallet_sign_data`, `wallet_optin_asset`
 - **Account Management** (8) — `create_account`, `rekey_account`, `mnemonic_to_mdk`, `mdk_to_mnemonic`, `secret_key_to_mnemonic`, `mnemonic_to_secret_key`, `seed_from_mnemonic`, `mnemonic_from_seed`
@@ -75,6 +75,9 @@ mcporter call algorand-mcp.search_assets name=USDC network=mainnet
 - **ARC-26 URI** (1) — `generate_algorand_qrcode`
 - **Knowledge** (1) — `get_knowledge_doc` (categories: `arcs`, `sdks`, `algokit`, `algokit-utils`, `tealscript`, `puya`, `liquid-auth`, `python`, `developers`, `clis`, `nodes`, `details`)
 - **x402 Payments** (2) — `x402_discover_payment_requirements`, `make_http_request_with_x402` — probe an x402-protected endpoint for payment requirements, then pay-and-fetch in one call. Used for accessing paid HTTP resources on Algorand.
+- **x402 Bazaar Discovery** (3) — `bazaar_list`, `bazaar_search`, `bazaar_get_resource_details` — browse and search the Bazaar discovery directory hosted by the configured facilitator (`facilitator.goplausible.xyz` by default) to find paid resources cataloged across the x402 ecosystem before calling `make_http_request_with_x402`.
+
+> For x402 + Bazaar workflows, **load the `algorand-x402-payment` skill** — it's the dedicated guide with all patterns, examples, and protocol references. The categories here just enumerate what tools exist.
 
 ## QR Code Display (ARC-26 URI)
 
@@ -125,7 +128,7 @@ This applies to ALL operations that yield a transaction ID: payments, asset tran
 - Default to testnet during development
 - Every transaction costs 0.001 ALGO minimum
 - Account needs 0.1 ALGO base + 0.1 per asset/app opt-in (MBR)
-- **x402 payments**: probe with `x402_discover_payment_requirements`, then pay+fetch in one call with `make_http_request_with_x402` (pass `paymentRequirements` from the probe to skip re-discovery, plus `preferredNetwork` and `maxAmountPerRequest` for supervised flows). The MCP tool handles atomic-group construction, signing, base64 encoding, and PAYMENT-SIGNATURE assembly internally — do not build the payment payload manually. Amounts are in atomic units (1,000,000 USDC atomic units = $1.00). Confirm mainnet costs with the user before paying.
+- **x402 payments + Bazaar discovery**: load the `algorand-x402-payment` skill. It covers the five MCP tools (`x402_discover_payment_requirements`, `make_http_request_with_x402`, `bazaar_list`, `bazaar_search`, `bazaar_get_resource_details`), the three payment patterns, mainnet confirmation discipline, wallet prerequisites, and the protocol-level reference. Always set `maxAmountPerRequest`; default to `preferredNetwork: "testnet"` during development; confirm cost with the user before any mainnet payment.
 
 ## Common Mainnet Assets
 
@@ -156,8 +159,8 @@ This applies to ALL operations that yield a transaction ID: payments, asset tran
 - Algorand Developer Docs: https://dev.algorand.co/
 - Algorand Developer Docs Github: https://github.com/algorandfoundation/devportal
 - Algorand Developer Examples Github: https://github.com/algorandfoundation/devportal-code-examples
-- GoPlausible x402-avm Documentation and Example code: https://github.com/GoPlausible/.github/blob/main/profile/algorand-x402-documentation/README.md
-- GoPlausible x402-avm Examples template Projects: https://github.com/GoPlausible/x402-avm/tree/branch-v2-algorand-publish/examples/
+- GoPlausible x402 Documentation and Example code: https://github.com/GoPlausible/.github/blob/main/profile/algorand-x402-documentation/README.md
+- GoPlausible x402 Examples template Projects: https://github.com/GoPlausible/x402/tree/main/examples/
 - CAIP-2 Specification: https://github.com/ChainAgnostic/CAIPs/blob/main/CAIPs/caip-2.md
 - Coinbase x402 Protocol: https://github.com/coinbase/x402
 - Haystack Router: https://github.com/TxnLab/haystack-router

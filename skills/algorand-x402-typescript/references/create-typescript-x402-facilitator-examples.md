@@ -4,7 +4,7 @@
 
 ```typescript
 import algosdk from "algosdk";
-import type { FacilitatorAvmSigner } from "@x402-avm/avm";
+import type { FacilitatorAvmSigner } from "@x402/avm";
 
 const secretKey = Buffer.from(process.env.AVM_PRIVATE_KEY!, "base64");
 const address = algosdk.encodeAddress(secretKey.slice(32));
@@ -56,9 +56,9 @@ const facilitatorSigner: FacilitatorAvmSigner = {
 ## Facilitator Setup and Scheme Registration
 
 ```typescript
-import { x402Facilitator } from "@x402-avm/core/facilitator";
-import { registerExactAvmScheme } from "@x402-avm/avm/exact/facilitator";
-import { ALGORAND_TESTNET_CAIP2 } from "@x402-avm/avm";
+import { x402Facilitator } from "@x402/core/facilitator";
+import { registerExactAvmScheme } from "@x402/avm/exact/facilitator";
+import { ALGORAND_TESTNET_CAIP2 } from "@x402/avm";
 
 const facilitator = new x402Facilitator();
 
@@ -74,9 +74,9 @@ registerExactAvmScheme(facilitator, {
 
 ```typescript
 import express from "express";
-import { x402Facilitator } from "@x402-avm/core/facilitator";
-import { registerExactAvmScheme } from "@x402-avm/avm/exact/facilitator";
-import { ALGORAND_TESTNET_CAIP2 } from "@x402-avm/avm";
+import { x402Facilitator } from "@x402/core/facilitator";
+import { registerExactAvmScheme } from "@x402/avm/exact/facilitator";
+import { ALGORAND_TESTNET_CAIP2 } from "@x402/avm";
 import algosdk from "algosdk";
 
 const secretKey = Buffer.from(process.env.AVM_PRIVATE_KEY!, "base64");
@@ -166,7 +166,7 @@ facilitator.onAfterSettle(async (context) => {
 import {
   declareDiscoveryExtension,
   BAZAAR,
-} from "@x402-avm/extensions";
+} from "@x402/extensions";
 
 // GET endpoint with query parameters
 const weatherExtension = declareDiscoveryExtension({
@@ -279,13 +279,13 @@ const uploadExtension = declareDiscoveryExtension({
 import {
   x402HTTPResourceServer,
   HTTPFacilitatorClient,
-} from "@x402-avm/core/server";
-import { registerExactAvmScheme } from "@x402-avm/avm/exact/server";
+} from "@x402/core/server";
+import { registerExactAvmScheme } from "@x402/avm/exact/server";
 import {
   bazaarResourceServerExtension,
   declareDiscoveryExtension,
-} from "@x402-avm/extensions";
-import { ALGORAND_TESTNET_CAIP2, USDC_TESTNET_ASA_ID } from "@x402-avm/avm";
+} from "@x402/extensions";
+import { ALGORAND_TESTNET_CAIP2, USDC_TESTNET_ASA_ID } from "@x402/avm";
 
 const facilitatorClient = new HTTPFacilitatorClient({
   url: "https://facilitator.example.com",
@@ -329,8 +329,8 @@ import {
   type DiscoveryInfo,
   type DiscoveredResource,
   type ValidationResult,
-} from "@x402-avm/extensions";
-import type { PaymentPayload, PaymentRequirements } from "@x402-avm/core/types";
+} from "@x402/extensions";
+import type { PaymentPayload, PaymentRequirements } from "@x402/core/types";
 
 // Method 1: Full extraction from payload + requirements
 async function processPaymentWithDiscovery(
@@ -404,12 +404,12 @@ function extractWithoutValidation(
 ## Bazaar: Facilitator Client Querying the Bazaar
 
 ```typescript
-import { HTTPFacilitatorClient } from "@x402-avm/core/server";
+import { HTTPFacilitatorClient } from "@x402/core/server";
 import {
   withBazaar,
   type DiscoveryResourcesResponse,
   type DiscoveryResource,
-} from "@x402-avm/extensions";
+} from "@x402/extensions";
 
 const facilitatorClient = new HTTPFacilitatorClient({
   url: "https://facilitator.example.com",
@@ -477,8 +477,8 @@ async function findAlgorandResources() {
 ## Bazaar: WithExtensions Type Utility
 
 ```typescript
-import { WithExtensions } from "@x402-avm/extensions";
-import { HTTPFacilitatorClient } from "@x402-avm/core/server";
+import { WithExtensions } from "@x402/extensions";
+import { HTTPFacilitatorClient } from "@x402/core/server";
 
 type ClientWithBazaar = WithExtensions<
   HTTPFacilitatorClient,
@@ -496,8 +496,8 @@ type ClientWithBazaarAndAuth = WithExtensions<
 ## Bazaar: Chaining Multiple Extensions
 
 ```typescript
-import { HTTPFacilitatorClient } from "@x402-avm/core/server";
-import { withBazaar } from "@x402-avm/extensions";
+import { HTTPFacilitatorClient } from "@x402/core/server";
+import { withBazaar } from "@x402/extensions";
 
 interface MyCustomExtension {
   custom: {
@@ -540,13 +540,13 @@ import express from "express";
 import {
   x402HTTPResourceServer,
   HTTPFacilitatorClient,
-} from "@x402-avm/core/server";
-import { registerExactAvmScheme } from "@x402-avm/avm/exact/server";
+} from "@x402/core/server";
+import { registerExactAvmScheme } from "@x402/avm/exact/server";
 import {
   bazaarResourceServerExtension,
   declareDiscoveryExtension,
-} from "@x402-avm/extensions";
-import { ALGORAND_TESTNET_CAIP2, USDC_TESTNET_ASA_ID } from "@x402-avm/avm";
+} from "@x402/extensions";
+import { ALGORAND_TESTNET_CAIP2, USDC_TESTNET_ASA_ID } from "@x402/avm";
 
 const app = express();
 
@@ -694,13 +694,13 @@ app.listen(PORT, () => {
 
 ```typescript
 import express from "express";
-import { x402Facilitator } from "@x402-avm/core/facilitator";
-import { registerExactAvmScheme } from "@x402-avm/avm/exact/facilitator";
-import { ALGORAND_TESTNET_CAIP2 } from "@x402-avm/avm";
+import { x402Facilitator } from "@x402/core/facilitator";
+import { registerExactAvmScheme } from "@x402/avm/exact/facilitator";
+import { ALGORAND_TESTNET_CAIP2 } from "@x402/avm";
 import {
   extractDiscoveryInfo,
   type DiscoveredResource,
-} from "@x402-avm/extensions";
+} from "@x402/extensions";
 import algosdk from "algosdk";
 
 // In-memory catalog (use a database in production)
@@ -828,7 +828,7 @@ app.listen(4000, () => {
 
 ```typescript
 // shared/config.ts
-import { ALGORAND_TESTNET_CAIP2, USDC_TESTNET_ASA_ID } from "@x402-avm/avm";
+import { ALGORAND_TESTNET_CAIP2, USDC_TESTNET_ASA_ID } from "@x402/avm";
 
 export const NETWORK = ALGORAND_TESTNET_CAIP2;
 export const USDC_ASA = USDC_TESTNET_ASA_ID;
@@ -842,7 +842,7 @@ export const RESOURCE_SERVER_URL = "http://localhost:3000";
 ## HTTPFacilitatorClient
 
 ```typescript
-import { HTTPFacilitatorClient } from "@x402-avm/core/server";
+import { HTTPFacilitatorClient } from "@x402/core/server";
 
 // Basic configuration
 const facilitatorClient = new HTTPFacilitatorClient({

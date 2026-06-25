@@ -21,9 +21,9 @@ Eight skills cover all four capabilities. Each skill has a `SKILL.md` router plu
 | **Development** | CLI, examples, general workflows | `algorand-development` |
 | **Development** | TypeScript contracts & tools | `algorand-typescript` |
 | **Development** | Python contracts & tools | `algorand-python` |
+| **x402 Payments** | Interact with x402 protected APIs and URLs and fullfill x402 payment flows | `algorand-x402-payment` |
 | **x402** | TypeScript x402 development | `algorand-x402-typescript` |
 | **x402** | Python x402 development | `algorand-x402-python` |
-| **Haystack Router** | Build swap apps with SDK | `haystack-router-development` |
 | **Haystack Router** | Execute swaps via MCP tools | `haystack-router-interaction` |
 
 ## Knowledge & Examples

@@ -41,12 +41,12 @@ Client Request (GET /api/premium)
 
 For Fetch-based clients:
 ```bash
-npm install @x402-avm/fetch @x402-avm/avm algosdk
+npm install @x402/fetch @x402/avm algosdk
 ```
 
 For Axios-based clients:
 ```bash
-npm install @x402-avm/axios @x402-avm/avm algosdk axios
+npm install @x402/axios @x402/avm algosdk axios
 ```
 
 ### Step 2: Implement a ClientAvmSigner
@@ -87,7 +87,7 @@ const signer = {
 **For Browser (@txnlab/use-wallet):**
 ```typescript
 import { useWallet } from "@txnlab/use-wallet-react";
-import type { ClientAvmSigner } from "@x402-avm/avm";
+import type { ClientAvmSigner } from "@x402/avm";
 
 function useAvmSigner(): ClientAvmSigner | null {
   const { activeAccount, signTransactions } = useWallet();
@@ -104,8 +104,8 @@ function useAvmSigner(): ClientAvmSigner | null {
 ### Step 3: Create and Configure the x402Client
 
 ```typescript
-import { x402Client } from "@x402-avm/fetch"; // or "@x402-avm/axios"
-import { registerExactAvmScheme } from "@x402-avm/avm/exact/client";
+import { x402Client } from "@x402/fetch"; // or "@x402/axios"
+import { registerExactAvmScheme } from "@x402/avm/exact/client";
 
 const client = new x402Client();
 registerExactAvmScheme(client, { signer });
@@ -115,7 +115,7 @@ registerExactAvmScheme(client, { signer });
 
 **Fetch:**
 ```typescript
-import { wrapFetchWithPayment } from "@x402-avm/fetch";
+import { wrapFetchWithPayment } from "@x402/fetch";
 
 const fetchWithPay = wrapFetchWithPayment(fetch, client);
 const response = await fetchWithPay("https://api.example.com/premium-data");
@@ -124,7 +124,7 @@ const response = await fetchWithPay("https://api.example.com/premium-data");
 **Axios:**
 ```typescript
 import axios from "axios";
-import { wrapAxiosWithPayment } from "@x402-avm/axios";
+import { wrapAxiosWithPayment } from "@x402/axios";
 
 const api = wrapAxiosWithPayment(axios.create(), client);
 const response = await api.get("https://api.example.com/premium-data");
@@ -135,7 +135,7 @@ const response = await api.get("https://api.example.com/premium-data");
 Policies filter payment requirements before selection. They are applied in order:
 
 ```typescript
-import type { PaymentPolicy } from "@x402-avm/fetch";
+import type { PaymentPolicy } from "@x402/fetch";
 
 const maxAmount: PaymentPolicy = (version, reqs) => {
   return reqs.filter((r) => BigInt(r.amount ?? "0") <= BigInt("5000000"));
@@ -186,8 +186,8 @@ client.onPaymentCreationFailure(async ({ error }) => {
 Instead of creating an `x402Client` manually, use the config-based approach:
 
 ```typescript
-import { wrapFetchWithPaymentFromConfig, type x402ClientConfig } from "@x402-avm/fetch";
-import { ExactAvmScheme } from "@x402-avm/avm";
+import { wrapFetchWithPaymentFromConfig, type x402ClientConfig } from "@x402/fetch";
+import { ExactAvmScheme } from "@x402/avm";
 
 const config: x402ClientConfig = {
   schemes: [
@@ -219,7 +219,7 @@ const fetchWithPay = wrapFetchWithPaymentFromConfig(fetch, config);
 After a successful paid request, check the response header:
 
 ```typescript
-import { decodePaymentResponseHeader } from "@x402-avm/fetch";
+import { decodePaymentResponseHeader } from "@x402/fetch";
 
 const paymentResponseHeader = response.headers.get("PAYMENT-RESPONSE");
 if (paymentResponseHeader) {
@@ -232,5 +232,5 @@ if (paymentResponseHeader) {
 
 - [create-typescript-x402-client-reference.md](./create-typescript-x402-client-reference.md) - Detailed API reference
 - [create-typescript-x402-client-examples.md](./create-typescript-x402-client-examples.md) - Complete code examples
-- [x402-avm Fetch Examples](https://github.com/GoPlausible/x402-avm/tree/branch-v2-algorand-publish/examples/)
-- [x402-avm Documentation](https://github.com/GoPlausible/.github/blob/main/profile/algorand-x402-documentation/)
+- [x402 Fetch Examples](https://github.com/GoPlausible/x402/tree/main/examples/)
+- [x402 Documentation](https://github.com/GoPlausible/.github/blob/main/profile/algorand-x402-documentation/)

@@ -41,13 +41,13 @@ Pattern 1: Proxy (middleware.ts)           Pattern 2: withX402 (route.ts)
 ### Step 1: Install Dependencies
 
 ```bash
-npm install @x402-avm/next @x402-avm/avm @x402-avm/core
+npm install @x402/next @x402/avm @x402/core
 ```
 
 For paywall UI support:
 
 ```bash
-npm install @x402-avm/next @x402-avm/avm @x402-avm/core @x402-avm/paywall
+npm install @x402/next @x402/avm @x402/core @x402/paywall
 ```
 
 ### Step 2: Set Up Environment Variables
@@ -67,9 +67,9 @@ Create `middleware.ts` at your project root:
 
 ```typescript
 import { NextRequest } from "next/server";
-import { paymentProxyFromConfig } from "@x402-avm/next";
-import { HTTPFacilitatorClient } from "@x402-avm/core/server";
-import { ALGORAND_TESTNET_CAIP2 } from "@x402-avm/avm";
+import { paymentProxyFromConfig } from "@x402/next";
+import { HTTPFacilitatorClient } from "@x402/core/server";
+import { ALGORAND_TESTNET_CAIP2 } from "@x402/avm";
 
 const PAY_TO = process.env.PAY_TO!;
 
@@ -123,10 +123,10 @@ Create a shared config module:
 
 ```typescript
 // lib/x402.ts
-import { x402ResourceServer } from "@x402-avm/next";
-import { registerExactAvmScheme } from "@x402-avm/avm/exact/server";
-import { HTTPFacilitatorClient } from "@x402-avm/core/server";
-import { ALGORAND_TESTNET_CAIP2 } from "@x402-avm/avm";
+import { x402ResourceServer } from "@x402/next";
+import { registerExactAvmScheme } from "@x402/avm/exact/server";
+import { HTTPFacilitatorClient } from "@x402/core/server";
+import { ALGORAND_TESTNET_CAIP2 } from "@x402/avm";
 
 export const PAY_TO = process.env.PAY_TO!;
 export const NETWORK = ALGORAND_TESTNET_CAIP2;
@@ -144,7 +144,7 @@ Wrap individual route handlers:
 ```typescript
 // app/api/weather/route.ts
 import { NextRequest, NextResponse } from "next/server";
-import { withX402 } from "@x402-avm/next";
+import { withX402 } from "@x402/next";
 import { x402Server, PAY_TO, NETWORK } from "@/lib/x402";
 
 const handler = async (request: NextRequest) => {
@@ -183,7 +183,7 @@ Accept payments on both testnet and mainnet:
 import {
   ALGORAND_TESTNET_CAIP2,
   ALGORAND_MAINNET_CAIP2,
-} from "@x402-avm/avm";
+} from "@x402/avm";
 
 const routes = {
   "GET /api/data": {
@@ -244,8 +244,8 @@ const routes = {
 
 ## References / Further Reading
 
-- [create-typescript-x402-nextjs-reference.md](./create-typescript-x402-nextjs-reference.md) - Full API reference for @x402-avm/next
+- [create-typescript-x402-nextjs-reference.md](./create-typescript-x402-nextjs-reference.md) - Full API reference for @x402/next
 - [create-typescript-x402-nextjs-examples.md](./create-typescript-x402-nextjs-examples.md) - Complete code examples
-- [x402-avm Next.js Examples](https://github.com/GoPlausible/x402-avm/tree/branch-v2-algorand-publish/examples/)
-- [x402-avm Documentation](https://github.com/GoPlausible/.github/blob/main/profile/algorand-x402-documentation/)
+- [x402 Next.js Examples](https://github.com/GoPlausible/x402/tree/main/examples/)
+- [x402 Documentation](https://github.com/GoPlausible/.github/blob/main/profile/algorand-x402-documentation/)
 - [Next.js Middleware Documentation](https://nextjs.org/docs/app/building-your-application/routing/middleware)
