@@ -4,7 +4,7 @@
 
 ## Features
 
-- **Bundled Algorand MCP Server**: `@goplausible/algorand-mcp` (pinned to `4.3.3`, 123 tools, **defaults to testnet**) — wallet, transactions, smart contracts, TEAL, indexer, DEX, NFD, Haystack Router, Alpha Arcade, x402 payments, knowledge base
+- **Bundled Algorand MCP Server**: `@goplausible/algorand-mcp` (pinned to `4.4.0`, 123 tools, **defaults to testnet**) — wallet, transactions, smart contracts, TEAL, indexer, DEX, NFD, Haystack Router, Alpha Arcade, x402 payments, knowledge base
 - **x402 Payment Protocol**: HTTP-native payments on Algorand via `@goplausible/algorand-mcp`'s `x402_discover_payment_requirements` and `make_http_request_with_x402` tools (surfaced through mcporter)
 - **Zero-privilege installation**: First-load init only writes a declarative entry into `~/.mcporter/mcporter.json` and a memory file into the agent workspace — no shell scripts, no system packages, no keyring installation, no `sudo`, no post-install hooks
 - **9 Skills** covering development, interaction, x402, DEX aggregation, and prediction markets:
