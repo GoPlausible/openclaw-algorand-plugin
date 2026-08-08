@@ -44,6 +44,13 @@ make_http_request_with_x402 {
 }
 ```
 
+`paymentResponse` is the decoded settle result — it carries the on-chain **txn id**
+(`paymentResponse.transaction`). Report it to the user as an **explorer link**:
+MainNet → `https://allo.info/tx/<txn id>`, TestNet →
+`https://lora.algokit.io/testnet/transaction/<txn id>`. On MainNet also offer the
+receipt `https://facilitator.goplausible.xyz/api/receipt/<txn id>` (receipts are
+MainNet-only).
+
 ---
 
 ## Pattern 2 — Discover, then pay (recommended default)
@@ -260,10 +267,14 @@ Returns the verbatim record. Throws `-32600 No Bazaar resource found with resour
    {
      "result": { "report": { "weather": "sunny", "temperature": 70 } },
      "status": 200,
+     "paymentResponse": { "success": true, "transaction": "LZFD...MCQ", "network": "algorand:SGO1..." },
      "paid": { "network": "testnet", "asset": "10458941", "amount": "1000", "payTo": "MPY5..." }
    }
 
-3. Tell user: "Paid $0.001 USDC on testnet for the weather data. It's sunny and 70°F."
+3. Tell user: "Paid $0.001 USDC on testnet for the weather data — txn:
+   https://lora.algokit.io/testnet/transaction/LZFD...MCQ. It's sunny and 70°F."
+   (On MainNet, link https://allo.info/tx/<txn id> instead, and also offer the
+   receipt: https://facilitator.goplausible.xyz/api/receipt/<txn id>)
 ```
 
 One tool call. The MCP did the discovery, transaction construction, signing, header construction, and retry internally.

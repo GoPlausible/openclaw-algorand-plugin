@@ -106,6 +106,13 @@ You do not build this. `make_http_request_with_x402` reads the active wallet's s
 | Mainnet | `algorand:wGHE2Pwdvd7S12BL5FaOP20EGYesN73ktiC1qzkkit8=` | `"mainnet"` | `"algorand-mainnet"`, `"mainnet"` |
 | Localnet | `algorand:localnet` (not standard CAIP-2) | `"localnet"` | `"algorand-localnet"`, `"localnet"` |
 
+**Truncated form (CAIP/CASA spec):** some SDK constants advertise the CAIP-2-spec
+reference instead of the full base64 hash — the first 32 characters of the URL-safe
+encoding: testnet `algorand:SGO1GKSzyE7IEPItTxCByw9x8FmnrCDe`, mainnet
+`algorand:wGHE2Pwdvd7S12BL5FaOP20EGYesN73k`. Both forms share their prefix with the
+full identifiers above — when debugging a network mismatch, compare by prefix, not
+exact string.
+
 The MCP tool translates between these representations automatically:
 - `make_http_request_with_x402` takes friendly names (`preferredNetwork: "testnet"`) and matches them against CAIP-2 `accepts[].network` values internally
 - `bazaar_list` / `bazaar_search` accept either friendly names or raw CAIP-2 — friendly names are translated before forwarding to the facilitator

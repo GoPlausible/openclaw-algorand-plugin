@@ -185,6 +185,7 @@ Returns the verbatim resource record with full `accepts[]`, `discoveryInfo`, pop
 - **Set `maxAmountPerRequest`.** Always. It's the only thing protecting against an endpoint silently quoting an unexpected price.
 - **Default `preferredNetwork: "testnet"`** during development. Switch to `"mainnet"` only when the user explicitly opted in to real funds.
 - **Amounts are in atomic units.** USDC has 6 decimals → `1,000,000` atomic units = `$1.00`. Most paid endpoints currently quote `1000`–`10000` atomic units = `$0.001`–`$0.01`.
+- **Report the proof of payment.** After a successful paid call, the tool's return includes `paymentResponse` — the decoded settle result with the on-chain **txn id** (`paymentResponse.transaction`). Always report the txn id to the user **as an explorer link**: MainNet → `https://allo.info/tx/<txn id>`, TestNet → `https://lora.algokit.io/testnet/transaction/<txn id>`. On **MainNet**, also offer the shareable receipt: `https://facilitator.goplausible.xyz/api/receipt/<txn id>` (receipts are MainNet-only — don't offer it for testnet payments).
 
 ## Common Pitfalls
 
