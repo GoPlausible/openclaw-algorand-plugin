@@ -42,8 +42,8 @@ Key points:
 
 1. **Check wallet**: `wallet_get_info` with target `network` — verify an account exists and is active
 2. **If no accounts**: Guide user to create one with `wallet_add_account` (sets nickname)
-3. **If needs funding**: Generate ARC-26 QR with `generate_algorand_qrcode` or direct to testnet faucet: https://lora.algokit.io/testnet/fund
-4. **If needs USDC funding**: Generate ARC-26 QR with `generate_algorand_qrcode` or direct to testnet faucet: https://faucet.circle.com/
+3. **If needs funding**: Generate an ARC-90 payment QR with `generate_algorand_qrcode` (pass the account's `network`) or direct to testnet faucet: https://lora.algokit.io/testnet/fund
+4. **If needs USDC funding**: Generate an ARC-90 payment QR with `generate_algorand_qrcode` (pass the account's `network`) or direct to testnet faucet: https://faucet.circle.com/
 5. **Confirm network**: Always confirm which network (`mainnet`, `testnet`, `localnet`) before transactions
 
 ## Network Selection
@@ -183,7 +183,7 @@ For atomic (all-or-nothing) multi-transaction groups:
 
 **Pera Asset Verification** (3): `api_pera_asset_verification_status`, `api_pera_verified_asset_details`, `api_pera_verified_asset_search` — mainnet asset verification (verified/trusted/suspicious/unverified), detailed asset info with USD value, and search by name/keyword
 
-**ARC-26 URI** (1): `generate_algorand_qrcode`
+**ARC-90 URI** (1): `generate_algorand_qrcode`
 
 **Knowledge Base** (1): `get_knowledge_doc`
 
@@ -224,19 +224,20 @@ All prices and quantities use **microunits** (1,000,000 = $1.00 or 1 share). Ord
 
 > For detailed Alpha Arcade workflows (orderbook mechanics, multi-choice markets, split/merge shares, claiming, collateral model), load the `alpha-arcade-interaction` skill.
 
-## QR Code Display (ARC-26 URI)
+## QR Code Display (ARC-90 URI)
 
-`generate_algorand_qrcode` generates an Algorand payment URI and QR code per ARC-26 specification via QRClaw service.
+`generate_algorand_qrcode` generates an Algorand payment URI per ARC-90 (the URI scheme that supersedes ARC-26) and a QR code for it via the QRClaw service. The URI names the network: mainnet URIs have no authority (`algorand://<address>?...`); testnet and localnet URIs carry the network's genesis hash (`algorand://gh:<genesis hash>/<address>?...`). Pass the `network` the payment is meant for (default: testnet).
 
 **Parameters:**
 | Parameter | Required | Description |
 |-----------|----------|-------------|
 | `address` | Yes | Receiver Algorand address |
 | `label` | No | Payment label |
-| `amount` | No | Amount in microunits (e.g. 1000000 = 1 ALGO or 1 USDC) |
-| `asset` | No | ASA ID for asset transfers; omit or 0 for ALGO |
+| `amount` | No | Amount in microunits (e.g. 1000000 = 1 ALGO or 1 USDC); a number, or a decimal string for values above 9007199254740991 |
+| `asset` | No | ASA ID for asset transfers; omit for ALGO |
 | `note` | No | Payment note |
 | `xnote` | No | Exclusive immutable note |
+| `network` | No | `mainnet`, `testnet` (default) or `localnet`; decides the URI's network authority |
 
 **Returns:**
 - `qr` — UTF-8 text QR code (terminal-friendly)

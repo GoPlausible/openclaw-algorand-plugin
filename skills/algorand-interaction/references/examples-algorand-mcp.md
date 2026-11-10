@@ -24,7 +24,8 @@ wallet_add_account {
 generate_algorand_qrcode {
   "address": "[wallet_address]",
   "amount": 5000000,
-  "note": "Fund testnet account"
+  "note": "Fund testnet account",
+  "network": "testnet"
 }
 ```
 Or direct user to: https://lora.algokit.io/testnet/fund
@@ -35,7 +36,8 @@ generate_algorand_qrcode {
   "address": "[wallet_address]",
   "asset": 10458941, // USDC on testnet
   "amount": 1000000, // 1 USDC with 6 decimals
-  "note": "Fund testnet account with USDC"
+  "note": "Fund testnet account with USDC",
+  "network": "testnet"
 }
 ```
 Or direct user to: https://faucet.circle.com/
@@ -641,13 +643,14 @@ Show the txID with explorer link:
 
 ## Top-Up QR Code (Insufficient Funds)
 
-When balance is insufficient, generate an ARC-26 QR code for easy funding:
+When balance is insufficient, generate an ARC-90 payment QR code for easy funding. Pass the wallet's `network`: the URI names it (no authority on mainnet, `gh:<genesis hash>` on testnet and localnet).
 
 ```
 generate_algorand_qrcode {
   "address": "[wallet_address]",
   "amount": 5000000,
-  "note": "Fund account for transaction"
+  "note": "Fund account for transaction",
+  "network": "[wallet_network]"
 }
 ```
 

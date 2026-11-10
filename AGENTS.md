@@ -113,8 +113,8 @@ Always confirm with the user which network to use before any signing/sending ope
 
 1. **Check wallet**: Call `wallet_get_info` with target network to verify a wallet account exists and is active
 2. **If no accounts**: Guide user to create one with `wallet_add_account` (sets nickname)
-3. **If needs funding**: Generate ARC-26 QR with `generate_algorand_qrcode` or direct to testnet faucet: https://lora.algokit.io/testnet/fund
-4. **If needs USDC funding**: Generate ARC-26 QR with `generate_algorand_qrcode` or direct to testnet faucet: https://faucet.circle.com/
+3. **If needs funding**: Generate an ARC-90 payment QR with `generate_algorand_qrcode` (pass the account's `network`) or direct to testnet faucet: https://lora.algokit.io/testnet/fund
+4. **If needs USDC funding**: Generate an ARC-90 payment QR with `generate_algorand_qrcode` (pass the account's `network`) or direct to testnet faucet: https://faucet.circle.com/
 5. **Confirm network**: Always confirm which network before transactions
 
 ### Pre-Transaction Validation
@@ -208,7 +208,7 @@ For atomic (all-or-nothing) multi-transaction groups:
 
 **Tinyman AMM** (9 tools): `api_tinyman_get_pool`, `api_tinyman_get_pool_analytics`, `api_tinyman_get_pool_creation_quote`, `api_tinyman_get_liquidity_quote`, `api_tinyman_get_remove_liquidity_quote`, `api_tinyman_get_swap_quote`, `api_tinyman_get_asset_optin_quote`, `api_tinyman_get_validator_optin_quote`, `api_tinyman_get_validator_optout_quote`
 
-**ARC-26 URI** (1 tool): `generate_algorand_qrcode`
+**ARC-90 URI** (1 tool): `generate_algorand_qrcode`
 
 **Haystack Router** (3 tools): `api_haystack_get_swap_quote`, `api_haystack_execute_swap`, `api_haystack_needs_optin`
 

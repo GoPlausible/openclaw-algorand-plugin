@@ -70,16 +70,16 @@ mcporter call algorand-mcp.search_assets name=USDC network=mainnet
 - **Haystack Router** (3) — `api_haystack_get_swap_quote`, `api_haystack_execute_swap`, `api_haystack_needs_optin`
 - **Pera Asset Verification** (3) — `api_pera_asset_verification_status`, `api_pera_verified_asset_details`, `api_pera_verified_asset_search`
 - **Alpha Arcade** (14) — Read: `alpha_get_live_markets`, `alpha_get_reward_markets`, `alpha_get_market`, `alpha_get_orderbook`, `alpha_get_open_orders`, `alpha_get_positions`. Trade: `alpha_create_limit_order`, `alpha_create_market_order`, `alpha_cancel_order`, `alpha_amend_order`, `alpha_propose_match`, `alpha_split_shares`, `alpha_merge_shares`, `alpha_claim`
-- **ARC-26 URI** (1) — `generate_algorand_qrcode`
+- **ARC-90 URI** (1) — `generate_algorand_qrcode`
 - **Knowledge** (1) — `get_knowledge_doc` (categories: `arcs`, `sdks`, `algokit`, `algokit-utils`, `tealscript`, `puya`, `liquid-auth`, `python`, `developers`, `clis`, `nodes`, `details`)
 - **x402 Payments** (2) — `x402_discover_payment_requirements`, `make_http_request_with_x402` — probe an x402-protected endpoint for payment requirements, then pay-and-fetch in one call. Used for accessing paid HTTP resources on Algorand.
 - **x402 Bazaar Discovery** (3) — `bazaar_list`, `bazaar_search`, `bazaar_get_resource_details` — browse and search the Bazaar discovery directory hosted by the configured facilitator (`facilitator.goplausible.xyz` by default) to find paid resources cataloged across the x402 ecosystem before calling `make_http_request_with_x402`.
 
 > For x402 + Bazaar workflows, **load the `algorand-x402-payment` skill** — it's the dedicated guide with all patterns, examples, and protocol references. The categories here just enumerate what tools exist.
 
-## QR Code Display (ARC-26 URI)
+## QR Code Display (ARC-90 URI)
 
-When generating QR codes with `generate_algorand_qrcode`, the tool returns:
+`generate_algorand_qrcode` builds an ARC-90 payment URI (ARC-90 supersedes ARC-26). Pass the `network` the payment is for: testnet and localnet URIs carry the genesis hash (`algorand://gh:<genesis hash>/<address>?...`), mainnet URIs have none. When generating QR codes with `generate_algorand_qrcode`, the tool returns:
 - `qr` — UTF-8 text QR code (terminal-friendly)
 - `uri` — the `algorand://` URI string
 - `link` — shareable hosted QR URL (via QRClaw service)
