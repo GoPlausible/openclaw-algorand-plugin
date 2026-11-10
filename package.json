@@ -42,6 +42,7 @@
   ],
   "openclaw": {
     "extensions": ["./index.ts"],
+    "runtimeExtensions": ["./dist/index.js"],
     "build": {
       "openclawVersion": "2026.3.14"
     },
@@ -58,6 +59,7 @@
     "openclaw": ">=2026.3.14"
   },
   "devDependencies": {
-    "@types/node": "20.0.0"
+    "@types/node": "20.0.0",
+    "typescript": "6.0.3"
   }
 }

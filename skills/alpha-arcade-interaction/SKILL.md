@@ -5,7 +5,7 @@ description: Trade on Alpha Arcade prediction markets on Algorand — browse mar
 
 # Alpha Arcade — Prediction Markets on Algorand
 
-Interact with Alpha Arcade prediction markets via the Alpha Arcade MCP server (15 tools across read-only and trading categories).
+Interact with Alpha Arcade prediction markets via the Algorand MCP server's Alpha Arcade tools (14 tools across read-only and trading categories).
 
 ## Key Characteristics
 

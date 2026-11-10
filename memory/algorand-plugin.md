@@ -2,7 +2,7 @@
 
 This plugin enables four core capabilities:
 
-1. **Blockchain Interaction** — Algorand MCP server (126 tools) via mcporter (includes Pera asset verification + x402 payments + Bazaar discovery)
+1. **Blockchain Interaction** — Algorand MCP server (119 tools) via mcporter (includes Pera asset verification + x402 payments + Bazaar discovery)
 2. **Algorand Development** — Smart contracts, typed clients, React frontends via AlgoKit CLI and skills
 3. **x402 Payment Protocol** — HTTP-native payments with Algorand as first-class chain
 4. **Haystack Router** — DEX aggregator/smart order routing on Algorand (Tinyman V2, Pact, Folks)
@@ -53,10 +53,10 @@ mcporter list algorand-mcp
 # Call a tool
 mcporter call algorand-mcp.wallet_get_info
 mcporter call algorand-mcp.generate_algorand_qrcode address=XXXXX network=testnet asset=0 amount=1000000
-mcporter call algorand-mcp.search_assets name=USDC network=mainnet
+mcporter call algorand-mcp.api_indexer_search_for_assets name=USDC network=mainnet
 ```
 
-## MCP Tool Categories (126 tools)
+## MCP Tool Categories (119 tools)
 
 - **Wallet** (10) — `wallet_add_account`, `wallet_remove_account`, `wallet_list_accounts`, `wallet_switch_account`, `wallet_get_info`, `wallet_get_assets`, `wallet_sign_transaction`, `wallet_sign_transaction_group`, `wallet_sign_data`, `wallet_optin_asset`
 - **Account Management** (8) — `create_account`, `rekey_account`, `mnemonic_to_mdk`, `mdk_to_mnemonic`, `secret_key_to_mnemonic`, `mnemonic_to_secret_key`, `seed_from_mnemonic`, `mnemonic_from_seed`
@@ -64,7 +64,7 @@ mcporter call algorand-mcp.search_assets name=USDC network=mainnet
 - **Transaction** (18) — `make_payment_txn`, `make_keyreg_txn`, `make_asset_create_txn`, `make_asset_config_txn`, `make_asset_destroy_txn`, `make_asset_freeze_txn`, `make_asset_transfer_txn`, `make_app_create_txn`, `make_app_update_txn`, `make_app_delete_txn`, `make_app_optin_txn`, `make_app_closeout_txn`, `make_app_clear_txn`, `make_app_call_txn`, `assign_group_id`, `sign_transaction`, `encode_unsigned_transaction`, `decode_signed_transaction`
 - **Algod** (5) — `compile_teal`, `disassemble_teal`, `send_raw_transaction`, `simulate_raw_transactions`, `simulate_transactions`
 - **Algod API** (13) — `api_algod_get_account_info`, `api_algod_get_account_application_info`, `api_algod_get_account_asset_info`, `api_algod_get_application_by_id`, `api_algod_get_application_box`, `api_algod_get_application_boxes`, `api_algod_get_asset_by_id`, `api_algod_get_pending_transaction`, `api_algod_get_pending_transactions_by_address`, `api_algod_get_pending_transactions`, `api_algod_get_transaction_params`, `api_algod_get_node_status`, `api_algod_get_node_status_after_block`
-- **Indexer API** (17) — `api_indexer_lookup_account_by_id`, `api_indexer_lookup_account_assets`, `api_indexer_lookup_account_app_local_states`, `api_indexer_lookup_account_created_applications`, `api_indexer_lookup_account_transactions`, `api_indexer_search_for_accounts`, `api_indexer_lookup_applications`, `api_indexer_lookup_application_logs`, `api_indexer_lookup_application_box`, `api_indexer_lookup_application_boxes`, `api_indexer_search_for_applications`, `api_indexer_lookup_asset_by_id`, `api_indexer_lookup_asset_balances`, `api_indexer_lookup_asset_transactions`, `api_indexer_search_for_assets`, `api_indexer_lookup_transaction_by_id`, `api_indexer_search_for_transactions`
+- **Indexer API** (10) — `api_indexer_lookup_account_created_applications`, `api_indexer_lookup_account_transactions`, `api_indexer_search_for_accounts`, `api_indexer_lookup_application_logs`, `api_indexer_search_for_applications`, `api_indexer_lookup_asset_balances`, `api_indexer_lookup_asset_transactions`, `api_indexer_search_for_assets`, `api_indexer_lookup_transaction_by_id`, `api_indexer_search_for_transactions` — historical and filtered queries only; for an account, asset, application or box by ID, use the Algod API tools
 - **NFDomains** (6) — `api_nfd_get_nfd`, `api_nfd_get_nfds_for_addresses`, `api_nfd_get_nfd_activity`, `api_nfd_get_nfd_analytics`, `api_nfd_browse_nfds`, `api_nfd_search_nfds`
 - **Tinyman AMM** (9) — `api_tinyman_get_pool`, `api_tinyman_get_pool_analytics`, `api_tinyman_get_pool_creation_quote`, `api_tinyman_get_liquidity_quote`, `api_tinyman_get_remove_liquidity_quote`, `api_tinyman_get_swap_quote`, `api_tinyman_get_asset_optin_quote`, `api_tinyman_get_validator_optin_quote`, `api_tinyman_get_validator_optout_quote`
 - **Haystack Router** (3) — `api_haystack_get_swap_quote`, `api_haystack_execute_swap`, `api_haystack_needs_optin`

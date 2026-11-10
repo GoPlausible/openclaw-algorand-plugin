@@ -1,7 +1,12 @@
+// Number of tools reported by tools/list of the pinned @goplausible/algorand-mcp
+// (4.4.4). Update together with the dependency version in package.json.
+const ALGORAND_MCP_TOOL_COUNT = 119;
+
 export const ALGORAND_MCP = {
   id: "algorand-mcp",
   name: "Algorand MCP",
-  description: "Local Algorand MCP server — 123 tools for blockchain interaction",
+  description: `Local Algorand MCP server — ${ALGORAND_MCP_TOOL_COUNT} tools for blockchain interaction`,
+  toolCount: ALGORAND_MCP_TOOL_COUNT,
   type: "stdio" as const,
   command: "algorand-mcp",
 } as const;

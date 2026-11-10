@@ -148,11 +148,10 @@ function register(api: OpenClawPluginApi) {
           const newConfig = await runSetup(pluginConfig);
 
           // Always apply the OpenClaw config sync (plugins.allow,
-          // plugins.entries.<id>.enabled, tools.alsoAllow) — even if the
-          // user cancels the interactive wizard, the plugin still needs
-          // its tool registered in the allowlist to be visible to the
-          // agent. Falls back to the existing pluginConfig if the wizard
-          // was cancelled.
+          // plugins.entries.<id>.enabled, and plugin tool names when there
+          // are any) — even if the wizard is cancelled, the plugin still
+          // needs to be allowed and enabled. Falls back to the existing
+          // pluginConfig if the wizard was cancelled.
           const configToWrite = (newConfig ?? pluginConfig) as Record<string, unknown>;
           const result = writePluginConfig(configToWrite);
           if (result.success) {

@@ -32,9 +32,9 @@ export async function runSetup(
 
   p.note(
     `MCP Server:\n` +
-      `  ${ALGORAND_MCP.name} (${ALGORAND_MCP.command}) — 107 blockchain tools.\n` +
+      `  ${ALGORAND_MCP.name} (${ALGORAND_MCP.command}) — ${ALGORAND_MCP.toolCount} blockchain tools.\n` +
       `  Registered in ~/.mcporter/mcporter.json on first load.\n` +
-      `  x402 micropayment and AP2 mandate flows are handled by algorand-mcp tools.\n`,
+      `  x402 payments and Bazaar discovery are handled by algorand-mcp tools.\n`,
   );
 
   p.outro(

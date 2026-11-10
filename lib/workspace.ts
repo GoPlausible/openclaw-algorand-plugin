@@ -152,31 +152,23 @@ export function writePluginConfig(pluginConfig: Record<string, unknown>): { succ
       changes.push(`plugins.allow += "${PLUGIN_ID}"`);
     }
 
-    // tools.alsoAllow: merge any existing tools.allow into tools.alsoAllow,
-    // add our tool names, then delete tools.allow. OpenClaw rejects having
-    // both `allow` and `alsoAllow` set simultaneously.
-    const tools = (config.tools && typeof config.tools === "object" && !Array.isArray(config.tools))
-      ? (config.tools as Record<string, unknown>)
-      : (config.tools = {} as Record<string, unknown>);
-
-    const alsoAllowRaw = tools.alsoAllow;
-    const alsoAllow: string[] = Array.isArray(alsoAllowRaw) ? [...(alsoAllowRaw as string[])] : [];
-    const allowRaw = tools.allow;
-    const allowArr: string[] = Array.isArray(allowRaw) ? (allowRaw as string[]) : [];
-
-    const merged = Array.from(new Set([...alsoAllow, ...allowArr, ...PLUGIN_TOOL_NAMES]));
-    const movedFromAllow = allowArr.filter((n) => !alsoAllow.includes(n));
-    const newToolNames = PLUGIN_TOOL_NAMES.filter((n) => !alsoAllow.includes(n) && !allowArr.includes(n));
-    const allowKeyExists = Object.prototype.hasOwnProperty.call(tools, "allow");
-
-    if (merged.length !== alsoAllow.length || allowKeyExists) {
-      tools.alsoAllow = merged;
-      if (allowKeyExists) delete tools.allow;
-      const parts: string[] = [];
-      if (movedFromAllow.length > 0) parts.push(`merged ${movedFromAllow.length} entr${movedFromAllow.length === 1 ? "y" : "ies"} from tools.allow`);
-      if (newToolNames.length > 0) parts.push(`added ${newToolNames.length} tool name${newToolNames.length === 1 ? "" : "s"}`);
-      if (allowKeyExists) parts.push("removed tools.allow");
-      changes.push(`tools.alsoAllow: ${parts.join("; ")}`);
+    // Plugin tools must be allowlisted to be visible to the agent. OpenClaw's
+    // config schema rejects non-empty tools.allow and tools.alsoAllow in the
+    // same scope, and tools.allow is the user's restriction on core tools, so
+    // never move or delete it: append our names to tools.allow when the user
+    // has one, otherwise to tools.alsoAllow. Writes nothing while
+    // PLUGIN_TOOL_NAMES is empty.
+    if (PLUGIN_TOOL_NAMES.length > 0) {
+      const tools = (config.tools && typeof config.tools === "object" && !Array.isArray(config.tools))
+        ? (config.tools as Record<string, unknown>)
+        : (config.tools = {} as Record<string, unknown>);
+      const key = Array.isArray(tools.allow) && tools.allow.length > 0 ? "allow" : "alsoAllow";
+      const current: string[] = Array.isArray(tools[key]) ? [...(tools[key] as string[])] : [];
+      const added = PLUGIN_TOOL_NAMES.filter((n) => !current.includes(n));
+      if (added.length > 0) {
+        tools[key] = [...current, ...added];
+        changes.push(`tools.${key} += ${added.map((n) => `"${n}"`).join(", ")}`);
+      }
     }
 
     writeFileSync(configPath, JSON.stringify(config, null, 2));
